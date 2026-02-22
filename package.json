@@ -1,0 +1,20 @@
+{
+  "name": "avail-jombang-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Avail Jombang Store (Vite + Vue SFC + Express MVC + MySQL)",
+  "workspaces": [
+    "client",
+    "admin",
+    "server"
+  ],
+  "scripts": {
+    "dev": "node server/index.js",
+    "build": "npm run build -w client && npm run build -w admin",
+    "start": "NODE_ENV=production node server/index.js"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.2.0"
+  }
+}

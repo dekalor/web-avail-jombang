@@ -1,0 +1,17 @@
+{
+  "name": "@avail-jombang/admin",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev":     "vite --port 5174",
+    "build":   "vite build",
+    "preview": "vite preview --port 5174"
+  },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.2.0"
+  }
+}
