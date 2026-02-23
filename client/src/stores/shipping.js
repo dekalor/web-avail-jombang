@@ -1,98 +1,177 @@
 import { defineStore } from "pinia"
-import { ref, computed } from "vue"
+import { ref } from "vue"
+import { useApi } from "../composables/useApi"
+
+const { get } = useApi()
 
 export const useShippingStore = defineStore("shipping", () => {
 
+  // data
   const provinces = ref([])
   const cities = ref([])
   const couriers = ref([])
 
-  const selectedProvince = ref(null)
-  const selectedCity = ref(null)
-  const selectedCourier = ref(null)
+  // loading states
+  const loadingProvinces = ref(false)
+  const loadingCities = ref(false)
+  const loadingShippingCosts = ref(false)
 
-  const shippingCost = ref(0)
-  const etd = ref("")
+  // shipping result
+  const shippingCosts = ref({})
 
-  // cache
-  const cache = new Map()
+  // caches
+  const citiesCache = new Map()
+  const shippingCache = new Map()
 
+  // ========================
+  // FETCH PROVINCES
+  // ========================
   async function fetchProvinces() {
 
-    const res = await fetch("/api/provinces")
-    provinces.value = await res.json()
+    if (provinces.value.length) return
 
-  }
+    loadingProvinces.value = true
 
-  async function fetchCities() {
+    try {
 
-    if (!selectedProvince.value) return
+      const res = await get("/shipping/provinces")
+      provinces.value = res.data
 
-    const res = await fetch(
-      `/api/cities?province_id=${selectedProvince.value}`
-    )
+    } finally {
 
-    cities.value = await res.json()
-
-  }
-
-  async function fetchCouriers() {
-
-    const res = await fetch("/api/couriers")
-    couriers.value = await res.json()
-
-  }
-
-  async function calculateShipping() {
-
-    if (!selectedCity.value || !selectedCourier.value)
-      return
-
-    const key =
-      `${selectedCity.value}-${selectedCourier.value}`
-
-    // use cache
-    if (cache.has(key)) {
-
-      const data = cache.get(key)
-
-      shippingCost.value = data.price
-      etd.value = data.etd
-
-      return
+      loadingProvinces.value = false
 
     }
 
-    const res = await fetch(
-      `/api/shipping-cost?city_id=${selectedCity.value}&courier_id=${selectedCourier.value}`
-    )
+  }
 
-    const data = await res.json()
+  // ========================
+  // FETCH CITIES BY PROVINCE
+  // ========================
+  async function fetchCities(provinceId) {
 
-    shippingCost.value = data.price
-    etd.value = data.etd
+    if (!provinceId) {
+      cities.value = []
+      return
+    }
 
-    cache.set(key, data)
+    // use cache
+    if (citiesCache.has(provinceId)) {
+      cities.value = citiesCache.get(provinceId)
+      return
+    }
 
+    loadingCities.value = true
+
+    try {
+
+      const res = await get(
+        `/shipping/cities?province_id=${provinceId}`
+      )
+
+      cities.value = res.data
+
+      citiesCache.set(provinceId, res.data)
+
+    } finally {
+
+      loadingCities.value = false
+
+    }
+
+  }
+
+  // ========================
+  // FETCH COURIERS
+  // ========================
+  async function fetchCouriers() {
+    if (couriers.value.length) return
+
+    const res = await get("/shipping/couriers")
+    couriers.value = res.data
+  }
+
+  // ========================
+  // FETCH ALL COURIER COSTS AT ONCE
+  // ========================
+  async function fetchShippingCosts(cityId) {
+
+    if (!cityId) return
+
+    if (shippingCache.has(cityId)) {
+      shippingCosts.value = shippingCache.get(cityId)
+      return
+    }
+
+    loadingShippingCosts.value = true
+
+    try {
+      // const res = await get(
+      //   `/shipping-costs?city_id=${cityId}`
+      // )
+      const res = {
+        data: [
+          { id: 1, price: 18000, etd: "2-3 hari" },
+          { id: 2, price: 15000, etd: "3-4 hari" }
+        ]
+      }
+
+      const costs = {}
+
+      for (const item of res.data) {
+        costs[item.id] = {
+          price: item.price,
+          etd: item.etd
+        }
+      }
+
+      shippingCosts.value = costs
+
+      shippingCache.set(cityId, costs)
+
+    } finally {
+
+      loadingShippingCosts.value = false
+
+    }
+
+  }
+
+  // ========================
+  // RESET
+  // ========================
+  function clearCities() {
+    cities.value = []
+  }
+
+  function clearShippingCosts() {
+    shippingCosts.value = {}
   }
 
   return {
 
+    // data
     provinces,
     cities,
     couriers,
 
-    selectedProvince,
-    selectedCity,
-    selectedCourier,
+    // result
+    shippingCosts,
 
-    shippingCost,
-    etd,
+    // loading
+    loadingProvinces,
+    loadingCities,
+    loadingShippingCosts,
 
+    // actions
     fetchProvinces,
     fetchCities,
     fetchCouriers,
-    calculateShipping
+    fetchShippingCosts,
+
+    // helpers
+    clearCities,
+    clearShippingCosts
 
   }
 

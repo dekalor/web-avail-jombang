@@ -46,7 +46,8 @@
                     Nama Lengkap *
                   </Label>
 
-                  <input id="name" name="name" v-model="formData.name" required class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
+                  <input id="name" name="name" v-model="formData.name" required
+                    class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="Masukkan nama lengkap" />
                 </div>
 
@@ -56,7 +57,8 @@
                     Nomor Telepon *
                   </Label>
 
-                  <input id="phone" name="phone" type="tel" v-model="formData.phone" required class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
+                  <input id="phone" name="phone" type="tel" v-model="formData.phone" required
+                    class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="08xxxxxxxxxx" />
                 </div>
 
@@ -84,35 +86,39 @@
                   </Label>
 
                   <textarea id="address" name="address" v-model="formData.address" required rows="4"
-                    class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="Jalan, No. Rumah, RT/RW" />
                 </div>
 
-
-                <!-- City + Postal -->
                 <div class="grid md:grid-cols-2 gap-5">
+                  <div>
+                    <Label for="province" class="text-lg mb-2">
+                      Provinsi *
+                    </Label>
+                    <ProvinceSelect v-model="formData.province" :options="shippingStore.provinces"
+                      placeholder="Pilih Provinsi" />
+                  </div>
 
                   <div>
                     <Label for="city" class="text-lg mb-2">
                       Kota *
                     </Label>
-
-                    <input id="city" name="city" v-model="formData.city" required class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
-                      placeholder="Nama kota" />
+                    <CitySelect v-model="formData.city" :cities="shippingStore.cities"
+                      :loading="shippingStore.loadingCities" :disabled="formData.province == ''" />
                   </div>
+                </div>
 
-
+                <div class="grid md:grid-cols-">
                   <div>
                     <Label for="postalCode" class="text-lg mb-2">
                       Kode Pos *
                     </Label>
 
-                    <input id="postalCode" name="postalCode" v-model="formData.postalCode" required class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
+                    <input id="postalCode" name="postalCode" v-model="formData.postalCode" required
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                       placeholder="12345" />
                   </div>
-
                 </div>
-
 
                 <!-- Notes -->
                 <div>
@@ -121,7 +127,7 @@
                   </Label>
 
                   <textarea id="notes" name="notes" v-model="formData.notes" rows="3"
-                    class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="Catatan untuk pengiriman" />
                 </div>
 
@@ -178,13 +184,13 @@
                 </div>
 
                 <!-- BCA Transfer Option -->
-                <div @click="paymentMethod = 'bca'"
+                <div @click="paymentMethod = 'bank'"
                   class="border-2 rounded-xl p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="paymentMethod === 'bca' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
+                  :class="paymentMethod === 'bank' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
                   <div class="flex items-center gap-4">
                     <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                      :class="paymentMethod === 'bca' ? 'border-[#7BA87D]' : 'border-gray-300'">
-                      <div v-if="paymentMethod === 'bca'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
+                      :class="paymentMethod === 'bank' ? 'border-[#7BA87D]' : 'border-gray-300'">
+                      <div v-if="paymentMethod === 'bank'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
                     </div>
                     <CreditCard class="w-8 h-8 text-[#7BA87D]" />
                     <div class="flex-1">
@@ -201,7 +207,7 @@
                       </p>
 
                       <!-- Bank Accounts -->
-                      <div v-if="paymentMethod === 'bca'" class="mt-4 space-y-4">
+                      <div v-if="paymentMethod === 'bank'" class="mt-4 space-y-4">
 
                         <p class="text-base text-gray-700 font-semibold">
                           Pilih salah satu rekening bank di bawah ini untuk transfer:
@@ -336,7 +342,7 @@
                     </div>
                   </div>
                   <p class="text-xl font-bold text-gray-900 mb-2">
-                    Total: Rp {{ getTotalPrice().toLocaleString('id-ID') }}
+                    Total: {{ formatPrice(getGrandTotal()) }}
                   </p>
                   <p class="text-base text-gray-600">
                     Scan QR Code menggunakan aplikasi e-wallet Anda
@@ -363,8 +369,17 @@
               </div>
             </Card>
 
+            <!-- Courier Selection -->
+            <CourierSelect
+              v-model="formData.courier"
+              :couriers="shippingStore.couriers"
+              :shippingCosts="shippingStore.shippingCosts"
+              :loading="shippingStore.loadingShippingCosts"
+              :paymentMethod="paymentMethod"
+            />
+
             <!-- Payment Proof Upload (for QRIS and BCA) -->
-            <Card v-if="paymentMethod === 'qris' || paymentMethod === 'bca'" class="p-8">
+            <Card v-if="paymentMethod === 'qris' || paymentMethod === 'bank'" class="p-8">
               <div class="flex items-center gap-3 mb-6">
                 <Upload class="w-7 h-7 text-[#7BA87D]" />
                 <h2 class="text-2xl font-bold text-gray-900">
@@ -486,25 +501,39 @@
                 <div class="flex justify-between text-lg">
                   <span class="text-gray-600">Subtotal</span>
                   <span class="font-semibold">
-                    Rp {{ getTotalPrice().toLocaleString('id-ID') }}
+                    {{ formatPrice(getTotalPrice()) }}
                   </span>
                 </div>
                 <div class="flex justify-between text-lg">
                   <span class="text-gray-600">Ongkir</span>
-                  <span class="font-semibold text-green-600">GRATIS</span>
+                  <span v-if="shippingStore.loadingShippingCosts">
+                    Menghitung...
+                  </span>
+
+                  <!-- Has shipping cost -->
+                  <span v-else-if="selectedShippingCost?.price">
+                    {{ formatPrice(selectedShippingCost.price) }}
+                  </span>
+
+                  <!-- Free shipping -->
+                  <span
+                    v-else
+                    class="font-semibold text-green-600"
+                  >
+                    GRATIS
+                  </span>
                 </div>
                 <div class="border-t pt-3">
                   <div class="flex justify-between text-2xl font-bold">
                     <span>Total</span>
                     <span class="text-[#7BA87D]">
-                      Rp {{ getTotalPrice().toLocaleString('id-ID') }}
+                      {{ formatPrice(getGrandTotal()) }}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <Button type="submit" :disabled="isProcessing" variant="success"
-                size="lg">
+              <Button type="submit" :disabled="isProcessing" variant="success" size="lg">
                 <template v-if="isProcessing">
                   <span class="animate-spin mr-2">⏳</span>
                   Memproses...
@@ -527,7 +556,7 @@
                 </p>
               </div>
 
-              <div v-if="paymentMethod === 'bca'" class="mt-6 p-4 bg-blue-50 rounded-lg">
+              <div v-if="paymentMethod === 'bank'" class="mt-6 p-4 bg-blue-50 rounded-lg">
                 <p class="text-sm text-blue-800 text-center">
                   🏦 Transfer ke rekening bank yang tertera
                 </p>
@@ -541,25 +570,33 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   CheckCircle, MapPin, User, Phone, Home, Wallet,
   QrCode, CreditCard, Copy, Check, Upload, X
 } from 'lucide-vue-next'
 import { useCartStore } from '../stores/cart'
+import { useShippingStore } from '../stores/shipping'
+import { useProducts } from '../composables/useProducts'
+
 import Button from '../components/ui/Button.vue'
 import Card from '../components/ui/Card.vue'
 import Input from '../components/ui/Input.vue'
 import Label from '../components/ui/Label.vue'
+import ProvinceSelect from '../components/ProvinceSelect.vue'
+import CitySelect from '../components/CitySelect.vue'
+import CourierSelect from '../components/CourierSelect.vue'
 
 const router = useRouter()
 const cartStore = useCartStore()
+const shippingStore = useShippingStore()
+const { formatPrice } = useProducts()
 
 // Reactive state
 const isProcessing = ref(false)
 const isSuccess = ref(false)
-const paymentMethod = ref('cod') // 'qris' | 'bca' | 'cod'
+const paymentMethod = ref('cod') // 'qris' | 'bank' | 'cod'
 const copiedBank = ref(null)
 const paymentProof = ref(null)
 const paymentProofPreview = ref(null)
@@ -569,9 +606,20 @@ const formData = ref({
   name: '',
   phone: '',
   address: '',
+  province: '',
   city: '',
+  courier: '',
   postalCode: '',
   notes: ''
+})
+
+// computed selected courier cost
+const selectedShippingCost = computed(() => {
+  if (!formData.value.courier)
+    return null
+
+  return shippingStore.shippingCosts[formData.value.courier] || null
+
 })
 
 // Bank account data
@@ -597,6 +645,11 @@ const bankAccounts = {
 const cart = cartStore.items
 const getTotalPrice = () => cartStore.totalPrice
 
+const getGrandTotal = () => {
+  const shipping_cost = shippingStore.shippingCosts[formData.value.courier]?.price || 0
+  return cartStore.totalPrice + shipping_cost
+}
+
 // Redirect to cart if empty and not in success state
 watch(() => cartStore.items.length, (newLength) => {
   if (newLength === 0 && !isSuccess.value) {
@@ -604,10 +657,39 @@ watch(() => cartStore.items.length, (newLength) => {
   }
 })
 
+// when province change
+watch(() => formData.value.province, async (provinceId) => {
+  formData.value.city = ""
+  shippingStore.clearCities()
+  shippingStore.clearShippingCosts()
+
+  if (provinceId)
+    await shippingStore.fetchCities(provinceId)
+})
+
+// when city or courier change
+watch(() => formData.value.city, async (cityId) => {
+    formData.value.courier = ""
+    shippingStore.clearShippingCosts()
+
+    if (cityId)
+      await shippingStore.fetchShippingCosts(cityId)
+  }
+)
+
+// when payment method change
+watch(paymentMethod, (method) => {
+  if (method === "cod") {
+    formData.value.courier = ""
+  }
+})
+
 onMounted(() => {
   if (cartStore.items.length === 0 && !isSuccess.value) {
     router.push('/cart')
   }
+  shippingStore.fetchProvinces()
+  shippingStore.fetchCouriers()
 })
 
 // Methods
