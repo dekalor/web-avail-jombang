@@ -6,6 +6,8 @@ const session = require('express-session');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes   = require('./routes/orderRoutes');
 const adminRoutes   = require('./routes/adminRoutes');
+const shippingRoutes   = require('./routes/shippingRoutes');
+
 const SequelizeSessionStore = require('./middleware/sequelizeSessionStore');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const { SESSION } = require('./config/config');
@@ -37,6 +39,7 @@ async function createApp() {
   app.use('/api/products', productRoutes);
   app.use('/api/orders',   orderRoutes);
   app.use('/api/admin',    adminRoutes);
+  app.use('/api/shipping',    shippingRoutes);
 
   if (isProd) {
     // ── Production: serve pre-built Vite dist folders ──────────────────────
@@ -46,7 +49,7 @@ async function createApp() {
       res.sendFile(path.join(__dirname, '../admin/dist/index.html'))
     );
 
-    // Client SPA
+    // Client
     app.use(express.static(path.join(__dirname, '../client/dist')));
     app.get('*', (req, res) =>
       res.sendFile(path.join(__dirname, '../client/dist/index.html'))
@@ -79,7 +82,7 @@ async function createApp() {
         middlewareMode: true,
         hmr: { port: clientHmrPort },
       },
-      appType: 'spa',
+      appType: 'mpa',
       base: '/',
     });
 

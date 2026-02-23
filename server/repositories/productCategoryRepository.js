@@ -6,7 +6,7 @@ const productCategoryRepository = {
     const where = activeOnly ? { active: true } : {};
 
     return ProductCategory.findAll({
-      attributes: attributes,
+      attributes,
       where,
       order: [['id', 'ASC']],
     });

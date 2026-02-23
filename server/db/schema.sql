@@ -83,24 +83,25 @@ CREATE TABLE IF NOT EXISTS provinces (
 -- ─── Cities ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS cities (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    province_id INT,
-    name VARCHAR(100),
+    province_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
     FOREIGN KEY (province_id) REFERENCES provinces(id)
 );
 
 -- ─── Couriers ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS couriers (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    code VARCHAR(20),
-    name VARCHAR(100)
+    code VARCHAR(20) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    active TINYINT(1) NOT NULL DEFAULT 1,
 );
 
 -- ─── Shipping Rates ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS shipping_rates (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    city_id INT,
-    courier_id INT,
-    price INT,
+    city_id INT NOT NULL,
+    courier_id INT NOT NULL,
+    price INT NOT NULL,
     etd VARCHAR(50),
     FOREIGN KEY (city_id) REFERENCES cities(id),
     FOREIGN KEY (courier_id) REFERENCES couriers(id)
