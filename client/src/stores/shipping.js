@@ -27,29 +27,22 @@ export const useShippingStore = defineStore("shipping", () => {
   // FETCH PROVINCES
   // ========================
   async function fetchProvinces() {
-
     if (provinces.value.length) return
 
     loadingProvinces.value = true
 
     try {
-
       const res = await get("/shipping/provinces")
       provinces.value = res.data
-
     } finally {
-
       loadingProvinces.value = false
-
     }
-
   }
 
   // ========================
   // FETCH CITIES BY PROVINCE
   // ========================
   async function fetchCities(provinceId) {
-
     if (!provinceId) {
       cities.value = []
       return
@@ -64,21 +57,15 @@ export const useShippingStore = defineStore("shipping", () => {
     loadingCities.value = true
 
     try {
-
       const res = await get(
         `/shipping/cities?province_id=${provinceId}`
       )
 
       cities.value = res.data
-
       citiesCache.set(provinceId, res.data)
-
     } finally {
-
       loadingCities.value = false
-
     }
-
   }
 
   // ========================
@@ -117,7 +104,6 @@ export const useShippingStore = defineStore("shipping", () => {
       }
 
       const costs = {}
-
       for (const item of res.data) {
         costs[item.id] = {
           price: item.price,
@@ -126,13 +112,9 @@ export const useShippingStore = defineStore("shipping", () => {
       }
 
       shippingCosts.value = costs
-
       shippingCache.set(cityId, costs)
-
     } finally {
-
       loadingShippingCosts.value = false
-
     }
 
   }

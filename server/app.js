@@ -82,7 +82,7 @@ async function createApp() {
         middlewareMode: true,
         hmr: { port: clientHmrPort },
       },
-      appType: 'mpa',
+      appType: 'spa',
       base: '/',
     });
 

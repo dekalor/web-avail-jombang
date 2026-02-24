@@ -97,11 +97,6 @@
                 <span class="font-semibold">{{ formatPrice(subtotal) }}</span>
               </div>
 
-              <div class="flex justify-between text-lg">
-                <span class="text-gray-600">Ongkos Kirim</span>
-                <span class="font-semibold text-green-600">GRATIS</span>
-              </div>
-
               <div v-if="discount > 0" class="flex justify-between text-lg text-green-600">
                 <span>Diskon</span>
                 <span class="font-semibold">-{{ formatPrice(discount) }}</span>

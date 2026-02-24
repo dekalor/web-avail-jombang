@@ -46,7 +46,7 @@
                     Nama Lengkap *
                   </Label>
 
-                  <input id="name" name="name" v-model="formData.name" required
+                  <input id="name" name="name" v-model="checkoutStore.name" required
                     class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="Masukkan nama lengkap" />
                 </div>
@@ -57,7 +57,7 @@
                     Nomor Telepon *
                   </Label>
 
-                  <input id="phone" name="phone" type="tel" v-model="formData.phone" required
+                  <input id="phone" name="phone" type="tel" v-model="checkoutStore.phone" required
                     class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="08xxxxxxxxxx" />
                 </div>
@@ -85,7 +85,7 @@
                     Alamat Lengkap *
                   </Label>
 
-                  <textarea id="address" name="address" v-model="formData.address" required rows="4"
+                  <textarea id="address" name="address" v-model="checkoutStore.address" required rows="4"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="Jalan, No. Rumah, RT/RW" />
                 </div>
@@ -95,7 +95,7 @@
                     <Label for="province" class="text-lg mb-2">
                       Provinsi *
                     </Label>
-                    <ProvinceSelect v-model="formData.province" :options="shippingStore.provinces"
+                    <ProvinceSelect v-model="checkoutStore.provinceId" :options="shippingStore.provinces"
                       placeholder="Pilih Provinsi" />
                   </div>
 
@@ -103,8 +103,11 @@
                     <Label for="city" class="text-lg mb-2">
                       Kota *
                     </Label>
-                    <CitySelect v-model="formData.city" :cities="shippingStore.cities"
-                      :loading="shippingStore.loadingCities" :disabled="formData.province == ''" />
+                    <CitySelect 
+                      v-model="checkoutStore.cityId" 
+                      :cities="shippingStore.cities"
+                      :loading="shippingStore.loadingCities" 
+                      :disabled="!checkoutStore.provinceId" />
                   </div>
                 </div>
 
@@ -114,7 +117,7 @@
                       Kode Pos *
                     </Label>
 
-                    <input id="postalCode" name="postalCode" v-model="formData.postalCode" required
+                    <input id="postalCode" name="postalCode" v-model="checkoutStore.postalCode" required
                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                       placeholder="12345" />
                   </div>
@@ -126,7 +129,7 @@
                     Catatan (Opsional)
                   </Label>
 
-                  <textarea id="notes" name="notes" v-model="formData.notes" rows="3"
+                  <textarea id="notes" name="notes" v-model="checkoutStore.notes" rows="3"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="Catatan untuk pengiriman" />
                 </div>
@@ -146,13 +149,13 @@
 
               <div class="space-y-4">
                 <!-- COD Option -->
-                <div @click="paymentMethod = 'cod'"
+                <div @click="checkoutStore.paymentMethod = 'cod'"
                   class="border-2 rounded-xl p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="paymentMethod === 'cod' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
+                  :class="checkoutStore.paymentMethod === 'cod' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
                   <div class="flex items-center gap-4">
                     <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                      :class="paymentMethod === 'cod' ? 'border-[#7BA87D]' : 'border-gray-300'">
-                      <div v-if="paymentMethod === 'cod'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
+                      :class="checkoutStore.paymentMethod === 'cod' ? 'border-[#7BA87D]' : 'border-gray-300'">
+                      <div v-if="checkoutStore.paymentMethod === 'cod'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
                     </div>
                     <Home class="w-8 h-8 text-[#7BA87D]" />
                     <div class="flex-1">
@@ -165,13 +168,13 @@
                 </div>
 
                 <!-- QRIS Option -->
-                <div @click="paymentMethod = 'qris'"
+                <div @click="checkoutStore.paymentMethod = 'qris'"
                   class="border-2 rounded-xl p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="paymentMethod === 'qris' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
+                  :class="checkoutStore.paymentMethod === 'qris' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
                   <div class="flex items-center gap-4">
                     <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                      :class="paymentMethod === 'qris' ? 'border-[#7BA87D]' : 'border-gray-300'">
-                      <div v-if="paymentMethod === 'qris'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
+                      :class="checkoutStore.paymentMethod === 'qris' ? 'border-[#7BA87D]' : 'border-gray-300'">
+                      <div v-if="checkoutStore.paymentMethod === 'qris'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
                     </div>
                     <QrCode class="w-8 h-8 text-[#7BA87D]" />
                     <div class="flex-1">
@@ -184,13 +187,13 @@
                 </div>
 
                 <!-- BCA Transfer Option -->
-                <div @click="paymentMethod = 'bank'"
+                <div @click="checkoutStore.paymentMethod = 'bank'"
                   class="border-2 rounded-xl p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="paymentMethod === 'bank' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
+                  :class="checkoutStore.paymentMethod === 'bank' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
                   <div class="flex items-center gap-4">
                     <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                      :class="paymentMethod === 'bank' ? 'border-[#7BA87D]' : 'border-gray-300'">
-                      <div v-if="paymentMethod === 'bank'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
+                      :class="checkoutStore.paymentMethod === 'bank' ? 'border-[#7BA87D]' : 'border-gray-300'">
+                      <div v-if="checkoutStore.paymentMethod === 'bank'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
                     </div>
                     <CreditCard class="w-8 h-8 text-[#7BA87D]" />
                     <div class="flex-1">
@@ -207,7 +210,7 @@
                       </p>
 
                       <!-- Bank Accounts -->
-                      <div v-if="paymentMethod === 'bank'" class="mt-4 space-y-4">
+                      <div v-if="checkoutStore.paymentMethod === 'bank'" class="mt-4 space-y-4">
 
                         <p class="text-base text-gray-700 font-semibold">
                           Pilih salah satu rekening bank di bawah ini untuk transfer:
@@ -325,7 +328,7 @@
             </Card>
 
             <!-- QRIS Payment Details -->
-            <Card v-if="paymentMethod === 'qris'" class="p-8">
+            <Card v-if="checkoutStore.paymentMethod === 'qris'" class="p-8">
               <div class="flex items-center gap-3 mb-6">
                 <QrCode class="w-7 h-7 text-[#7BA87D]" />
                 <h2 class="text-2xl font-bold text-gray-900">
@@ -342,7 +345,7 @@
                     </div>
                   </div>
                   <p class="text-xl font-bold text-gray-900 mb-2">
-                    Total: {{ formatPrice(getGrandTotal()) }}
+                    Total: {{ formatPrice(checkoutStore.grandTotal) }}
                   </p>
                   <p class="text-base text-gray-600">
                     Scan QR Code menggunakan aplikasi e-wallet Anda
@@ -371,15 +374,15 @@
 
             <!-- Courier Selection -->
             <CourierSelect
-              v-model="formData.courier"
+              v-model="checkoutStore.courierId"
               :couriers="shippingStore.couriers"
               :shippingCosts="shippingStore.shippingCosts"
               :loading="shippingStore.loadingShippingCosts"
-              :paymentMethod="paymentMethod"
+              :paymentMethod="checkoutStore.paymentMethod"
             />
 
             <!-- Payment Proof Upload (for QRIS and BCA) -->
-            <Card v-if="paymentMethod === 'qris' || paymentMethod === 'bank'" class="p-8">
+            <Card v-if="checkoutStore.paymentMethod === 'qris' || checkoutStore.paymentMethod === 'bank'" class="p-8">
               <div class="flex items-center gap-3 mb-6">
                 <Upload class="w-7 h-7 text-[#7BA87D]" />
                 <h2 class="text-2xl font-bold text-gray-900">
@@ -389,7 +392,7 @@
 
               <div class="space-y-5">
                 <p class="text-lg text-gray-600">
-                  Setelah melakukan pembayaran via {{ paymentMethod === 'qris' ? 'QRIS' : 'Transfer Bank' }}, mohon
+                  Setelah melakukan pembayaran via {{ checkoutStore.paymentMethod === 'qris' ? 'QRIS' : 'Transfer Bank' }}, mohon
                   upload bukti pembayaran Anda di bawah ini:
                 </p>
 
@@ -501,7 +504,7 @@
                 <div class="flex justify-between text-lg">
                   <span class="text-gray-600">Subtotal</span>
                   <span class="font-semibold">
-                    {{ formatPrice(getTotalPrice()) }}
+                    {{ formatPrice(checkoutStore.subtotal) }}
                   </span>
                 </div>
                 <div class="flex justify-between text-lg">
@@ -511,8 +514,8 @@
                   </span>
 
                   <!-- Has shipping cost -->
-                  <span v-else-if="selectedShippingCost?.price">
-                    {{ formatPrice(selectedShippingCost.price) }}
+                  <span v-else-if="checkoutStore.shippingCost != 0">
+                    {{ formatPrice(checkoutStore.shippingCost) }}
                   </span>
 
                   <!-- Free shipping -->
@@ -527,7 +530,7 @@
                   <div class="flex justify-between text-2xl font-bold">
                     <span>Total</span>
                     <span class="text-[#7BA87D]">
-                      {{ formatPrice(getGrandTotal()) }}
+                      {{ formatPrice(checkoutStore.grandTotal) }}
                     </span>
                   </div>
                 </div>
@@ -544,19 +547,19 @@
                 </template>
               </Button>
 
-              <div v-if="paymentMethod === 'cod'" class="mt-6 p-4 bg-green-50 rounded-lg">
+              <div v-if="checkoutStore.paymentMethod === 'cod'" class="mt-6 p-4 bg-green-50 rounded-lg">
                 <p class="text-sm text-green-800 text-center">
                   ✅ Bayar saat barang diterima
                 </p>
               </div>
 
-              <div v-if="paymentMethod === 'qris'" class="mt-6 p-4 bg-blue-50 rounded-lg">
+              <div v-if="checkoutStore.paymentMethod === 'qris'" class="mt-6 p-4 bg-blue-50 rounded-lg">
                 <p class="text-sm text-blue-800 text-center">
                   📱 Silakan scan QR Code untuk pembayaran
                 </p>
               </div>
 
-              <div v-if="paymentMethod === 'bank'" class="mt-6 p-4 bg-blue-50 rounded-lg">
+              <div v-if="checkoutStore.paymentMethod === 'bank'" class="mt-6 p-4 bg-blue-50 rounded-lg">
                 <p class="text-sm text-blue-800 text-center">
                   🏦 Transfer ke rekening bank yang tertera
                 </p>
@@ -578,6 +581,7 @@ import {
 } from 'lucide-vue-next'
 import { useCartStore } from '../stores/cart'
 import { useShippingStore } from '../stores/shipping'
+import { useCheckoutStore } from '../stores/checkout'
 import { useProducts } from '../composables/useProducts'
 
 import Button from '../components/ui/Button.vue'
@@ -591,35 +595,23 @@ import CourierSelect from '../components/CourierSelect.vue'
 const router = useRouter()
 const cartStore = useCartStore()
 const shippingStore = useShippingStore()
+const checkoutStore = useCheckoutStore()
 const { formatPrice } = useProducts()
 
 // Reactive state
 const isProcessing = ref(false)
 const isSuccess = ref(false)
-const paymentMethod = ref('cod') // 'qris' | 'bank' | 'cod'
 const copiedBank = ref(null)
 const paymentProof = ref(null)
 const paymentProofPreview = ref(null)
 const fileInput = ref(null)
 
-const formData = ref({
-  name: '',
-  phone: '',
-  address: '',
-  province: '',
-  city: '',
-  courier: '',
-  postalCode: '',
-  notes: ''
-})
-
 // computed selected courier cost
 const selectedShippingCost = computed(() => {
-  if (!formData.value.courier)
+  if (!shippingStore.selectedCourierId)
     return null
 
-  return shippingStore.shippingCosts[formData.value.courier] || null
-
+  return shippingStore.shippingCosts[shippingStore.selectedCourierId] || null
 })
 
 // Bank account data
@@ -641,35 +633,31 @@ const bankAccounts = {
   },
 }
 
-// Computed-like access to cart (using store directly)
 const cart = cartStore.items
-const getTotalPrice = () => cartStore.totalPrice
-
-const getGrandTotal = () => {
-  const shipping_cost = shippingStore.shippingCosts[formData.value.courier]?.price || 0
-  return cartStore.totalPrice + shipping_cost
-}
 
 // Redirect to cart if empty and not in success state
-watch(() => cartStore.items.length, (newLength) => {
+watch(() => cart.length, (newLength) => {
   if (newLength === 0 && !isSuccess.value) {
     router.push('/cart')
   }
 })
 
 // when province change
-watch(() => formData.value.province, async (provinceId) => {
-  formData.value.city = ""
-  shippingStore.clearCities()
+watch(() => checkoutStore.provinceId, async (provinceId) => {
+  // shippingStore.clearCities()
+
+  shippingStore.selectedCityId = ""
+  shippingStore.selectedCourierId = ""
+
   shippingStore.clearShippingCosts()
 
   if (provinceId)
     await shippingStore.fetchCities(provinceId)
 })
 
-// when city or courier change
-watch(() => formData.value.city, async (cityId) => {
-    formData.value.courier = ""
+// when city
+watch(() => checkoutStore.cityId, async (cityId) => {
+    shippingStore.selectedCourierId = ""
     shippingStore.clearShippingCosts()
 
     if (cityId)
@@ -677,19 +665,57 @@ watch(() => formData.value.city, async (cityId) => {
   }
 )
 
+watch(() => checkoutStore.courierId, (courierId) => {
+    const cost =
+      shippingStore.shippingCosts[courierId]
+
+    if (cost) {
+      checkoutStore.setShipping(
+        cost.price,
+        cost.etd
+      )
+    }
+  }
+)
+
 // when payment method change
-watch(paymentMethod, (method) => {
+watch(() => checkoutStore.paymentMethod, (method) => {
   if (method === "cod") {
-    formData.value.courier = ""
+    checkoutStore.courierId = ""
+    shippingStore.clearShippingCosts()
   }
 })
 
-onMounted(() => {
+onMounted(async () => {
   if (cartStore.items.length === 0 && !isSuccess.value) {
     router.push('/cart')
   }
-  shippingStore.fetchProvinces()
-  shippingStore.fetchCouriers()
+
+  if (!shippingStore.provinces.length)
+    shippingStore.fetchProvinces()
+
+  if (!shippingStore.couriers.length)
+    shippingStore.fetchCouriers()
+
+  // restore selected cities
+  if (
+    checkoutStore.provinceId &&
+    !shippingStore.cities.length
+  ) {
+    await shippingStore.fetchCities(
+      checkoutStore.provinceId
+    )
+  }
+
+  // restore selected shipping costs
+  if (
+    checkoutStore.cityId &&
+    Object.keys(shippingStore.shippingCosts).length === 0
+  ) {
+    await shippingStore.fetchShippingCosts(
+      checkoutStore.cityId
+    )
+  }
 })
 
 // Methods
@@ -701,6 +727,7 @@ function handleSubmit() {
     isProcessing.value = false
     isSuccess.value = true
     cartStore.clearCart()
+    checkoutStore.resetAfterCheckout()
 
     // Redirect after success
     setTimeout(() => {
