@@ -1,39 +1,20 @@
 <template>
-  <!-- Success State -->
-  <div v-if="isSuccess" class="min-h-screen flex items-center justify-center py-12">
-    <Card class="max-w-2xl w-full p-12 text-center">
-      <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <CheckCircle class="w-16 h-16 text-green-600" />
-      </div>
-      <h1 class="text-4xl font-bold text-gray-900 mb-4">
-        Pesanan Berhasil!
-      </h1>
-      <p class="text-xl text-gray-600 mb-6">
-        Terima kasih telah berbelanja di AVAIL. Pesanan Anda sedang diproses.
-      </p>
-      <p class="text-lg text-gray-600">
-        Anda akan diarahkan ke halaman utama...
-      </p>
-    </Card>
-  </div>
-
-  <!-- Checkout Form -->
-  <div v-else class="min-h-screen py-12">
+  <div class="min-h-screen py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 class="text-5xl font-bold text-[#2C4A2F] mb-12">
+      <h1 class="text-4xl sm:text-4xl lg:text-5xl font-bold text-[#2C4A2F] mb-12">
         Checkout
       </h1>
 
       <form @submit.prevent="handleSubmit">
-        <div class="grid lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Checkout Form -->
-          <div class="lg:col-span-2 space-y-6">
+          <div class="lg:col-span-2 space-y-6 min-w-0">
             <!-- Personal Information -->
-            <Card class="p-8">
+            <Card>
 
               <div class="flex items-center gap-3 mb-6">
-                <User class="w-7 h-7 text-[#7BA87D]" />
-                <h2 class="text-2xl font-bold text-gray-900">
+                <User class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D]" />
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
                   Informasi Pribadi
                 </h2>
               </div>
@@ -47,7 +28,7 @@
                   </Label>
 
                   <input id="name" name="name" v-model="checkoutStore.name" required
-                    class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="Masukkan nama lengkap" />
                 </div>
 
@@ -58,7 +39,7 @@
                   </Label>
 
                   <input id="phone" name="phone" type="tel" v-model="checkoutStore.phone" required
-                    class="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
                     placeholder="08xxxxxxxxxx" />
                 </div>
 
@@ -68,11 +49,10 @@
 
 
             <!-- Shipping Address -->
-            <Card class="p-8">
-
+            <Card>
               <div class="flex items-center gap-3 mb-6">
-                <MapPin class="w-7 h-7 text-[#7BA87D]" />
-                <h2 class="text-2xl font-bold text-gray-900">
+                <MapPin class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D]" />
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
                   Alamat Pengiriman
                 </h2>
               </div>
@@ -135,188 +115,181 @@
                 </div>
 
               </div>
-
             </Card>
 
             <!-- Payment Method -->
-            <Card class="p-8">
+            <Card class="p-4 sm:p-6 lg:p-8 overflow-hidden">
               <div class="flex items-center gap-3 mb-6">
-                <Wallet class="w-7 h-7 text-[#7BA87D]" />
-                <h2 class="text-2xl font-bold text-gray-900">
+                <Wallet class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D]" />
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
                   Metode Pembayaran
                 </h2>
               </div>
 
               <div class="space-y-4">
+
                 <!-- COD Option -->
-                <div @click="checkoutStore.paymentMethod = 'cod'"
-                  class="border-2 rounded-xl p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="checkoutStore.paymentMethod === 'cod' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
-                  <div class="flex items-center gap-4">
-                    <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                      :class="checkoutStore.paymentMethod === 'cod' ? 'border-[#7BA87D]' : 'border-gray-300'">
-                      <div v-if="checkoutStore.paymentMethod === 'cod'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
+                <div
+                  @click="checkoutStore.paymentMethod = 'cod'"
+                  class="border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
+                  :class="checkoutStore.paymentMethod === 'cod'
+                    ? 'border-[#7BA87D] bg-[#7BA87D]/5'
+                    : 'border-gray-200'"
+                >
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0">
+
+                    <!-- Radio (hidden on mobile) -->
+                    <div
+                      class="hidden sm:flex w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0"
+                      :class="checkoutStore.paymentMethod === 'cod'
+                        ? 'border-[#7BA87D]'
+                        : 'border-gray-300'"
+                    >
+                      <div
+                        v-if="checkoutStore.paymentMethod === 'cod'"
+                        class="w-3 h-3 rounded-full bg-[#7BA87D]"
+                      ></div>
                     </div>
-                    <Home class="w-8 h-8 text-[#7BA87D]" />
-                    <div class="flex-1">
-                      <p class="text-xl font-bold text-gray-900">Bayar di Tempat (COD)</p>
-                      <p class="text-base text-gray-600 mt-1">
+
+                    <!-- Icon -->
+                    <Home class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0" />
+
+                    <!-- Text -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-lg sm:text-xl font-bold text-gray-900">
+                        Bayar di Tempat (COD)
+                      </p>
+                      <p class="text-sm sm:text-base text-gray-600 mt-1">
                         Bayar langsung saat barang diterima
                       </p>
                     </div>
+
                   </div>
                 </div>
 
+
                 <!-- QRIS Option -->
-                <div @click="checkoutStore.paymentMethod = 'qris'"
-                  class="border-2 rounded-xl p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="checkoutStore.paymentMethod === 'qris' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
-                  <div class="flex items-center gap-4">
-                    <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                      :class="checkoutStore.paymentMethod === 'qris' ? 'border-[#7BA87D]' : 'border-gray-300'">
-                      <div v-if="checkoutStore.paymentMethod === 'qris'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
+                <div
+                  @click="checkoutStore.paymentMethod = 'qris'"
+                  class="border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
+                  :class="checkoutStore.paymentMethod === 'qris'
+                    ? 'border-[#7BA87D] bg-[#7BA87D]/5'
+                    : 'border-gray-200'"
+                >
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0">
+
+                    <!-- Radio (hidden on mobile) -->
+                    <div
+                      class="hidden sm:flex w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0"
+                      :class="checkoutStore.paymentMethod === 'qris'
+                        ? 'border-[#7BA87D]'
+                        : 'border-gray-300'"
+                    >
+                      <div
+                        v-if="checkoutStore.paymentMethod === 'qris'"
+                        class="w-3 h-3 rounded-full bg-[#7BA87D]"
+                      ></div>
                     </div>
-                    <QrCode class="w-8 h-8 text-[#7BA87D]" />
-                    <div class="flex-1">
-                      <p class="text-xl font-bold text-gray-900">QRIS</p>
-                      <p class="text-base text-gray-600 mt-1">
+
+                    <!-- Icon -->
+                    <QrCode class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0" />
+
+                    <!-- Text -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-lg sm:text-xl font-bold text-gray-900">
+                        QRIS
+                      </p>
+                      <p class="text-sm sm:text-base text-gray-600 mt-1">
                         Scan QR untuk pembayaran instant
                       </p>
                     </div>
+
                   </div>
                 </div>
 
-                <!-- BCA Transfer Option -->
-                <div @click="checkoutStore.paymentMethod = 'bank'"
-                  class="border-2 rounded-xl p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="checkoutStore.paymentMethod === 'bank' ? 'border-[#7BA87D] bg-[#7BA87D]/5' : 'border-gray-200'">
-                  <div class="flex items-center gap-4">
-                    <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                      :class="checkoutStore.paymentMethod === 'bank' ? 'border-[#7BA87D]' : 'border-gray-300'">
-                      <div v-if="checkoutStore.paymentMethod === 'bank'" class="w-3 h-3 rounded-full bg-[#7BA87D]"></div>
+
+                <!-- Bank Transfer Option -->
+                <div
+                  @click="checkoutStore.paymentMethod = 'bank'"
+                  class="border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
+                  :class="checkoutStore.paymentMethod === 'bank'
+                    ? 'border-[#7BA87D] bg-[#7BA87D]/5'
+                    : 'border-gray-200'"
+                >
+                  <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 min-w-0">
+
+                    <!-- Radio (hidden on mobile) -->
+                    <div
+                      class="hidden sm:flex w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0 mt-1"
+                      :class="checkoutStore.paymentMethod === 'bank'
+                        ? 'border-[#7BA87D]'
+                        : 'border-gray-300'"
+                    >
+                      <div
+                        v-if="checkoutStore.paymentMethod === 'bank'"
+                        class="w-3 h-3 rounded-full bg-[#7BA87D]"
+                      ></div>
                     </div>
-                    <CreditCard class="w-8 h-8 text-[#7BA87D]" />
-                    <div class="flex-1">
 
-                      <!-- Header -->
-                      <div class="flex items-center gap-3 mb-2">
-                        <h3 class="text-xl font-bold text-gray-900">
-                          Transfer Bank
-                        </h3>
-                      </div>
+                    <!-- Icon -->
+                    <CreditCard class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0 mt-1" />
 
-                      <p class="text-base text-gray-600 mb-4">
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+
+                      <h3 class="text-lg sm:text-xl font-bold text-gray-900">
+                        Transfer Bank
+                      </h3>
+
+                      <p :class="[
+                        'text-sm sm:text-base text-gray-600',
+
+                        checkoutStore.paymentMethod === 'bank' ?? 'mb-4'
+                      ]">
                         Transfer ke rekening kami
                       </p>
 
                       <!-- Bank Accounts -->
-                      <div v-if="checkoutStore.paymentMethod === 'bank'" class="mt-4 space-y-4">
+                      <div
+                        v-if="checkoutStore.paymentMethod === 'bank'"
+                        class="mt-4 space-y-4"
+                      >
 
-                        <p class="text-base text-gray-700 font-semibold">
+                        <p class="text-sm sm:text-base text-gray-700 font-semibold">
                           Pilih salah satu rekening bank di bawah ini untuk transfer:
                         </p>
 
                         <!-- BCA -->
-                        <div class="p-5 bg-white rounded-lg border-2 border-gray-200">
-                          <div class="flex items-center gap-2 mb-3">
-                            <CreditCard class="w-6 h-6 text-[#7BA87D]" />
-                            <p class="text-lg font-bold">Bank BCA</p>
+                        <div v-for="bank in bankAccounts" :key="bank.name" class="p-4 sm:p-5 bg-white rounded-lg border-2 border-gray-200">
+                          <div class="flex items-center gap-2 mb-2">
+                            <CreditCard class="w-5 h-5 text-[#7BA87D]" />
+                            <p class="text-base sm:text-lg font-bold">Bank {{ bank.name }}</p>
                           </div>
 
                           <p class="text-sm text-gray-600">Nomor Rekening</p>
 
-                          <div class="flex justify-between items-center mt-1">
-
-                            <p class="text-2xl font-bold">
-                              {{ bankAccounts.BCA.accountNumber }}
+                          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-1">
+                            <p class="text-base sm:text-xl font-bold break-all">
+                              {{ bank.accountNumber }}
                             </p>
 
-                            <button @click.stop="handleCopyAccountNumber('BCA')" type="button"
-                              class="bg-[#7BA87D] hover:bg-[#6A9570] text-white px-4 py-2 flex items-center rounded">
-
-                              <component :is="copiedBank === 'BCA' ? Check : Copy" class="w-5 h-5 mr-2" />
-
-                              {{ copiedBank === 'BCA' ? 'Tersalin' : 'Salin' }}
-
+                            <button
+                              @click.stop="handleCopyAccountNumber(bank.name)"
+                              type="button"
+                              class="bg-[#7BA87D] hover:bg-[#6A9570] text-white px-4 py-2 flex items-center justify-center rounded w-full sm:w-auto"
+                            >
+                              <component
+                                :is="copiedBank === bank.name ? Check : Copy"
+                                class="w-4 h-4 mr-2"
+                              />
+                              {{ copiedBank === bank.name ? 'Tersalin' : 'Salin' }}
                             </button>
-
                           </div>
 
                           <p class="text-sm text-gray-600 mt-2">Atas Nama</p>
-                          <p class="text-lg font-semibold">
-                            {{ bankAccounts.BCA.accountName }}
+                          <p class="text-base sm:text-lg font-semibold">
+                            {{ bank.accountName }}
                           </p>
-
-                        </div>
-
-
-                        <!-- Mandiri -->
-                        <div class="p-5 bg-white rounded-lg border-2 border-gray-200">
-
-                          <div class="flex items-center gap-2 mb-3">
-                            <CreditCard class="w-6 h-6 text-[#7BA87D]" />
-                            <p class="text-lg font-bold">Bank Mandiri</p>
-                          </div>
-
-                          <p class="text-sm text-gray-600">Nomor Rekening</p>
-
-                          <div class="flex justify-between items-center mt-1">
-
-                            <p class="text-2xl font-bold">
-                              {{ bankAccounts.Mandiri.accountNumber }}
-                            </p>
-
-                            <button @click.stop="handleCopyAccountNumber('Mandiri')" type="button"
-                              class="bg-[#7BA87D] hover:bg-[#6A9570] text-white px-4 py-2 flex items-center rounded">
-
-                              <component :is="copiedBank === 'Mandiri' ? Check : Copy" class="w-5 h-5 mr-2" />
-
-                              {{ copiedBank === 'Mandiri' ? 'Tersalin' : 'Salin' }}
-
-                            </button>
-
-                          </div>
-
-                          <p class="text-sm text-gray-600 mt-2">Atas Nama</p>
-                          <p class="text-lg font-semibold">
-                            {{ bankAccounts.Mandiri.accountName }}
-                          </p>
-
-                        </div>
-
-
-                        <!-- BNI -->
-                        <div class="p-5 bg-white rounded-lg border-2 border-gray-200">
-
-                          <div class="flex items-center gap-2 mb-3">
-                            <CreditCard class="w-6 h-6 text-[#7BA87D]" />
-                            <p class="text-lg font-bold">Bank BNI</p>
-                          </div>
-
-                          <p class="text-sm text-gray-600">Nomor Rekening</p>
-
-                          <div class="flex justify-between items-center mt-1">
-
-                            <p class="text-2xl font-bold">
-                              {{ bankAccounts.BNI.accountNumber }}
-                            </p>
-
-                            <button @click.stop="handleCopyAccountNumber('BNI')" type="button"
-                              class="bg-[#7BA87D] hover:bg-[#6A9570] text-white px-4 py-2 flex items-center rounded">
-
-                              <component :is="copiedBank === 'BNI' ? Check : Copy" class="w-5 h-5 mr-2" />
-
-                              {{ copiedBank === 'BNI' ? 'Tersalin' : 'Salin' }}
-
-                            </button>
-
-                          </div>
-
-                          <p class="text-sm text-gray-600 mt-2">Atas Nama</p>
-                          <p class="text-lg font-semibold">
-                            {{ bankAccounts.BNI.accountName }}
-                          </p>
-
                         </div>
 
                       </div>
@@ -324,42 +297,43 @@
                     </div>
                   </div>
                 </div>
+
               </div>
             </Card>
 
             <!-- QRIS Payment Details -->
-            <Card v-if="checkoutStore.paymentMethod === 'qris'" class="p-8">
+            <Card v-if="checkoutStore.paymentMethod === 'qris'">
               <div class="flex items-center gap-3 mb-6">
-                <QrCode class="w-7 h-7 text-[#7BA87D]" />
-                <h2 class="text-2xl font-bold text-gray-900">
+                <QrCode class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D]" />
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
                   Pembayaran QRIS
                 </h2>
               </div>
 
               <div class="space-y-5">
                 <div class="bg-white border-3 border-[#7BA87D] rounded-xl p-8 text-center">
-                  <div class="w-80 h-80 mx-auto bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+                  <div class="w-full max-w-xs aspect-square mx-auto bg-gray-100 rounded-xl flex items-center justify-center mb-4">
                     <div class="text-center">
                       <QrCode class="w-32 h-32 text-gray-400 mx-auto mb-4" />
                       <p class="text-lg text-gray-500">QR Code Pembayaran</p>
                     </div>
                   </div>
-                  <p class="text-xl font-bold text-gray-900 mb-2">
+                  <p class="text-lg sm:text-xl font-bold text-gray-900">
                     Total: {{ formatPrice(checkoutStore.grandTotal) }}
                   </p>
-                  <p class="text-base text-gray-600">
+                  <p class="text-sm sm:text-base text-gray-600">
                     Scan QR Code menggunakan aplikasi e-wallet Anda
                   </p>
                 </div>
 
                 <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
                   <div class="flex gap-3">
-                    <div class="text-3xl">ℹ️</div>
+                    <div class="text-2xl sm:text-3xl">ℹ️</div>
                     <div class="flex-1">
-                      <p class="text-lg font-bold text-blue-900 mb-2">
+                      <p class="text-lg sm:text-xl font-bold text-blue-900 mb-2">
                         Cara Pembayaran QRIS:
                       </p>
-                      <ol class="text-base text-blue-800 space-y-1 list-decimal list-inside">
+                      <ol class="text-sm sm:text-base text-blue-800 space-y-1 list-decimal list-inside">
                         <li>Buka aplikasi e-wallet (GoPay, OVO, DANA, dll)</li>
                         <li>Pilih menu Scan/Bayar</li>
                         <li>Scan QR Code di atas</li>
@@ -382,188 +356,336 @@
             />
 
             <!-- Payment Proof Upload (for QRIS and BCA) -->
-            <Card v-if="checkoutStore.paymentMethod === 'qris' || checkoutStore.paymentMethod === 'bank'" class="p-8">
-              <div class="flex items-center gap-3 mb-6">
-                <Upload class="w-7 h-7 text-[#7BA87D]" />
-                <h2 class="text-2xl font-bold text-gray-900">
+            <Card
+              v-if="checkoutStore.paymentMethod === 'qris' || checkoutStore.paymentMethod === 'bank'"
+              class="p-4 sm:p-6 lg:p-8 overflow-hidden"
+            >
+              <!-- Header -->
+              <div class="flex items-center gap-3 mb-4 sm:mb-6">
+                <Upload class="w-5 h-5 sm:w-7 sm:h-7 text-[#7BA87D]" />
+                <h2 class="text-lg sm:text-2xl font-bold text-gray-900">
                   Upload Bukti Pembayaran
                 </h2>
               </div>
 
-              <div class="space-y-5">
-                <p class="text-lg text-gray-600">
-                  Setelah melakukan pembayaran via {{ checkoutStore.paymentMethod === 'qris' ? 'QRIS' : 'Transfer Bank' }}, mohon
-                  upload bukti pembayaran Anda di bawah ini:
+              <div class="space-y-4 sm:space-y-5">
+
+                <!-- Description -->
+                <p class="text-sm sm:text-base lg:text-lg text-gray-600">
+                  Setelah melakukan pembayaran via
+                  {{ checkoutStore.paymentMethod === 'qris' ? 'QRIS' : 'Transfer Bank' }},
+                  mohon upload bukti pembayaran Anda di bawah ini:
                 </p>
 
+
                 <!-- Upload Area -->
-                <div v-if="!paymentProofPreview"
-                  class="border-3 border-dashed border-[#7BA87D] rounded-xl p-10 text-center bg-[#7BA87D]/5">
-                  <input ref="fileInput" type="file" id="paymentProof" accept="image/*"
-                    @change="handlePaymentProofChange" class="hidden" />
-                  <label for="paymentProof" class="cursor-pointer flex flex-col items-center">
-                    <div class="w-20 h-20 bg-[#7BA87D] rounded-full flex items-center justify-center mb-4">
-                      <Upload class="w-10 h-10 text-white" />
+                <div
+                  v-if="!paymentProofPreview"
+                  class="border-2 sm:border-3 border-dashed border-[#7BA87D] rounded-xl p-6 sm:p-8 lg:p-10 text-center bg-[#7BA87D]/5"
+                >
+
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    id="paymentProof"
+                    accept="image/*"
+                    @change="handlePaymentProofChange"
+                    class="hidden"
+                  />
+
+                  <label
+                    for="paymentProof"
+                    class="cursor-pointer flex flex-col items-center"
+                  >
+
+                    <!-- Upload Icon -->
+                    <div
+                      class="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-[#7BA87D] rounded-full flex items-center justify-center mb-3 sm:mb-4"
+                    >
+                      <Upload class="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-white" />
                     </div>
-                    <p class="text-2xl font-bold text-gray-900 mb-2">
+
+                    <!-- Title -->
+                    <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2 text-center">
                       Klik untuk Upload Bukti Bayar
                     </p>
-                    <p class="text-lg text-gray-600 mb-4">
+
+                    <!-- Subtitle -->
+                    <p class="text-sm sm:text-base lg:text-lg text-gray-600 mb-3 sm:mb-4 text-center">
                       atau seret file gambar ke sini
                     </p>
-                    <div class="bg-white px-8 py-4 rounded-lg border border-gray-200">
-                      <p class="text-base text-gray-500">
+
+                    <!-- Format info -->
+                    <div
+                      class="bg-white px-4 py-2 sm:px-6 sm:py-3 lg:px-8 lg:py-4 rounded-lg border border-gray-200"
+                    >
+                      <p class="text-xs sm:text-sm lg:text-base text-gray-500">
                         Format: JPG, PNG, JPEG (Maks. 5MB)
                       </p>
                     </div>
+
                   </label>
                 </div>
 
+
                 <!-- Preview Area -->
-                <div v-else class="border-2 border-[#7BA87D] rounded-xl p-6 bg-white">
-                  <div class="flex items-start gap-4">
-                    <div class="flex-1">
-                      <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <Check class="w-7 h-7 text-green-600" />
-                          </div>
-                          <div>
-                            <p class="text-xl font-bold text-gray-900">
-                              Bukti Pembayaran Terupload
-                            </p>
-                            <p class="text-base text-gray-600">
-                              {{ paymentProof?.name }}
-                            </p>
-                          </div>
+                <div
+                  v-else
+                  class="border-2 border-[#7BA87D] rounded-xl p-4 sm:p-6 bg-white"
+                >
+
+                  <div class="flex flex-col gap-4">
+
+                    <!-- Header row responsive -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                      <!-- Left info -->
+                      <div class="flex items-center gap-3 min-w-0">
+
+                        <div
+                          class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0"
+                        >
+                          <Check class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                         </div>
-                        <Button type="button" @click="handleRemovePaymentProof" variant="outline" size="sm"
-                          class="border-red-300 text-red-600 hover:bg-red-50 px-4 py-2">
-                          <X class="w-5 h-5 mr-2" />
-                          Hapus
-                        </Button>
+
+                        <div class="min-w-0">
+                          <p class="text-base sm:text-xl font-bold text-gray-900 truncate">
+                            Bukti Pembayaran Terupload
+                          </p>
+
+                          <p class="text-xs sm:text-base text-gray-600 truncate">
+                            {{ paymentProof?.name }}
+                          </p>
+                        </div>
+
                       </div>
 
-                      <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <p class="text-sm text-gray-600 mb-3 font-semibold">
-                          Preview Bukti Pembayaran:
-                        </p>
-                        <img :src="paymentProofPreview" alt="Bukti Pembayaran"
-                          class="w-full max-h-96 object-contain rounded-lg border border-gray-300" />
-                      </div>
+                      <!-- Remove button -->
+                      <Button
+                        type="button"
+                        @click="handleRemovePaymentProof"
+                        variant="outline"
+                        size="sm"
+                        class="border-red-300 text-red-600 hover:bg-red-50 w-full sm:w-auto justify-center"
+                      >
+                        <X class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                        Hapus
+                      </Button>
+
                     </div>
+
+
+                    <!-- Preview image -->
+                    <div
+                      class="bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200"
+                    >
+                      <p class="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 font-semibold">
+                        Preview Bukti Pembayaran:
+                      </p>
+
+                      <img
+                        :src="paymentProofPreview"
+                        alt="Bukti Pembayaran"
+                        class="w-full max-h-64 sm:max-h-80 lg:max-h-96 object-contain rounded-lg border border-gray-300"
+                      />
+                    </div>
+
                   </div>
+
                 </div>
 
-                <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-5">
+
+                <!-- Tips -->
+                <div
+                  class="bg-yellow-50 border border-yellow-200 sm:border-2 rounded-xl p-4 sm:p-5"
+                >
+
                   <div class="flex gap-3">
-                    <div class="text-3xl">💡</div>
+
+                    <div class="text-xl sm:text-2xl lg:text-3xl">💡</div>
+
                     <div class="flex-1">
-                      <p class="text-lg font-bold text-yellow-900 mb-2">
+
+                      <p class="text-sm sm:text-base lg:text-lg font-bold text-yellow-900 mb-2">
                         Tips Upload Bukti Bayar:
                       </p>
-                      <ul class="text-base text-yellow-800 space-y-1 list-disc list-inside">
+
+                      <ul
+                        class="text-xs sm:text-sm lg:text-base text-yellow-800 space-y-1 list-disc list-inside"
+                      >
                         <li>Pastikan foto jelas dan tidak buram</li>
                         <li>Semua informasi pembayaran terlihat</li>
                         <li>Nominal transfer sesuai dengan total pesanan</li>
                         <li>Format file: JPG, PNG, atau JPEG (maksimal 5MB)</li>
                       </ul>
+
                     </div>
+
                   </div>
+
                 </div>
+
               </div>
             </Card>
           </div>
 
           <!-- Order Summary (Sticky Sidebar) -->
-          <div class="lg:col-span-1">
-            <Card class="p-8 sticky top-24">
-              <h2 class="text-2xl font-bold text-gray-900 mb-6">
+          <div class="lg:col-span-1 min-w-0">
+            <Card
+              class="w-full max-w-full p-4 sm:p-6 lg:p-6
+                    lg:sticky lg:top-24"
+            >
+
+              <!-- Title -->
+              <h2 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Ringkasan Pesanan
               </h2>
 
+
               <!-- Items -->
-              <div class="space-y-4 mb-6 max-h-64 overflow-y-auto">
-                <div v-for="item in cart" :key="item.id" class="flex gap-3">
-                  <div class="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                    <img :src="item.imageUrl" :alt="item.name" class="w-full h-full object-cover" />
+              <div class="space-y-3 sm:space-y-4 mb-4 sm:mb-6 max-h-48 sm:max-h-64 overflow-y-auto pr-1">
+
+                <div
+                  v-for="item in cart"
+                  :key="item.id"
+                  class="flex gap-3 min-w-0 items-center"
+                >
+
+                  <!-- Image -->
+                  <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                    <img
+                      :src="item.imageUrl"
+                      :alt="item.name"
+                      class="w-full h-full object-cover"
+                    />
                   </div>
+
+                  <!-- Info -->
                   <div class="flex-1 min-w-0">
-                    <h3 class="text-base font-semibold text-gray-900 truncate">
+
+                    <h3 class="text-sm sm:text-base font-semibold text-gray-900 truncate">
                       {{ item.name }}
                     </h3>
-                    <p class="text-sm text-gray-600">
+
+                    <p class="text-xs sm:text-sm text-gray-600 truncate">
                       {{ item.quantity }}x @ Rp {{ item.price.toLocaleString('id-ID') }}
                     </p>
+
                   </div>
+
                 </div>
+
               </div>
 
+
               <!-- Totals -->
-              <div class="space-y-3 mb-6 border-t pt-4">
-                <div class="flex justify-between text-lg">
+              <div class="space-y-2 sm:space-y-3 mb-4 sm:mb-6 border-t pt-3 sm:pt-4">
+
+                <div class="flex justify-between text-sm sm:text-base lg:text-lg gap-3">
                   <span class="text-gray-600">Subtotal</span>
-                  <span class="font-semibold">
+                  <span class="font-semibold text-right break-all">
                     {{ formatPrice(checkoutStore.subtotal) }}
                   </span>
                 </div>
-                <div class="flex justify-between text-lg">
+
+
+                <div class="flex justify-between text-sm sm:text-base lg:text-lg gap-3">
+
                   <span class="text-gray-600">Ongkir</span>
+
                   <span v-if="shippingStore.loadingShippingCosts">
                     Menghitung...
                   </span>
 
-                  <!-- Has shipping cost -->
-                  <span v-else-if="checkoutStore.shippingCost != 0">
+                  <span
+                    v-else-if="checkoutStore.shippingCost != 0"
+                    class="font-semibold text-right break-all"
+                  >
                     {{ formatPrice(checkoutStore.shippingCost) }}
                   </span>
 
-                  <!-- Free shipping -->
                   <span
                     v-else
                     class="font-semibold text-green-600"
                   >
                     GRATIS
                   </span>
+
                 </div>
+
+
                 <div class="border-t pt-3">
-                  <div class="flex justify-between text-2xl font-bold">
-                    <span>Total</span>
-                    <span class="text-[#7BA87D]">
+
+                  <div class="flex justify-between items-start gap-3">
+
+                    <span class="text-base sm:text-xl lg:text-2xl font-bold">
+                      Total
+                    </span>
+
+                    <span class="text-lg sm:text-xl lg:text-2xl font-bold text-[#7BA87D] text-right break-all">
                       {{ formatPrice(checkoutStore.grandTotal) }}
                     </span>
+
                   </div>
+
                 </div>
+
               </div>
 
-              <Button type="submit" :disabled="isProcessing" variant="success" size="lg">
+
+              <!-- Button -->
+              <Button
+                type="submit"
+                :disabled="isProcessing"
+                variant="success"
+                size="lg"
+                class="w-full justify-center"
+              >
+
                 <template v-if="isProcessing">
                   <span class="animate-spin mr-2">⏳</span>
                   Memproses...
                 </template>
+
                 <template v-else>
-                  <CheckCircle class="w-6 h-6 mr-2" />
+                  <CheckCircle class="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                   Konfirmasi Pesanan
                 </template>
+
               </Button>
 
-              <div v-if="checkoutStore.paymentMethod === 'cod'" class="mt-6 p-4 bg-green-50 rounded-lg">
-                <p class="text-sm text-green-800 text-center">
+
+              <!-- Payment info -->
+              <div
+                v-if="checkoutStore.paymentMethod === 'cod'"
+                class="mt-4 sm:mt-6 p-3 sm:p-4 bg-green-50 rounded-lg"
+              >
+                <p class="text-xs sm:text-sm text-green-800 text-center">
                   ✅ Bayar saat barang diterima
                 </p>
               </div>
 
-              <div v-if="checkoutStore.paymentMethod === 'qris'" class="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p class="text-sm text-blue-800 text-center">
+
+              <div
+                v-if="checkoutStore.paymentMethod === 'qris'"
+                class="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg"
+              >
+                <p class="text-xs sm:text-sm text-blue-800 text-center">
                   📱 Silakan scan QR Code untuk pembayaran
                 </p>
               </div>
 
-              <div v-if="checkoutStore.paymentMethod === 'bank'" class="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p class="text-sm text-blue-800 text-center">
+
+              <div
+                v-if="checkoutStore.paymentMethod === 'bank'"
+                class="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg"
+              >
+                <p class="text-xs sm:text-sm text-blue-800 text-center">
                   🏦 Transfer ke rekening bank yang tertera
                 </p>
               </div>
+
+
             </Card>
           </div>
         </div>
@@ -615,23 +737,20 @@ const selectedShippingCost = computed(() => {
 })
 
 // Bank account data
-const bankAccounts = {
-  BCA: {
+const bankAccounts = [{
+    name: 'BCA',
     accountNumber: '1234567890',
     accountName: 'AVAIL INDONESIA',
-    bankName: 'BCA',
-  },
-  Mandiri: {
+  },{
+    name: 'Mandiri',
     accountNumber: '0987654321',
     accountName: 'AVAIL INDONESIA',
-    bankName: 'Mandiri',
-  },
-  BNI: {
+  },{
+    name: 'BNI',
     accountNumber: '5556667778',
     accountName: 'AVAIL INDONESIA',
-    bankName: 'BNI',
-  },
-}
+  }
+]
 
 const cart = cartStore.items
 
@@ -666,8 +785,7 @@ watch(() => checkoutStore.cityId, async (cityId) => {
 )
 
 watch(() => checkoutStore.courierId, (courierId) => {
-    const cost =
-      shippingStore.shippingCosts[courierId]
+    const cost = shippingStore.shippingCosts[courierId]
 
     if (cost) {
       checkoutStore.setShipping(
@@ -682,7 +800,7 @@ watch(() => checkoutStore.courierId, (courierId) => {
 watch(() => checkoutStore.paymentMethod, (method) => {
   if (method === "cod") {
     checkoutStore.courierId = ""
-    shippingStore.clearShippingCosts()
+    checkoutStore.clearShipping()
   }
 })
 
@@ -730,15 +848,15 @@ function handleSubmit() {
     checkoutStore.resetAfterCheckout()
 
     // Redirect after success
-    setTimeout(() => {
-      router.push('/')
-    }, 3000)
+    router.push('/order-success')
   }, 2000)
 }
 
 function handleCopyAccountNumber(bankName) {
-  navigator.clipboard.writeText(bankAccounts[bankName].accountNumber)
+  const bank = bankAccounts.find(b => b.name === bankName)
+  navigator.clipboard.writeText(bank.accountNumber)
   copiedBank.value = bankName
+
   setTimeout(() => {
     copiedBank.value = null
   }, 2000)

@@ -1,11 +1,11 @@
 <template>
 
-  <Card v-if="paymentMethod === 'qris' || paymentMethod === 'bank'" class="border rounded-xl p-6">
+  <Card v-if="paymentMethod === 'qris' || paymentMethod === 'bank'">
 
     <!-- Header -->
     <div class="flex items-center gap-3 mb-4">
       <Truck class="w-6 h-6 text-[#7BA87D]" />
-      <h2 class="text-xl font-bold">
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
         Pilih Kurir Pengiriman
       </h2>
     </div>

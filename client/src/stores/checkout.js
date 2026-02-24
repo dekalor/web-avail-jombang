@@ -43,6 +43,11 @@ export const useCheckoutStore = defineStore(
       shippingEtd.value = etd
     }
 
+    function clearShipping(cost, etd) {
+      shippingCost.value = 0
+      shippingEtd.value = ""
+    }
+
     function resetAfterCheckout() {
       notes.value = ""
       courierId.value = ""
@@ -75,6 +80,7 @@ export const useCheckoutStore = defineStore(
       grandTotal,
 
       setShipping,
+      clearShipping,
       resetAfterCheckout
     }
 
