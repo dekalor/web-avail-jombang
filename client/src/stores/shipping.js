@@ -98,14 +98,15 @@ export const useShippingStore = defineStore("shipping", () => {
       // )
       const res = {
         data: [
-          { id: 1, price: 18000, etd: "2-3 hari" },
-          { id: 2, price: 15000, etd: "3-4 hari" }
+          { code: 'jne', price: 18000, etd: "2-3 hari" },
+          { code: 'jnt', price: 15000, etd: "3 hari" },
+          { code: 'pos', price: 11000, etd: "3-4 hari" },
         ]
       }
 
       const costs = {}
       for (const item of res.data) {
-        costs[item.id] = {
+        costs[item.code] = {
           price: item.price,
           etd: item.etd
         }

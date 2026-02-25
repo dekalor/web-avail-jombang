@@ -13,11 +13,11 @@
     <!-- Courier list -->
     <div class="grid gap-3">
       <div v-for="courier in couriers" 
-        :key="courier.id" 
-        @click="emit('update:modelValue', courier.id)" 
+        :key="courier.code" 
+        @click="emit('update:modelValue', courier.code)" 
         :class="[
           'border-2 rounded-xl p-4 cursor-pointer transition',
-          modelValue === courier.id
+          modelValue === courier.code
             ? 'border-[#7BA87D] bg-[#7BA87D]/5'
             : 'border-gray-200 hover:border-gray-300'
         ]"
@@ -27,8 +27,8 @@
           <!-- Left -->
           <div class="flex items-center gap-3">
             <input type="radio" 
-              :value="courier.id" 
-              :checked="modelValue === courier.id" 
+              :value="courier.code" 
+              :checked="modelValue === courier.code" 
               class="accent-[#7BA87D]" 
             />
 
@@ -44,7 +44,7 @@
 
                 <span v-else>
                   Estimasi:
-                  {{ shippingCosts[courier.id]?.etd || "-" }}
+                  {{ shippingCosts[courier.code]?.etd || "-" }}
                 </span>
               </div>
             </div>
@@ -56,8 +56,8 @@
               ...
             </span>
 
-            <span v-else-if="shippingCosts[courier.id]">
-              {{ formatPrice(shippingCosts[courier.id].price) }}
+            <span v-else-if="shippingCosts[courier.code]">
+              {{ formatPrice(shippingCosts[courier.code].price) }}
             </span>
 
             <span v-else>

@@ -348,7 +348,7 @@
 
             <!-- Courier Selection -->
             <CourierSelect
-              v-model="checkoutStore.courierId"
+              v-model="checkoutStore.courierCode"
               :couriers="shippingStore.couriers"
               :shippingCosts="shippingStore.shippingCosts"
               :loading="shippingStore.loadingShippingCosts"
@@ -728,14 +728,6 @@ const paymentProof = ref(null)
 const paymentProofPreview = ref(null)
 const fileInput = ref(null)
 
-// computed selected courier cost
-const selectedShippingCost = computed(() => {
-  if (!shippingStore.selectedCourierId)
-    return null
-
-  return shippingStore.shippingCosts[shippingStore.selectedCourierId] || null
-})
-
 // Bank account data
 const bankAccounts = [{
     name: 'BCA',
@@ -765,9 +757,6 @@ watch(() => cart.length, (newLength) => {
 watch(() => checkoutStore.provinceId, async (provinceId) => {
   // shippingStore.clearCities()
 
-  shippingStore.selectedCityId = ""
-  shippingStore.selectedCourierId = ""
-
   shippingStore.clearShippingCosts()
 
   if (provinceId)
@@ -776,7 +765,6 @@ watch(() => checkoutStore.provinceId, async (provinceId) => {
 
 // when city
 watch(() => checkoutStore.cityId, async (cityId) => {
-    shippingStore.selectedCourierId = ""
     shippingStore.clearShippingCosts()
 
     if (cityId)
@@ -784,8 +772,8 @@ watch(() => checkoutStore.cityId, async (cityId) => {
   }
 )
 
-watch(() => checkoutStore.courierId, (courierId) => {
-    const cost = shippingStore.shippingCosts[courierId]
+watch(() => checkoutStore.courierCode, (courierCode) => {
+    const cost = shippingStore.shippingCosts[courierCode]
 
     if (cost) {
       checkoutStore.setShipping(
@@ -799,7 +787,7 @@ watch(() => checkoutStore.courierId, (courierId) => {
 // when payment method change
 watch(() => checkoutStore.paymentMethod, (method) => {
   if (method === "cod") {
-    checkoutStore.courierId = ""
+    checkoutStore.courierCode = ""
     checkoutStore.clearShipping()
   }
 })

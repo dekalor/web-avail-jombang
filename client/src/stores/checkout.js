@@ -21,7 +21,7 @@ export const useCheckoutStore = defineStore(
     const notes = ref("")
 
     // shipping
-    const courierId = ref("")
+    const courierCode = ref("")
     const shippingCost = ref(0)
     const shippingEtd = ref("")
 
@@ -50,7 +50,7 @@ export const useCheckoutStore = defineStore(
 
     function resetAfterCheckout() {
       notes.value = ""
-      courierId.value = ""
+      courierCode.value = ""
       shippingCost.value = 0
       shippingEtd.value = ""
       paymentMethod.value = "cod"
@@ -69,8 +69,7 @@ export const useCheckoutStore = defineStore(
       postalCode,
       notes,
 
-      courierId,
-
+      courierCode,
       shippingCost,
       shippingEtd,
 
