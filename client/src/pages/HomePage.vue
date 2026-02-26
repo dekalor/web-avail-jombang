@@ -171,12 +171,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import ProductCard from '../components/ProductCard.vue'
 import { useProducts } from '../composables/useProducts'
 import { Leaf, Shield, Zap } from 'lucide-vue-next'
 
-const { products } = useProducts()
+const { loadProducts, products } = useProducts()
+
+onMounted(() => loadProducts())
 
 // Featured products (first 3)
 const featuredProducts = computed(() => products.value.slice(0, 3))

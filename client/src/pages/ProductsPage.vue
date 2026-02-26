@@ -102,8 +102,20 @@
 </template>
 
 <script setup>
+import { onMounted, watch } from 'vue'
 import ProductCard from '../components/ProductCard.vue'
 import { useProducts } from '../composables/useProducts'
 
-const { products, categories, loading, selectedCategoryId } = useProducts()
+const { init, products, loadProducts, loadCategories, categories, loading, selectedCategoryId } = useProducts()
+
+onMounted(async () => {
+  await Promise.all([
+    loadProducts(),
+    loadCategories()
+  ])
+})
+
+watch(selectedCategoryId, () => {
+  loadProducts()
+})
 </script>

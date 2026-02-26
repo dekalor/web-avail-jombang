@@ -66,9 +66,15 @@
 import { ref, onMounted, computed, watch } from "vue"
 import { useApi } from '../composables/useApi.js'
 
-const { get } = useApi()
+const products = ref([])
+const categories = ref([])
+const loading = ref(false)
+const selectedCategoryId = ref(0)
+const product = ref(null)
 
 export function useProducts() {
+  const { get } = useApi()
+
   function formatPrice(price) {
     return `Rp ${price.toLocaleString('id-ID')}`
   }
@@ -77,12 +83,6 @@ export function useProducts() {
     if (!originalPrice) return 0
     return Math.round(((originalPrice - price) / originalPrice) * 100)
   }
-
-  const products = ref([])
-  const categories = ref([])
-  const loading = ref(false)
-  const selectedCategoryId = ref(0)
-  const product = ref(null)
 
   const categoryOptions = computed(() => [
     { id: 0, name: "Semua" },
@@ -123,18 +123,14 @@ export function useProducts() {
   }
 
   async function getProductById(id) {
-
     loading.value = true
     try {
       const res = await get(`/products/${id}`)
-
       if (!res.success) {
         throw new Error('Product not found')
       }
 
       product.value = await res.data
-      console.log('ahhay',product.value)
-
       return product.value
 
     } catch (err) {
@@ -145,27 +141,18 @@ export function useProducts() {
     } finally {
       loading.value = false
     }
-
   }
-
-  onMounted(async () => {
-    await Promise.all([
-      loadProducts(),
-      loadCategories()
-    ])
-  })
-
-  watch(selectedCategoryId, () => {
-    loadProducts()
-  })
 
   return {
     products,
     product,
     categories: categoryOptions,
     selectedCategoryId,
+    loadProducts,
+    loadCategories,
     getProductById,
+    
     formatPrice,
-    calculateDiscount
+    calculateDiscount,
   }
 }
