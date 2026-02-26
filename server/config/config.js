@@ -1,7 +1,6 @@
 module.exports = {
   PORT:              process.env.PORT              || 3000,
   FREE_SHIPPING_MIN: parseInt(process.env.FREE_SHIPPING_MIN) || 100000,
-  SHIPPING_FEE:      parseInt(process.env.SHIPPING_FEE)      || 15000,
 
   DB: {
     HOST:     process.env.DB_HOST     || 'localhost',
@@ -20,5 +19,13 @@ module.exports = {
   SESSION: {
     SECRET: process.env.SESSION_SECRET || 'change-this-session-secret',
     MAX_AGE_MS: parseInt(process.env.SESSION_MAX_AGE_MS || '86400000', 10),
+  },
+
+  RAJAONGKIR: {
+    BASE_URL: process.env.RAJAONGKIR_BASE_URL,
+    API_KEY: process.env.RAJAONGKIR_API_KEY,
+    ORIGIN_DISTRICT_ID: process.env.ORIGIN_DISTRICT_ID,
+    CACHE_DAYS: process.env.RAJAONGKIR_CACHE_DAYS,
+    DEFAULT_WEIGHT: process.env.DEFAULT_WEIGHT
   },
 };

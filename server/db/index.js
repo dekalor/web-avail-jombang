@@ -10,7 +10,8 @@ const AdminSession = require('../models/AdminSession');
 const Province = require('../models/Province');
 const City = require('../models/City');
 const Courier = require('../models/Courier');
-const ShippingRate = require('../models/ShippingRate');
+const ShippingCost = require('../models/ShippingCost');
+const District = require('../models/District');
 
 // ─── Associations ──────────────────────────────────────────────────────────
 Order.hasMany(OrderItem, {
@@ -96,22 +97,50 @@ City.belongsTo(Province, {
   },
 });
 
-ShippingRate.belongsTo(City, {
+City.hasMany(District, {
   foreignKey: {
     name: 'cityId',
     field: 'city_id',
     allowNull: false,
   },
-  as: 'city',
-});
+})
 
-ShippingRate.belongsTo(Courier, {
+District.belongsTo(City, {
   foreignKey: {
-    name: 'courierId',
-    field: 'courier_id',
+    name: 'cityId',
+    field: 'city_id',
     allowNull: false,
   },
-  as: 'courier',
+})
+
+ShippingCost.belongsTo(District, {
+  foreignKey: {
+    name: 'destinationDistrictId',
+    field: 'destination_district_id',
+    allowNull: false,
+  },
+  as: 'district',
 });
 
-module.exports = { sequelize, Product, ProductCategory, Order, OrderItem, AdminSession, Province, City, Courier, ShippingRate };
+District.hasMany(ShippingCost, {
+  foreignKey: {
+    name: 'destinationDistrictId',
+    field: 'destination_district_id',
+    allowNull: false,
+  },
+  as: 'shippingCosts'
+})
+
+ShippingCost.belongsTo(Courier, {
+  foreignKey: 'courier',   // column in ShippingCost
+  targetKey: 'code',       // column in Courier
+  as: 'courierInfo'
+});
+
+Courier.hasMany(ShippingCost, {
+  foreignKey: 'courier',
+  sourceKey: 'code',
+  as: 'shippingCosts'
+});
+
+module.exports = { sequelize, Product, ProductCategory, Order, OrderItem, AdminSession, Province, City, District, Courier, ShippingCost };

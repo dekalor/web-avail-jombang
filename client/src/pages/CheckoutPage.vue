@@ -91,7 +91,18 @@
                   </div>
                 </div>
 
-                <div class="grid md:grid-cols-">
+                <div class="grid md:grid-cols-2 gap-5">
+                  <div>
+                    <Label for="district" class="text-lg mb-2">
+                      Kecamatan *
+                    </Label>
+                    <DistrictSelect 
+                      v-model="checkoutStore.districtId" 
+                      :districts="shippingStore.districts"
+                      :loading="shippingStore.loadingDistricts" 
+                      :disabled="!checkoutStore.cityId" />
+                  </div>
+
                   <div>
                     <Label for="postalCode" class="text-lg mb-2">
                       Kode Pos *
@@ -594,21 +605,28 @@
                   <span class="text-gray-600">Ongkir</span>
 
                   <span v-if="shippingStore.loadingShippingCosts">
-                    Menghitung...
+                    <div class="h-5 w-20 bg-gray-200 rounded animate-pulse"></div>
                   </span>
 
                   <span
-                    v-else-if="checkoutStore.shippingCost != 0"
+                    v-else-if="checkoutStore.shippingCost !== 0"
                     class="font-semibold text-right break-all"
                   >
                     {{ formatPrice(checkoutStore.shippingCost) }}
                   </span>
 
                   <span
-                    v-else
+                    v-else-if="checkoutStore.paymentMethod === 'cod'"
                     class="font-semibold text-green-600"
                   >
                     GRATIS
+                  </span>
+
+                  <span 
+                    v-else
+                    class="font-semibold text-right break-all"
+                  >
+                  -
                   </span>
 
                 </div>
@@ -712,6 +730,7 @@ import Input from '../components/ui/Input.vue'
 import Label from '../components/ui/Label.vue'
 import ProvinceSelect from '../components/ProvinceSelect.vue'
 import CitySelect from '../components/CitySelect.vue'
+import DistrictSelect from '../components/DistrictSelect.vue'
 import CourierSelect from '../components/CourierSelect.vue'
 
 const router = useRouter()
@@ -755,34 +774,43 @@ watch(() => cart.length, (newLength) => {
 
 // when province change
 watch(() => checkoutStore.provinceId, async (provinceId) => {
-  // shippingStore.clearCities()
+  checkoutStore.cityId = ""
+  checkoutStore.districtId = ""
+  shippingStore.clearCities()
+  shippingStore.clearDistricts()
 
   shippingStore.clearShippingCosts()
+  checkoutStore.clearShipping()
 
   if (provinceId)
     await shippingStore.fetchCities(provinceId)
 })
 
-// when city
+// when city change
 watch(() => checkoutStore.cityId, async (cityId) => {
+    checkoutStore.districtId = ""
     shippingStore.clearShippingCosts()
+    checkoutStore.clearShipping()
 
     if (cityId)
-      await shippingStore.fetchShippingCosts(cityId)
+      await shippingStore.fetchDistricts(cityId)
   }
 )
 
-watch(() => checkoutStore.courierCode, (courierCode) => {
-    const cost = shippingStore.shippingCosts[courierCode]
+// when district change
+watch(() => checkoutStore.districtId, async (districtId) => {
+    shippingStore.clearShippingCosts()
+    checkoutStore.clearShipping()
 
-    if (cost) {
-      checkoutStore.setShipping(
-        cost.price,
-        cost.etd
-      )
+    if (districtId) {
+      await shippingStore.fetchShippingCosts(districtId)
+      setShipping(checkoutStore.courierCode)
     }
   }
 )
+
+// when courier change
+watch(() => checkoutStore.courierCode, (courierCode) => setShipping(courierCode))
 
 // when payment method change
 watch(() => checkoutStore.paymentMethod, (method) => {
@@ -813,13 +841,23 @@ onMounted(async () => {
     )
   }
 
-  // restore selected shipping costs
+  // restore selected district
   if (
     checkoutStore.cityId &&
+    !shippingStore.districts.length
+  ) {
+    await shippingStore.fetchDistricts(
+      checkoutStore.cityId
+    )
+  }
+
+  // restore selected shipping costs
+  if (
+    checkoutStore.districtId &&
     Object.keys(shippingStore.shippingCosts).length === 0
   ) {
     await shippingStore.fetchShippingCosts(
-      checkoutStore.cityId
+      checkoutStore.districtId
     )
   }
 })
@@ -873,6 +911,16 @@ function handleRemovePaymentProof() {
   paymentProofPreview.value = null
   if (fileInput.value) {
     fileInput.value.value = ''
+  }
+}
+
+function setShipping(courierCode) {
+  const cost = shippingStore.shippingCosts[courierCode]
+  if (cost) {
+    checkoutStore.setShipping(
+      cost.price,
+      cost.etd
+    )
   }
 }
 </script>

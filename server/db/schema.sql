@@ -85,7 +85,17 @@ CREATE TABLE IF NOT EXISTS cities (
     id INT PRIMARY KEY AUTO_INCREMENT,
     province_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
-    FOREIGN KEY (province_id) REFERENCES provinces(id)
+    FOREIGN KEY (province_id) REFERENCES provinces(id),
+    INDEX (province_id)
+);
+
+-- ─── Districts ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS districts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    city_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    FOREIGN KEY (city_id) REFERENCES cities(id),
+    INDEX (city_id)
 );
 
 -- ─── Couriers ────────────────────────────────────────────────────────────
@@ -96,22 +106,31 @@ CREATE TABLE IF NOT EXISTS couriers (
     active TINYINT(1) NOT NULL DEFAULT 1,
 );
 
--- ─── Shipping Rates ────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS shipping_rates (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    city_id INT NOT NULL,
-    courier_id INT NOT NULL,
-    price INT NOT NULL,
-    etd VARCHAR(50),
-    FOREIGN KEY (city_id) REFERENCES cities(id),
-    FOREIGN KEY (courier_id) REFERENCES couriers(id)
-);
+-- ─── Shipping Costs ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS shipping_costs (
+  id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  origin_district_id int NOT NULL,
+  destination_district_id int NOT NULL,
+  courier varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  service varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  price_per_kg int NOT NULL,
+  etd varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  expires_at datetime NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `shipping_costs_unique_idx` (`origin_district_id`,`destination_district_id`,`courier`,`service`),
+  KEY `destination_district_id` (`destination_district_id`),
+  KEY `courier` (`courier`),
+  CONSTRAINT `shipping_costs_ibfk_3` FOREIGN KEY (`destination_district_id`) REFERENCES `cities` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `shipping_costs_ibfk_4` FOREIGN KEY (`courier`) REFERENCES `couriers` (`code`) ON UPDATE CASCADE
+)
 
 -- ─── Seed Couriers ──────────────────────────────────────────────────────────
 INSERT INTO couriers (code, name) 
 VALUES
   ('jne', 'JNE Express'),
-  ('jnt', 'J&T Express');
+  ('jnt', 'J&T Express'),
+  ('pos', 'POS Indonesia (POS)');
 
 -- ─── Seed Product Categories ──────────────────────────────────────────────────────────
 INSERT INTO

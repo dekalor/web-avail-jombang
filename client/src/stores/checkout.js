@@ -16,6 +16,7 @@ export const useCheckoutStore = defineStore(
     const address = ref("")
     const provinceId = ref("")
     const cityId = ref("")
+    const districtId = ref("")
     const postalCode = ref("")
     
     const notes = ref("")
@@ -43,7 +44,7 @@ export const useCheckoutStore = defineStore(
       shippingEtd.value = etd
     }
 
-    function clearShipping(cost, etd) {
+    function clearShipping() {
       shippingCost.value = 0
       shippingEtd.value = ""
     }
@@ -66,6 +67,7 @@ export const useCheckoutStore = defineStore(
 
       provinceId,
       cityId,
+      districtId,
       postalCode,
       notes,
 

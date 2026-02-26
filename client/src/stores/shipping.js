@@ -9,11 +9,13 @@ export const useShippingStore = defineStore("shipping", () => {
   // data
   const provinces = ref([])
   const cities = ref([])
+  const districts = ref([])
   const couriers = ref([])
 
   // loading states
   const loadingProvinces = ref(false)
   const loadingCities = ref(false)
+  const loadingDistricts = ref(false)
   const loadingShippingCosts = ref(false)
 
   // shipping result
@@ -21,6 +23,7 @@ export const useShippingStore = defineStore("shipping", () => {
 
   // caches
   const citiesCache = new Map()
+  const districtsCache = new Map()
   const shippingCache = new Map()
 
   // ========================
@@ -69,6 +72,35 @@ export const useShippingStore = defineStore("shipping", () => {
   }
 
   // ========================
+  // FETCH DISTRICTS BY CITIES
+  // ========================
+  async function fetchDistricts(citiesId) {
+    if (!citiesId) {
+      districts.value = []
+      return
+    }
+
+    // use cache
+    if (districtsCache.has(citiesId)) {
+      districts.value = districtsCache.get(citiesId)
+      return
+    }
+
+    loadingDistricts.value = true
+
+    try {
+      const res = await get(
+        `/shipping/districts?city_id=${citiesId}`
+      )
+
+      districts.value = res.data
+      districtsCache.set(citiesId, res.data)
+    } finally {
+      loadingDistricts.value = false
+    }
+  }
+
+  // ========================
   // FETCH COURIERS
   // ========================
   async function fetchCouriers() {
@@ -81,39 +113,37 @@ export const useShippingStore = defineStore("shipping", () => {
   // ========================
   // FETCH ALL COURIER COSTS AT ONCE
   // ========================
-  async function fetchShippingCosts(cityId) {
+  async function fetchShippingCosts(districtId) {
 
-    if (!cityId) return
+    if (!districtId) return
 
-    if (shippingCache.has(cityId)) {
-      shippingCosts.value = shippingCache.get(cityId)
+    if (shippingCache.has(districtId)) {
+      shippingCosts.value = shippingCache.get(districtId)
       return
     }
 
     loadingShippingCosts.value = true
 
+    // simulate loading
+    // await new Promise(resolve => setTimeout(resolve, 2000));
+
     try {
-      // const res = await get(
-      //   `/shipping-costs?city_id=${cityId}`
-      // )
-      const res = {
-        data: [
-          { code: 'jne', price: 18000, etd: "2-3 hari" },
-          { code: 'jnt', price: 15000, etd: "3 hari" },
-          { code: 'pos', price: 11000, etd: "3-4 hari" },
-        ]
-      }
+      const res = await get(
+        `/shipping/costs?destination_district_id=${districtId}&weight=1000` // TODO:get total weight from cart
+      )
 
       const costs = {}
-      for (const item of res.data) {
-        costs[item.code] = {
-          price: item.price,
-          etd: item.etd
+      if (res.success) {
+        for (const item of res.data) {
+          costs[item.code] = {
+            price: item.price,
+            etd: item.etd
+          }
         }
       }
 
       shippingCosts.value = costs
-      shippingCache.set(cityId, costs)
+      shippingCache.set(districtId, costs)
     } finally {
       loadingShippingCosts.value = false
     }
@@ -127,6 +157,10 @@ export const useShippingStore = defineStore("shipping", () => {
     cities.value = []
   }
 
+  function clearDistricts() {
+    districts.value = []
+  }
+
   function clearShippingCosts() {
     shippingCosts.value = {}
   }
@@ -136,6 +170,7 @@ export const useShippingStore = defineStore("shipping", () => {
     // data
     provinces,
     cities,
+    districts,
     couriers,
 
     // result
@@ -144,16 +179,19 @@ export const useShippingStore = defineStore("shipping", () => {
     // loading
     loadingProvinces,
     loadingCities,
+    loadingDistricts,
     loadingShippingCosts,
 
     // actions
     fetchProvinces,
     fetchCities,
+    fetchDistricts,
     fetchCouriers,
     fetchShippingCosts,
 
     // helpers
     clearCities,
+    clearDistricts,
     clearShippingCosts
 
   }
