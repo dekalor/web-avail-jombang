@@ -1,5 +1,5 @@
 const { Op, fn, col, literal } = require('sequelize');
-const { Order, OrderItem, Product } = require('../db/index');
+const { Order, OrderItem, Product } = require('../models');
 
 const orderRepository = {
 

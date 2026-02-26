@@ -1,5 +1,5 @@
 const session = require('express-session');
-const { AdminSession } = require('../db/index');
+const { AdminSession } = require('../models');
 
 class SequelizeSessionStore extends session.Store {
   get(sid, callback) {

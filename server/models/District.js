@@ -1,7 +1,30 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../db/sequelize');
+const { Model } = require('sequelize');
 
-const District = sequelize.define('District', {
+module.exports = (sequelize, DataTypes) => {
+  class District extends Model {
+
+    static associate(models) {
+      District.belongsTo(models.City, {
+        foreignKey: {
+          name: 'cityId',
+          field: 'city_id',
+          allowNull: false,
+        },
+      });
+
+      District.hasMany(models.ShippingCost, {
+        foreignKey: {
+          name: 'destinationDistrictId',
+          field: 'destination_district_id',
+          allowNull: false,
+        },
+        as: 'shippingCosts'
+      });
+    }
+
+  }
+
+  District.init({
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -17,8 +40,11 @@ const District = sequelize.define('District', {
     allowNull: false,
   },
 }, {
-  tableName: 'districts',
-  timestamps: false,
-});
+    sequelize,
+    modelName: 'District',
+    tableName: 'districts',
+    timestamps: false,
+  });
 
-module.exports = District;
+  return District;
+};

@@ -1,7 +1,7 @@
-const { sequelize }       = require('../db/index');
+const db = require('../models');
 const orderRepository     = require('../repositories/orderRepository');
 const productRepository   = require('../repositories/productRepository');
-const { FREE_SHIPPING_MIN, SHIPPING_FEE } = require('../config/config');
+const { FREE_SHIPPING_MIN, SHIPPING_FEE } = require('../config/env');
 
 const VALID_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -34,7 +34,7 @@ const orderService = {
     const total       = subtotal + shippingFee;
 
     // ── 3. Persist inside a transaction ───────────────────────────────────
-    const order = await sequelize.transaction(async (t) => {
+    const order = await db.sequelize.transaction(async (t) => {
       const newOrder = await orderRepository.create({
         customerName:    customer.name,
         customerPhone:   customer.phone,

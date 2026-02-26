@@ -1,31 +1,21 @@
 module.exports = {
-  PORT:              process.env.PORT              || 3000,
-  FREE_SHIPPING_MIN: parseInt(process.env.FREE_SHIPPING_MIN) || 100000,
-
-  DB: {
-    HOST:     process.env.DB_HOST     || 'localhost',
-    PORT:     parseInt(process.env.DB_PORT) || 3306,
-    USER:     process.env.DB_USER     || 'root',
-    PASSWORD: process.env.DB_PASSWORD || '',
-    NAME:     process.env.DB_NAME     || 'avail_db',
-    DIALECT:  'mysql',
+  local: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    dialect: process.env.DB_DIALECT || 'mysql',
+    timezone: '+07:00',
+    logging: console.log
   },
 
-  ADMIN: {
-    USERNAME: process.env.ADMIN_USERNAME || 'admin',
-    PASSWORD: process.env.ADMIN_PASSWORD || 'bloom2025',
-  },
-
-  SESSION: {
-    SECRET: process.env.SESSION_SECRET || 'change-this-session-secret',
-    MAX_AGE_MS: parseInt(process.env.SESSION_MAX_AGE_MS || '86400000', 10),
-  },
-
-  RAJAONGKIR: {
-    BASE_URL: process.env.RAJAONGKIR_BASE_URL,
-    API_KEY: process.env.RAJAONGKIR_API_KEY,
-    ORIGIN_DISTRICT_ID: process.env.ORIGIN_DISTRICT_ID,
-    CACHE_DAYS: process.env.RAJAONGKIR_CACHE_DAYS,
-    DEFAULT_WEIGHT: process.env.DEFAULT_WEIGHT
-  },
-};
+  production: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME_PROD,
+    host: process.env.DB_HOST,
+    dialect: process.env.DB_DIALECT,
+    logging: false
+  }
+}

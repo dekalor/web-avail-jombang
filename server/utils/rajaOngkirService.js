@@ -1,5 +1,5 @@
 const axios = require("axios")
-const { RAJAONGKIR } = require("../config/config")
+const { RAJAONGKIR } = require("../config/env")
 
 const axiosInstance = axios.create({
   baseURL: RAJAONGKIR.BASE_URL,

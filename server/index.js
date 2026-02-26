@@ -1,11 +1,14 @@
 require('dotenv').config()
 const createApp            = require('./app');
-const { sequelize }        = require('./db/index');
-const { PORT }             = require('./config/config');
+// const { sequelize }        = require('./db/index');
+const { PORT }             = require('./config/env');
+const db = require('./models')
 
 async function start() {
+  await db.sequelize.authenticate()
+
   // Sync Sequelize models with the DB (alter: true updates columns safely)
-  await sequelize.sync({ alter: process.env.NODE_ENV !== 'production' });
+  // await db.sequelize.sync({ alter: process.env.NODE_ENV !== 'production' });
 
   const app = await createApp();
   app.listen(PORT, () => {

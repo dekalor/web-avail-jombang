@@ -1,7 +1,7 @@
 const dotenv = require("dotenv")
 dotenv.config()
 
-const { sequelize, Province, City, District } = require('../db/index');
+const { sequelize, Province, City, District } = require('../models');
 const { Op } = require("sequelize");
 
 const {

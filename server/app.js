@@ -10,7 +10,7 @@ const shippingRoutes   = require('./routes/shippingRoutes');
 
 const SequelizeSessionStore = require('./middleware/sequelizeSessionStore');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
-const { SESSION } = require('./config/config');
+const { SESSION } = require('./config/env');
 
 const isProd = process.env.NODE_ENV === 'production';
 

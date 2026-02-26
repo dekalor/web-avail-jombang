@@ -1,46 +1,70 @@
-// server/models/OrderItem.js
-// Defines the DB schema for order line items. No business logic here.
+const { Model } = require('sequelize');
 
-const { DataTypes } = require('sequelize');
-const sequelize     = require('../db/sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class OrderItem extends Model {
 
-const OrderItem = sequelize.define('OrderItem', {
-  id: {
-    type:          DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey:    true,
-  },
-  orderId: {
-    type:      DataTypes.UUID,
-    allowNull: false,
-    field:     'order_id',
-  },
-  productId: {
-    type:      DataTypes.INTEGER,
-    allowNull: false,
-    field:     'product_id',
-  },
-  productName: {
-    type:      DataTypes.STRING(100),  // snapshot at purchase time
-    allowNull: false,
-    field:     'product_name',
-  },
-  price: {
-    type:      DataTypes.INTEGER,      // snapshot at purchase time
-    allowNull: false,
-  },
-  qty: {
-    type:      DataTypes.INTEGER,
-    allowNull: false,
-  },
-  lineTotal: {
-    type:      DataTypes.INTEGER,
-    allowNull: false,
-    field:     'line_total',
-  },
-}, {
-  tableName:  'order_items',
-  timestamps: false,
-});
+    static associate(models) {
+      OrderItem.belongsTo(models.Order, {
+        foreignKey: {
+          name: 'orderId',
+          field: 'order_id',
+          allowNull: false,
+        },
+        as: 'order',
+      });
 
-module.exports = OrderItem;
+      OrderItem.belongsTo(models.Product, {
+        foreignKey: {
+          name: 'productId',
+          field: 'product_id',
+          allowNull: false,
+        },
+        as: 'product',
+      });
+    }
+
+  }
+
+  OrderItem.init({
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    orderId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      field: 'order_id',
+    },
+    productId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: 'product_id',
+    },
+    productName: {
+      type: DataTypes.STRING(100),  // snapshot at purchase time
+      allowNull: false,
+      field: 'product_name',
+    },
+    price: {
+      type: DataTypes.INTEGER,      // snapshot at purchase time
+      allowNull: false,
+    },
+    qty: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    lineTotal: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: 'line_total',
+    },
+  }, {
+    sequelize,
+    modelName: 'OrderItem',
+    tableName: 'order_items',
+    timestamps: false,
+  });
+
+  return OrderItem;
+};

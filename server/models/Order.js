@@ -1,66 +1,81 @@
-// server/models/Order.js
-// Defines the DB schema for orders. No business logic here.
+const { Model } = require('sequelize');
 
-const { DataTypes } = require('sequelize');
-const sequelize     = require('../db/sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class Order extends Model {
 
-const Order = sequelize.define('Order', {
-  id: {
-    type:         DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey:   true,
-  },
-  customerName: {
-    type:      DataTypes.STRING(120),
-    allowNull: false,
-    field:     'customer_name',
-  },
-  customerPhone: {
-    type:      DataTypes.STRING(30),
-    allowNull: false,
-    field:     'customer_phone',
-  },
-  customerAddress: {
-    type:      DataTypes.TEXT,
-    allowNull: false,
-    field:     'customer_address',
-  },
-  customerCity: {
-    type:      DataTypes.STRING(80),
-    allowNull: false,
-    field:     'customer_city',
-  },
-  customerPostal: {
-    type:      DataTypes.STRING(10),
-    allowNull: false,
-    field:     'customer_postal',
-  },
-  customerNotes: {
-    type:      DataTypes.TEXT,
-    allowNull: true,
-    field:     'customer_notes',
-  },
-  subtotal: {
-    type:      DataTypes.INTEGER,
-    allowNull: false,
-  },
-  shippingFee: {
-    type:         DataTypes.INTEGER,
-    allowNull:    false,
-    defaultValue: 0,
-    field:        'shipping_fee',
-  },
-  total: {
-    type:      DataTypes.INTEGER,
-    allowNull: false,
-  },
-  status: {
-    type:         DataTypes.ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled'),
-    allowNull:    false,
-    defaultValue: 'pending',
-  },
-}, {
-  tableName: 'orders',
-});
+    static associate(models) {
+      Order.hasMany(models.OrderItem, {
+        foreignKey: {
+          name: 'orderId',
+          field: 'order_id',
+          allowNull: false,
+        },
+        as: 'items',
+      });
+    }
 
-module.exports = Order;
+  }
+
+  Order.init({
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    customerName: {
+      type: DataTypes.STRING(120),
+      allowNull: false,
+      field: 'customer_name',
+    },
+    customerPhone: {
+      type: DataTypes.STRING(30),
+      allowNull: false,
+      field: 'customer_phone',
+    },
+    customerAddress: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      field: 'customer_address',
+    },
+    customerCity: {
+      type: DataTypes.STRING(80),
+      allowNull: false,
+      field: 'customer_city',
+    },
+    customerPostal: {
+      type: DataTypes.STRING(10),
+      allowNull: false,
+      field: 'customer_postal',
+    },
+    customerNotes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: 'customer_notes',
+    },
+    subtotal: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    shippingFee: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'shipping_fee',
+    },
+    total: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled'),
+      allowNull: false,
+      defaultValue: 'pending',
+    },
+  }, {
+    sequelize,
+    modelName: 'Order',
+    tableName: 'orders',
+  });
+
+  return Order;
+};

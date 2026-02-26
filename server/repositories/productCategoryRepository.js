@@ -1,4 +1,4 @@
-const { ProductCategory } = require('../db/index');
+const { ProductCategory } = require('../models');
 
 const productCategoryRepository = {
 

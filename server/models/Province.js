@@ -1,19 +1,37 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../db/sequelize');
+const { Model } = require('sequelize');
 
-const Province = sequelize.define('Province', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  name: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-  },
-}, {
-  tableName: 'provinces',
-  timestamps: false,
-});
+module.exports = (sequelize, DataTypes) => {
+  class Province extends Model {
 
-module.exports = Province;
+    static associate(models) {
+      Province.hasMany(models.City, {
+        foreignKey: {
+          name: 'provinceId',
+          field: 'province_id',
+          allowNull: false,
+        },
+        as: 'products',
+      });
+    }
+
+  }
+
+  Province.init({
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+  }, {
+    sequelize,
+    modelName: 'Province',
+    tableName: 'provinces',
+    timestamps: false,
+  });
+
+  return Province;
+};
