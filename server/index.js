@@ -6,6 +6,11 @@ const db = require('./models')
 
 async function start() {
   await db.sequelize.authenticate()
+    .then(() => console.log('✅ MySQL (Sequelize) connected'))
+    .catch(err => {
+      console.error('❌ MySQL connection failed:', err.message);
+      process.exit(1);
+    });
 
   // Sync Sequelize models with the DB (alter: true updates columns safely)
   // await db.sequelize.sync({ alter: process.env.NODE_ENV !== 'production' });
