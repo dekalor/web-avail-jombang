@@ -599,6 +599,10 @@
                   </span>
                 </div>
 
+                <div class="flex justify-between text-sm sm:text-base lg:text-lg">
+                  <span class="text-gray-600">Total Berat</span>
+                  <span class="font-semibold">{{ formatWeight(cartStore.totalWeight) }}</span>
+                </div>
 
                 <div class="flex justify-between text-sm sm:text-base lg:text-lg gap-3">
 
@@ -738,6 +742,7 @@ const cartStore = useCartStore()
 const shippingStore = useShippingStore()
 const checkoutStore = useCheckoutStore()
 const { formatPrice } = useProducts()
+const { formatPrice, formatWeight } = useProducts()
 
 // Reactive state
 const isProcessing = ref(false)

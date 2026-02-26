@@ -1,6 +1,7 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
 import { useApi } from "../composables/useApi"
+import { useCartStore } from "./cartStore"
 
 const { get } = useApi()
 
@@ -25,6 +26,8 @@ export const useShippingStore = defineStore("shipping", () => {
   const citiesCache = new Map()
   const districtsCache = new Map()
   const shippingCache = new Map()
+
+  const { totalWeight } = useCartStore()
 
   // ========================
   // FETCH PROVINCES
@@ -129,7 +132,7 @@ export const useShippingStore = defineStore("shipping", () => {
 
     try {
       const res = await get(
-        `/shipping/costs?destination_district_id=${districtId}&weight=1000` // TODO:get total weight from cart
+        `/shipping/costs?destination_district_id=${districtId}&weight=${totalWeight}`
       )
 
       const costs = {}

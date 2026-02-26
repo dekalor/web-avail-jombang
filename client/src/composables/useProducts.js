@@ -143,6 +143,11 @@ export function useProducts() {
     }
   }
 
+  function formatWeight(grams) {
+    const kg = grams / 1000
+    return `${parseFloat(kg.toFixed(2))}kg`
+  }
+
   return {
     products,
     product,
@@ -151,8 +156,9 @@ export function useProducts() {
     loadProducts,
     loadCategories,
     getProductById,
-    
+
     formatPrice,
     calculateDiscount,
+    formatWeight,
   }
 }

@@ -70,6 +70,11 @@
                     <p class="text-xs sm:text-sm text-gray-600 mt-1">
                       {{ item.category.name }}
                     </p>
+
+                    <p class="text-xs sm:text-sm text-gray-500 mt-0.5 flex items-center gap-1">
+                      <Weight class="w-4 h-4 sm:w-5 sm:h-5" />
+                      {{ formatWeight(item.weight * item.quantity) }}
+                    </p>
                   </div>
 
                   <button
@@ -197,11 +202,11 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
-import { Plus, Minus, ArrowRight, ShoppingBag, Trash2 } from 'lucide-vue-next'
+import { Plus, Minus, ArrowRight, ShoppingBag, Trash2, Weight } from 'lucide-vue-next'
 
 const router = useRouter()
 const cart = useCartStore()
-const { formatPrice } = useProducts()
+const { formatPrice, formatWeight } = useProducts()
 
 const totalItems = computed(() => cart.totalItems)
 
