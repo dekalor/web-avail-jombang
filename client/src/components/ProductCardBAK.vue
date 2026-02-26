@@ -79,7 +79,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useCartStore } from '../stores/cart'
+import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
 
 const props = defineProps({

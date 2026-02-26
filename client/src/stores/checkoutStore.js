@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
-import { useCartStore } from '../stores/cart'
+import { useCartStore } from './cartStore'
 
 export const useCheckoutStore = defineStore(
   "checkout",

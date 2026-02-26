@@ -80,7 +80,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useCartStore } from '../stores/cart'
+import { useCartStore } from '../stores/cartStore'
 
 const cart = useCartStore()
 const totalItems = computed(() => cart.totalItems)

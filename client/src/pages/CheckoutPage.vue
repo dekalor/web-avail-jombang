@@ -719,9 +719,9 @@ import {
   CheckCircle, MapPin, User, Phone, Home, Wallet,
   QrCode, CreditCard, Copy, Check, Upload, X
 } from 'lucide-vue-next'
-import { useCartStore } from '../stores/cart'
-import { useShippingStore } from '../stores/shipping'
-import { useCheckoutStore } from '../stores/checkout'
+import { useCartStore } from '../stores/cartStore'
+import { useShippingStore } from '../stores/shippingStore'
+import { useCheckoutStore } from '../stores/checkoutStore'
 import { useProducts } from '../composables/useProducts'
 
 import Button from '../components/ui/Button.vue'

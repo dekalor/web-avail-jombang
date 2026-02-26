@@ -94,7 +94,7 @@
 <script setup>
 import { computed } from "vue"
 import { Truck } from "lucide-vue-next"
-import { useShippingStore } from "../stores/shipping"
+import { useShippingStore } from "../stores/shippingStore"
 import { useProducts } from "../composables/useProducts"
 import Card from '../components/ui/Card.vue'
 

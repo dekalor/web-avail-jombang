@@ -102,7 +102,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { useCartStore } from '../stores/cart'
+import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
 import { ShoppingCart, Check } from 'lucide-vue-next'
 

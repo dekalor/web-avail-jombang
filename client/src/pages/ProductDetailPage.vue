@@ -213,7 +213,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useCartStore } from '../stores/cart'
+import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
 import ProductCard from '../components/ProductCard.vue'
 import { ShoppingCart, Plus, Minus } from 'lucide-vue-next'
