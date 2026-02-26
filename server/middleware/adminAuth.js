@@ -1,7 +1,7 @@
 // server/middleware/adminAuth.js
 // Session-based auth for the admin API using express-session + DB store.
 
-const { ADMIN } = require('../config/env');
+const { ADMIN } = require('../config/config');
 
 // POST /api/admin/login
 function login(req, res) {

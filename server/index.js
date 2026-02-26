@@ -1,7 +1,6 @@
 require('dotenv').config()
 const createApp            = require('./app');
-// const { sequelize }        = require('./db/index');
-const { PORT }             = require('./config/env');
+const { PORT }             = require('./config/config');
 const db = require('./models')
 
 async function start() {

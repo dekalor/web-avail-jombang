@@ -1,7 +1,7 @@
 const db = require('../models');
 const orderRepository     = require('../repositories/orderRepository');
 const productRepository   = require('../repositories/productRepository');
-const { FREE_SHIPPING_MIN, SHIPPING_FEE } = require('../config/env');
+const { FREE_SHIPPING_MIN, SHIPPING_FEE } = require('../config/config');
 
 const VALID_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 

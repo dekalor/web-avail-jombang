@@ -1,6 +1,6 @@
 // const { Province, City, District, Courier, ShippingCost } = require('../models');
 const { Province, City, District, Courier, ShippingCost } = require('../models')
-const { RAJAONGKIR } = require('../config/env')
+const { RAJAONGKIR } = require('../config/config')
 const { Op } = require("sequelize");
 
 const shippingRepository = {
