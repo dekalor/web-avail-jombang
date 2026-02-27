@@ -109,6 +109,11 @@ const orderService = {
       topProducts,
     };
   },
+
+  async getPaymentMethod() {
+    return orderRepository.findAllPaymentMethod(true);
+  },
+
 };
 
 module.exports = orderService;

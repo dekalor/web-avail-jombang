@@ -1,5 +1,5 @@
 const { Op, fn, col, literal } = require('sequelize');
-const { Order, OrderItem, Product } = require('../models');
+const { Order, OrderItem, PaymentMethod } = require('../models');
 
 const orderRepository = {
 
@@ -90,6 +90,15 @@ const orderRepository = {
       raw:    true,
     });
   },
+
+  findAllPaymentMethod(active) {
+    return PaymentMethod.findAll({
+      where: {
+        active
+      },
+    });
+  },
+
 };
 
 module.exports = orderRepository;

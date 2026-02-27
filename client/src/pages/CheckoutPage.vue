@@ -137,13 +137,13 @@
                 </h2>
               </div>
 
-              <div class="space-y-4">
+              <div v-for="paymentMethod in checkoutStore.paymentMethods" :key="paymentMethod.type" class="space-y-4">
 
                 <!-- COD Option -->
                 <div
-                  @click="checkoutStore.paymentMethod = 'cod'"
+                  @click="checkoutStore.paymentMethod = paymentMethod.type"
                   class="border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="checkoutStore.paymentMethod === 'cod'
+                  :class="checkoutStore.paymentMethod === paymentMethod.type
                     ? 'border-[#7BA87D] bg-[#7BA87D]/5'
                     : 'border-gray-200'"
                 >
@@ -152,117 +152,37 @@
                     <!-- Radio (hidden on mobile) -->
                     <div
                       class="hidden sm:flex w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0"
-                      :class="checkoutStore.paymentMethod === 'cod'
+                      :class="checkoutStore.paymentMethod === paymentMethod.type
                         ? 'border-[#7BA87D]'
                         : 'border-gray-300'"
                     >
                       <div
-                        v-if="checkoutStore.paymentMethod === 'cod'"
+                        v-if="checkoutStore.paymentMethod === paymentMethod.type"
                         class="w-3 h-3 rounded-full bg-[#7BA87D]"
                       ></div>
                     </div>
 
                     <!-- Icon -->
-                    <Home class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0" />
-
-                    <!-- Text -->
-                    <div class="flex-1 min-w-0">
-                      <p class="text-lg sm:text-xl font-bold text-gray-900">
-                        Bayar di Tempat (COD)
-                      </p>
-                      <p class="text-sm sm:text-base text-gray-600 mt-1">
-                        Bayar langsung saat barang diterima
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
-
-
-                <!-- QRIS Option -->
-                <div
-                  @click="checkoutStore.paymentMethod = 'qris'"
-                  class="border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="checkoutStore.paymentMethod === 'qris'
-                    ? 'border-[#7BA87D] bg-[#7BA87D]/5'
-                    : 'border-gray-200'"
-                >
-                  <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0">
-
-                    <!-- Radio (hidden on mobile) -->
-                    <div
-                      class="hidden sm:flex w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0"
-                      :class="checkoutStore.paymentMethod === 'qris'
-                        ? 'border-[#7BA87D]'
-                        : 'border-gray-300'"
-                    >
-                      <div
-                        v-if="checkoutStore.paymentMethod === 'qris'"
-                        class="w-3 h-3 rounded-full bg-[#7BA87D]"
-                      ></div>
-                    </div>
-
-                    <!-- Icon -->
-                    <QrCode class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0" />
-
-                    <!-- Text -->
-                    <div class="flex-1 min-w-0">
-                      <p class="text-lg sm:text-xl font-bold text-gray-900">
-                        QRIS
-                      </p>
-                      <p class="text-sm sm:text-base text-gray-600 mt-1">
-                        Scan QR untuk pembayaran instant
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
-
-
-                <!-- Bank Transfer Option -->
-                <div
-                  @click="checkoutStore.paymentMethod = 'bank'"
-                  class="border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="checkoutStore.paymentMethod === 'bank'
-                    ? 'border-[#7BA87D] bg-[#7BA87D]/5'
-                    : 'border-gray-200'"
-                >
-                  <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 min-w-0">
-
-                    <!-- Radio (hidden on mobile) -->
-                    <div
-                      class="hidden sm:flex w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0 mt-1"
-                      :class="checkoutStore.paymentMethod === 'bank'
-                        ? 'border-[#7BA87D]'
-                        : 'border-gray-300'"
-                    >
-                      <div
-                        v-if="checkoutStore.paymentMethod === 'bank'"
-                        class="w-3 h-3 rounded-full bg-[#7BA87D]"
-                      ></div>
-                    </div>
-
-                    <!-- Icon -->
-                    <CreditCard class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0 mt-1" />
+                    <Home v-if="paymentMethod.type === 'cod'" class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0" />
+                    <QrCode v-else-if="paymentMethod.type === 'qris'" class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0" />
+                    <CreditCard v-else class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D] flex-shrink-0" />
 
                     <!-- Content -->
                     <div class="flex-1 min-w-0">
-
-                      <h3 class="text-lg sm:text-xl font-bold text-gray-900">
-                        Transfer Bank
-                      </h3>
-
+                      <p class="text-lg sm:text-xl font-bold text-gray-900">
+                        {{ paymentMethod.type === 'bank' ? 'Transfer Bank' : paymentMethod.items[0].name }}
+                      </p>
                       <p :class="[
                         'text-sm sm:text-base text-gray-600',
 
                         checkoutStore.paymentMethod === 'bank' ?? 'mb-4'
                       ]">
-                        Transfer ke rekening kami
+                        {{ paymentMethod.items[0].description }}
                       </p>
 
                       <!-- Bank Accounts -->
                       <div
-                        v-if="checkoutStore.paymentMethod === 'bank'"
+                        v-if="checkoutStore.paymentMethod === 'bank' && paymentMethod.type === 'bank'"
                         class="mt-4 space-y-4"
                       >
 
@@ -271,10 +191,10 @@
                         </p>
 
                         <!-- BCA -->
-                        <div v-for="bank in bankAccounts" :key="bank.name" class="p-4 sm:p-5 bg-white rounded-lg border-2 border-gray-200">
+                        <div v-for="bank in paymentMethod.items" :key="bank.code" class="p-4 sm:p-5 bg-white rounded-lg border-2 border-gray-200">
                           <div class="flex items-center gap-2 mb-2">
                             <CreditCard class="w-5 h-5 text-[#7BA87D]" />
-                            <p class="text-base sm:text-lg font-bold">Bank {{ bank.name }}</p>
+                            <p class="text-base sm:text-lg font-bold">{{ bank.name }}</p>
                           </div>
 
                           <p class="text-sm text-gray-600">Nomor Rekening</p>
@@ -285,15 +205,15 @@
                             </p>
 
                             <button
-                              @click.stop="handleCopyAccountNumber(bank.name)"
+                              @click.stop="handleCopyAccountNumber(bank.code)"
                               type="button"
                               class="bg-[#7BA87D] hover:bg-[#6A9570] text-white px-4 py-2 flex items-center justify-center rounded w-full sm:w-auto"
                             >
                               <component
-                                :is="copiedBank === bank.name ? Check : Copy"
+                                :is="copiedBank === bank.code ? Check : Copy"
                                 class="w-4 h-4 mr-2"
                               />
-                              {{ copiedBank === bank.name ? 'Tersalin' : 'Salin' }}
+                              {{ copiedBank === bank.code ? 'Tersalin' : 'Salin' }}
                             </button>
                           </div>
 
@@ -306,6 +226,7 @@
                       </div>
 
                     </div>
+
                   </div>
                 </div>
 
@@ -748,26 +669,6 @@ const { formatPrice, formatWeight } = useProducts()
 const isProcessing = ref(false)
 const isSuccess = ref(false)
 const copiedBank = ref(null)
-const paymentProof = ref(null)
-const paymentProofPreview = ref(null)
-const fileInput = ref(null)
-
-// Bank account data
-const bankAccounts = [{
-    name: 'BCA',
-    accountNumber: '1234567890',
-    accountName: 'AVAIL INDONESIA',
-  },{
-    name: 'Mandiri',
-    accountNumber: '0987654321',
-    accountName: 'AVAIL INDONESIA',
-  },{
-    name: 'BNI',
-    accountNumber: '5556667778',
-    accountName: 'AVAIL INDONESIA',
-  }
-]
-
 const cart = cartStore.items
 
 // Redirect to cart if empty and not in success state
@@ -830,6 +731,9 @@ onMounted(async () => {
     router.push('/cart')
   }
 
+  // fetch payment method
+  checkoutStore.fetchPaymentMethods()
+
   if (!shippingStore.provinces.length)
     shippingStore.fetchProvinces()
 
@@ -883,10 +787,11 @@ function handleSubmit() {
   }, 2000)
 }
 
-function handleCopyAccountNumber(bankName) {
-  const bank = bankAccounts.find(b => b.name === bankName)
+function handleCopyAccountNumber(bankCode) {
+  const bankAccountIdx = checkoutStore.paymentMethods.findIndex(v => v.type === 'bank')
+  const bank = checkoutStore.paymentMethods[bankAccountIdx].items.find(b => b.code === bankCode)
   navigator.clipboard.writeText(bank.accountNumber)
-  copiedBank.value = bankName
+  copiedBank.value = bankCode
 
   setTimeout(() => {
     copiedBank.value = null

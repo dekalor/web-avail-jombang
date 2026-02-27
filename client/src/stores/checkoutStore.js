@@ -27,6 +27,7 @@ export const useCheckoutStore = defineStore(
     const shippingEtd = ref("")
 
     // payment
+    const paymentMethods = ref([])
     const paymentMethod = ref("cod")
 
     // order
@@ -47,6 +48,22 @@ export const useCheckoutStore = defineStore(
     function clearShipping() {
       shippingCost.value = 0
       shippingEtd.value = ""
+    }
+
+    async function fetchPaymentMethods() {
+      const res = await get("/orders/get-payment-method")
+
+      if (res.success) {
+        const grouped = Object.entries( // group by type
+          res.data.reduce((acc, item) => {
+            if (!acc[item.type]) acc[item.type] = []
+            acc[item.type].push(item)
+            return acc
+          }, {})
+        ).map(([type, items]) => ({ type, items }))
+
+        paymentMethods.value = grouped
+      }
     }
 
     function resetAfterCheckout() {
@@ -75,6 +92,7 @@ export const useCheckoutStore = defineStore(
       shippingCost,
       shippingEtd,
 
+      paymentMethods,
       paymentMethod,
 
       subtotal,
@@ -83,6 +101,7 @@ export const useCheckoutStore = defineStore(
       setShipping,
       clearShipping,
       resetAfterCheckout
+      fetchPaymentMethods,
     }
 
   },
