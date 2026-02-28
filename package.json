@@ -9,9 +9,13 @@
     "server"
   ],
   "scripts": {
-    "dev": "node server/index.js",
+    "dev": "nodemon server/index.js",
     "build": "npm run build -w client && npm run build -w admin",
-    "start": "NODE_ENV=production node server/index.js"
+    "start": "NODE_ENV=production node server/index.js",
+    "migrateup": "npx sequelize-cli db:migrate",
+    "migratedownto": "npx sequelize-cli db:migrate:undo:all",
+    "migratedownname": "npx sequelize-cli db:migrate:undo",
+    "seed": "npx sequelize-cli db:seed"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

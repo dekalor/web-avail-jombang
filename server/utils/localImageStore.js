@@ -3,6 +3,7 @@ const path = require('path');
 
 const ROOT_DIR = path.join(__dirname, '..', '..');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads', 'products');
+const ORDER_UPLOADS_DIR = path.join(ROOT_DIR, 'uploads', 'orders');
 
 const MIME_TO_EXT = {
   'image/jpeg': 'jpg',
@@ -51,6 +52,25 @@ async function storeProductImage(dataUrl) {
   return `/uploads/products/${fileName}`;
 }
 
+async function storeOrderPaymentProof(dataUrl) {
+  const { base64, ext } = parseDataUrl(dataUrl);
+  const buffer = Buffer.from(base64, 'base64');
+
+  if (buffer.length === 0) {
+    throw new Error('Image payload is empty');
+  }
+  if (buffer.length > 5 * 1024 * 1024) {
+    throw new Error('Image is too large (max 5MB)');
+  }
+
+  await fs.mkdir(ORDER_UPLOADS_DIR, { recursive: true });
+  const fileName = `payment-proof-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const absPath = path.join(ORDER_UPLOADS_DIR, fileName);
+
+  await fs.writeFile(absPath, buffer);
+  return `/uploads/orders/${fileName}`;
+}
+
 async function deleteLocalImage(imageUrl) {
   if (!imageUrl || typeof imageUrl !== 'string') return;
   if (!imageUrl.startsWith('/uploads/products/')) return;
@@ -65,5 +85,6 @@ async function deleteLocalImage(imageUrl) {
 
 module.exports = {
   storeProductImage,
+  storeOrderPaymentProof,
   deleteLocalImage,
 };

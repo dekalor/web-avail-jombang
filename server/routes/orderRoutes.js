@@ -1,11 +1,16 @@
-// server/routes/orderRoutes.js
 const express = require('express');
-const router  = express.Router();
+const router = express.Router();
+const validator = require('../middleware/validator')
+
+// controller
 const orderController = require('../controllers/orderController');
 
-router.get('/',    orderController.index);
+// validation schemas
+const orderSchema = require('../schemas/orderSchema')
+
 router.get('/get-payment-method', orderController.getPaymentMethod);
+router.get('/', orderController.index);
 router.get('/:id', orderController.show);
-router.post('/',   orderController.store);
+router.post('/', validator(orderSchema), orderController.createOrder);
 
 module.exports = router;

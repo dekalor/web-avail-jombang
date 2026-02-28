@@ -35,7 +35,7 @@
                 <!-- Phone -->
                 <div>
                   <Label for="phone" class="text-lg mb-2">
-                    Nomor Telepon *
+                    Nomor Whatsapp *
                   </Label>
 
                   <input id="phone" name="phone" type="tel" v-model="checkoutStore.phone" required
@@ -58,17 +58,6 @@
               </div>
 
               <div class="space-y-5">
-
-                <!-- Address -->
-                <div>
-                  <Label for="address" class="text-lg mb-2">
-                    Alamat Lengkap *
-                  </Label>
-
-                  <textarea id="address" name="address" v-model="checkoutStore.address" required rows="4"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
-                    placeholder="Jalan, No. Rumah, RT/RW" />
-                </div>
 
                 <div class="grid md:grid-cols-2 gap-5">
                   <div>
@@ -108,10 +97,24 @@
                       Kode Pos *
                     </Label>
 
-                    <input id="postalCode" name="postalCode" v-model="checkoutStore.postalCode" required
+                    <input 
+                      type="text" inputmode="numeric" pattern="[0-9]*" @input="filterNumber"
+                      id="postalCode" name="postalCode" v-model="checkoutStore.postalCode" required
                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
-                      placeholder="12345" />
+                      placeholder="12345" 
+                    />
                   </div>
+                </div>
+
+                <!-- Address -->
+                <div>
+                  <Label for="address" class="text-lg mb-2">
+                    Alamat Lengkap *
+                  </Label>
+
+                  <textarea id="address" name="address" v-model="checkoutStore.address" required rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7BA87D]"
+                    placeholder="Jalan, No. Rumah, RT/RW" />
                 </div>
 
                 <!-- Notes -->
@@ -137,13 +140,13 @@
                 </h2>
               </div>
 
-              <div v-for="paymentMethod in checkoutStore.paymentMethods" :key="paymentMethod.type" class="space-y-4">
+              <div v-for="paymentMethod in checkoutStore.paymentMethods" :key="paymentMethod.id" class="space-y-4">
 
-                <!-- COD Option -->
+                <!-- Option -->
                 <div
-                  @click="checkoutStore.paymentMethod = paymentMethod.type"
+                  @click="setPaymentMethodType(paymentMethod.type); setPaymentMethod(paymentMethod.id)"
                   class="border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="checkoutStore.paymentMethod === paymentMethod.type
+                  :class="checkoutStore.paymentMethodType === paymentMethod.type
                     ? 'border-[#7BA87D] bg-[#7BA87D]/5'
                     : 'border-gray-200'"
                 >
@@ -152,12 +155,12 @@
                     <!-- Radio (hidden on mobile) -->
                     <div
                       class="hidden sm:flex w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0"
-                      :class="checkoutStore.paymentMethod === paymentMethod.type
+                      :class="checkoutStore.paymentMethodType === paymentMethod.type
                         ? 'border-[#7BA87D]'
                         : 'border-gray-300'"
                     >
                       <div
-                        v-if="checkoutStore.paymentMethod === paymentMethod.type"
+                        v-if="checkoutStore.paymentMethodType === paymentMethod.type"
                         class="w-3 h-3 rounded-full bg-[#7BA87D]"
                       ></div>
                     </div>
@@ -170,60 +173,15 @@
                     <!-- Content -->
                     <div class="flex-1 min-w-0">
                       <p class="text-lg sm:text-xl font-bold text-gray-900">
-                        {{ paymentMethod.type === 'bank' ? 'Transfer Bank' : paymentMethod.items[0].name }}
+                        {{ paymentMethod.type === 'bank' ? 'Transfer Bank' : paymentMethod.name }}
                       </p>
                       <p :class="[
                         'text-sm sm:text-base text-gray-600',
 
-                        checkoutStore.paymentMethod === 'bank' ?? 'mb-4'
+                        checkoutStore.paymentMethodType === 'bank' ?? 'mb-4'
                       ]">
-                        {{ paymentMethod.items[0].description }}
+                        {{ paymentMethod.description }}
                       </p>
-
-                      <!-- Bank Accounts -->
-                      <div
-                        v-if="checkoutStore.paymentMethod === 'bank' && paymentMethod.type === 'bank'"
-                        class="mt-4 space-y-4"
-                      >
-
-                        <p class="text-sm sm:text-base text-gray-700 font-semibold">
-                          Pilih salah satu rekening bank di bawah ini untuk transfer:
-                        </p>
-
-                        <!-- BCA -->
-                        <div v-for="bank in paymentMethod.items" :key="bank.code" class="p-4 sm:p-5 bg-white rounded-lg border-2 border-gray-200">
-                          <div class="flex items-center gap-2 mb-2">
-                            <CreditCard class="w-5 h-5 text-[#7BA87D]" />
-                            <p class="text-base sm:text-lg font-bold">{{ bank.name }}</p>
-                          </div>
-
-                          <p class="text-sm text-gray-600">Nomor Rekening</p>
-
-                          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-1">
-                            <p class="text-base sm:text-xl font-bold break-all">
-                              {{ bank.accountNumber }}
-                            </p>
-
-                            <button
-                              @click.stop="handleCopyAccountNumber(bank.code)"
-                              type="button"
-                              class="bg-[#7BA87D] hover:bg-[#6A9570] text-white px-4 py-2 flex items-center justify-center rounded w-full sm:w-auto"
-                            >
-                              <component
-                                :is="copiedBank === bank.code ? Check : Copy"
-                                class="w-4 h-4 mr-2"
-                              />
-                              {{ copiedBank === bank.code ? 'Tersalin' : 'Salin' }}
-                            </button>
-                          </div>
-
-                          <p class="text-sm text-gray-600 mt-2">Atas Nama</p>
-                          <p class="text-base sm:text-lg font-semibold">
-                            {{ bank.accountName }}
-                          </p>
-                        </div>
-
-                      </div>
 
                     </div>
 
@@ -233,8 +191,97 @@
               </div>
             </Card>
 
+            <!-- Bank Accounts -->
+            <Card
+              v-if="checkoutStore.paymentMethodType === 'bank'"
+              class="p-4 sm:p-6 lg:p-8 overflow-hidden"
+            >
+              <div class="flex items-center gap-3 mb-6">
+                <CreditCard class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D]" />
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+                  Pilih Rekening Bank
+                </h2>
+              </div>
+
+              <div
+                v-for="bank in checkoutStore.bankAccounts"
+                :key="bank.id"
+                @click="setPaymentMethod(bank.id)"
+                class="flex items-center gap-4 p-4 sm:p-5 bg-white rounded-lg border-2 cursor-pointer transition-all"
+                :class="checkoutStore.paymentMethod === bank.id
+                  ? 'border-[#7BA87D] bg-[#7BA87D]/5'
+                  : 'border-gray-200 hover:border-[#7BA87D]/50'"
+              >
+
+                <!-- Radio (hidden on mobile) -->
+                <div
+                  class="hidden sm:flex w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0"
+                  :class="checkoutStore.paymentMethod === bank.id
+                    ? 'border-[#7BA87D]'
+                    : 'border-gray-300'"
+                >
+                  <div
+                    v-if="checkoutStore.paymentMethod === bank.id"
+                    class="w-3 h-3 rounded-full bg-[#7BA87D]"
+                  ></div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 flex flex-col">
+
+                  <!-- Header -->
+                  <div class="flex items-center gap-2 mb-2">
+                    <CreditCard class="w-5 h-5 text-[#7BA87D]" />
+                    <p class="text-base sm:text-lg font-bold">{{ bank.name }}</p>
+                  </div>
+
+                  <!-- Account Number + Desktop Button -->
+                  <p class="text-sm text-gray-600">Nomor Rekening</p>
+
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-1">
+                    <p class="text-base sm:text-xl font-bold break-all">
+                      {{ bank.accountNumber }}
+                    </p>
+
+                    <!-- Desktop Copy Button -->
+                    <button
+                      @click.stop="handleCopyAccountNumber(bank.id)"
+                      type="button"
+                      class="hidden sm:flex bg-[#7BA87D] hover:bg-[#6A9570] text-white px-4 py-2 items-center justify-center rounded"
+                    >
+                      <component
+                        :is="copiedBank === bank.id ? Check : Copy"
+                        class="w-4 h-4 mr-2"
+                      />
+                      {{ copiedBank === bank.id ? 'Tersalin' : 'Salin' }}
+                    </button>
+                  </div>
+
+                  <p class="text-sm text-gray-600 mt-3">Atas Nama</p>
+                  <p class="text-base sm:text-lg font-semibold">
+                    {{ bank.accountName }}
+                  </p>
+
+                  <!-- Mobile Copy Button (Bottom) -->
+                  <button
+                    @click.stop="handleCopyAccountNumber(bank.id)"
+                    type="button"
+                    class="sm:hidden mt-4 bg-[#7BA87D] hover:bg-[#6A9570] text-white px-4 py-2 flex items-center justify-center rounded w-full"
+                  >
+                    <component
+                      :is="copiedBank === bank.id ? Check : Copy"
+                      class="w-4 h-4 mr-2"
+                    />
+                    {{ copiedBank === bank.id ? 'Tersalin' : 'Salin Nomor Rekening' }}
+                  </button>
+
+                </div>
+              </div>
+
+            </Card>
+
             <!-- QRIS Payment Details -->
-            <Card v-if="checkoutStore.paymentMethod === 'qris'">
+            <Card v-if="checkoutStore.paymentMethodType === 'qris'">
               <div class="flex items-center gap-3 mb-6">
                 <QrCode class="w-6 h-6 sm:w-7 sm:h-7 text-[#7BA87D]" />
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
@@ -284,12 +331,12 @@
               :couriers="shippingStore.couriers"
               :shippingCosts="shippingStore.shippingCosts"
               :loading="shippingStore.loadingShippingCosts"
-              :paymentMethod="checkoutStore.paymentMethod"
+              :paymentMethod="checkoutStore.paymentMethodType"
             />
 
             <!-- Payment Proof Upload (for QRIS and BCA) -->
             <Card
-              v-if="checkoutStore.paymentMethod === 'qris' || checkoutStore.paymentMethod === 'bank'"
+              v-if="checkoutStore.paymentMethodType === 'qris' || checkoutStore.paymentMethodType === 'bank'"
               class="p-4 sm:p-6 lg:p-8 overflow-hidden"
             >
               <!-- Header -->
@@ -305,23 +352,23 @@
                 <!-- Description -->
                 <p class="text-sm sm:text-base lg:text-lg text-gray-600">
                   Setelah melakukan pembayaran via
-                  {{ checkoutStore.paymentMethod === 'qris' ? 'QRIS' : 'Transfer Bank' }},
+                  {{ checkoutStore.paymentMethodType === 'qris' ? 'QRIS' : 'Transfer Bank' }},
                   mohon upload bukti pembayaran Anda di bawah ini:
                 </p>
 
 
                 <!-- Upload Area -->
                 <div
-                  v-if="!paymentProofPreview"
+                  v-if="!checkoutStore.paymentProofPreview"
                   class="border-2 sm:border-3 border-dashed border-[#7BA87D] rounded-xl p-6 sm:p-8 lg:p-10 text-center bg-[#7BA87D]/5"
                 >
 
                   <input
-                    ref="fileInput"
+                    :ref="(el) => { checkoutStore.fileInput = el }"
                     type="file"
                     id="paymentProof"
                     accept="image/*"
-                    @change="handlePaymentProofChange"
+                    @change="checkoutStore.handlePaymentProofChange"
                     class="hidden"
                   />
 
@@ -386,7 +433,7 @@
                           </p>
 
                           <p class="text-xs sm:text-base text-gray-600 truncate">
-                            {{ paymentProof?.name }}
+                            {{ checkoutStore.paymentProof?.name }}
                           </p>
                         </div>
 
@@ -395,7 +442,7 @@
                       <!-- Remove button -->
                       <Button
                         type="button"
-                        @click="handleRemovePaymentProof"
+                        @click="checkoutStore.handleRemovePaymentProof"
                         variant="outline"
                         size="sm"
                         class="border-red-300 text-red-600 hover:bg-red-50 w-full sm:w-auto justify-center"
@@ -416,7 +463,7 @@
                       </p>
 
                       <img
-                        :src="paymentProofPreview"
+                        :src="checkoutStore.paymentProofPreview"
                         alt="Bukti Pembayaran"
                         class="w-full max-h-64 sm:max-h-80 lg:max-h-96 object-contain rounded-lg border border-gray-300"
                       />
@@ -541,7 +588,7 @@
                   </span>
 
                   <span
-                    v-else-if="checkoutStore.paymentMethod === 'cod'"
+                    v-else-if="checkoutStore.paymentMethodType === 'cod'"
                     class="font-semibold text-green-600"
                   >
                     GRATIS
@@ -579,13 +626,13 @@
               <!-- Button -->
               <Button
                 type="submit"
-                :disabled="isProcessing"
+                :disabled="checkoutStore.loading"
                 variant="success"
                 size="lg"
                 class="w-full justify-center"
               >
 
-                <template v-if="isProcessing">
+                <template v-if="checkoutStore.loading">
                   <span class="animate-spin mr-2">⏳</span>
                   Memproses...
                 </template>
@@ -600,7 +647,7 @@
 
               <!-- Payment info -->
               <div
-                v-if="checkoutStore.paymentMethod === 'cod'"
+                v-if="checkoutStore.paymentMethodType === 'cod'"
                 class="mt-4 sm:mt-6 p-3 sm:p-4 bg-green-50 rounded-lg"
               >
                 <p class="text-xs sm:text-sm text-green-800 text-center">
@@ -610,7 +657,7 @@
 
 
               <div
-                v-if="checkoutStore.paymentMethod === 'qris'"
+                v-if="checkoutStore.paymentMethodType === 'qris'"
                 class="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg"
               >
                 <p class="text-xs sm:text-sm text-blue-800 text-center">
@@ -620,7 +667,7 @@
 
 
               <div
-                v-if="checkoutStore.paymentMethod === 'bank'"
+                v-if="checkoutStore.paymentMethodType === 'bank'"
                 class="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg"
               >
                 <p class="text-xs sm:text-sm text-blue-800 text-center">
@@ -662,20 +709,19 @@ const router = useRouter()
 const cartStore = useCartStore()
 const shippingStore = useShippingStore()
 const checkoutStore = useCheckoutStore()
-const { formatPrice } = useProducts()
 const { formatPrice, formatWeight } = useProducts()
 
 // Reactive state
-const isProcessing = ref(false)
-const isSuccess = ref(false)
 const copiedBank = ref(null)
 const cart = cartStore.items
 
+const filterNumber = () => {
+  checkoutStore.postalCode = checkoutStore.postalCode.replace(/\D/g, '')
+}
+
 // Redirect to cart if empty and not in success state
 watch(() => cart.length, (newLength) => {
-  if (newLength === 0 && !isSuccess.value) {
-    router.push('/cart')
-  }
+  redirectToCart(newLength)
 })
 
 // when province change
@@ -719,7 +765,7 @@ watch(() => checkoutStore.districtId, async (districtId) => {
 watch(() => checkoutStore.courierCode, (courierCode) => setShipping(courierCode))
 
 // when payment method change
-watch(() => checkoutStore.paymentMethod, (method) => {
+watch(() => checkoutStore.paymentMethodType, (method) => {
   if (method === "cod") {
     checkoutStore.courierCode = ""
     checkoutStore.clearShipping()
@@ -727,9 +773,7 @@ watch(() => checkoutStore.paymentMethod, (method) => {
 })
 
 onMounted(async () => {
-  if (cartStore.items.length === 0 && !isSuccess.value) {
-    router.push('/cart')
-  }
+  redirectToCart(cart.length)
 
   // fetch payment method
   checkoutStore.fetchPaymentMethods()
@@ -772,56 +816,29 @@ onMounted(async () => {
 })
 
 // Methods
-function handleSubmit() {
-  isProcessing.value = true
+async function handleSubmit() {
+  await checkoutStore.submitOrder()
 
-  // Simulate processing
-  setTimeout(() => {
-    isProcessing.value = false
-    isSuccess.value = true
-    cartStore.clearCart()
-    checkoutStore.resetAfterCheckout()
-
-    // Redirect after success
-    router.push('/order-success')
-  }, 2000)
+  if (checkoutStore.success)
+    router.push("/order-success/")
 }
 
-function handleCopyAccountNumber(bankCode) {
-  const bankAccountIdx = checkoutStore.paymentMethods.findIndex(v => v.type === 'bank')
-  const bank = checkoutStore.paymentMethods[bankAccountIdx].items.find(b => b.code === bankCode)
+function setPaymentMethodType(paymentMethodType) {
+  checkoutStore.paymentMethodType = paymentMethodType
+}
+
+function setPaymentMethod(paymentMethodId) {
+  checkoutStore.paymentMethod = paymentMethodId
+}
+
+function handleCopyAccountNumber(bankId) {
+  const bank = checkoutStore.bankAccounts.find(b => b.id === bankId)
   navigator.clipboard.writeText(bank.accountNumber)
-  copiedBank.value = bankCode
+  copiedBank.value = bankId
 
   setTimeout(() => {
     copiedBank.value = null
   }, 2000)
-}
-
-function handlePaymentProofChange(e) {
-  const file = e.target.files?.[0]
-  if (file) {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Mohon upload file gambar (JPG, PNG, dll)')
-      return
-    }
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Ukuran file maksimal 5MB')
-      return
-    }
-    paymentProof.value = file
-    paymentProofPreview.value = URL.createObjectURL(file)
-  }
-}
-
-function handleRemovePaymentProof() {
-  paymentProof.value = null
-  paymentProofPreview.value = null
-  if (fileInput.value) {
-    fileInput.value.value = ''
-  }
 }
 
 function setShipping(courierCode) {
@@ -831,6 +848,14 @@ function setShipping(courierCode) {
       cost.price,
       cost.etd
     )
+  }
+}
+
+function redirectToCart(cartLength) {
+  console.log('==<',cartLength)
+  console.log(checkoutStore.success)
+  if (cartLength === 0 && !checkoutStore.success) {
+    router.push('/cart')
   }
 }
 </script>

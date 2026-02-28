@@ -99,6 +99,12 @@ const orderRepository = {
     });
   },
 
+  findPaymentMethod(where) {
+    return PaymentMethod.findOne({
+      where,
+    });
+  }
+
 };
 
 module.exports = orderRepository;

@@ -1,70 +1,105 @@
 const db = require('../models');
-const orderRepository     = require('../repositories/orderRepository');
-const productRepository   = require('../repositories/productRepository');
-const { FREE_SHIPPING_MIN, SHIPPING_FEE } = require('../config/config');
+const orderRepository = require('../repositories/orderRepository');
+const productRepository = require('../repositories/productRepository');
+const generateOrderNumber = require("../utils/generateOrderNumber")
+const { storeOrderPaymentProof } = require('../utils/localImageStore');
 
 const VALID_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 const orderService = {
 
-  async placeOrder(customer, cartItems) {
-    // ── 1. Validate + build line items ─────────────────────────────────────
-    const lines    = [];
-    let   subtotal = 0;
+  async placeOrder(data) {
+    const { customer, shipping, items, payment_method, payment_method_id, payment_proof_data, subtotal } = data;
 
-    for (const { id, qty: rawQty } of cartItems) {
-      const product = await productRepository.findById(id);
-      if (!product)        throw Object.assign(new Error(`Product id ${id} not found`),  { status: 400 });
-      if (!product.active) throw Object.assign(new Error(`Product "${product.name}" is unavailable`), { status: 400 });
-      if (product.stock < rawQty) {
+    if ((payment_method === 'bank' || payment_method === 'qris') && !payment_proof_data) {
+      throw Object.assign(new Error('Bukti pembayaran wajib diupload untuk metode pembayaran ini'), { status: 400 });
+    }
+
+    let paymentMethod = null;
+    if (payment_method_id) {
+      paymentMethod = await orderRepository.findPaymentMethod({
+        id: payment_method_id,
+        type: payment_method, 
+        active: true
+      });
+    }
+    if (!paymentMethod) {
+      throw Object.assign(new Error('Metode pembayaran tidak ditemukan'), { status: 404 });
+    }
+
+    const lines = [];
+    let calc_subtotal = 0; // Calculate subtotal from items submitted
+
+    for (const item of items) {
+      const productId = Number(item.product_id);
+      const qty = Number(item.qty);
+
+      const product = await productRepository.findById(productId);
+      if (!product) {
+        throw Object.assign(new Error(`Product id ${productId} not found`), { status: 404 });
+      }
+      if (!product.active) {
+        throw Object.assign(new Error(`Product "${product.name}" is unavailable`), { status: 400 });
+      }
+      if (product.stock < qty) {
         throw Object.assign(
           new Error(`Insufficient stock for "${product.name}" (available: ${product.stock})`),
           { status: 400 }
         );
       }
 
-      const qty       = parseInt(rawQty) || 1;
       const lineTotal = product.price * qty;
-      subtotal       += lineTotal;
+      calc_subtotal += lineTotal;
       lines.push({ product, qty, lineTotal });
     }
 
-    // ── 2. Compute shipping + total ────────────────────────────────────────
-    const shippingFee = subtotal >= FREE_SHIPPING_MIN ? 0 : SHIPPING_FEE;
-    const total       = subtotal + shippingFee;
+    if (calc_subtotal != subtotal) {
+      throw Object.assign(new Error(`Terdapat perubahan harga, silahkan refresh halaman`), { status: 404 });
+    }
 
-    // ── 3. Persist inside a transaction ───────────────────────────────────
-    const order = await db.sequelize.transaction(async (t) => {
+    const shippingCost = payment_method === 'cod' ? 0 : Number(shipping.cost || 0);
+    const total = calc_subtotal + shippingCost;
+
+    let paymentProofUrl = null
+    if (payment_proof_data) {
+      paymentProofUrl = await storeOrderPaymentProof(payment_proof_data);
+    }
+
+    const order = await db.sequelize.transaction(async (transaction) => {
+      const orderNumber = await generateOrderNumber(transaction);
+
       const newOrder = await orderRepository.create({
-        customerName:    customer.name,
-        customerPhone:   customer.phone,
-        customerAddress: customer.address,
-        customerCity:    customer.city,
-        customerPostal:  customer.postal,
-        customerNotes:   customer.notes || null,
+        orderNumber,
+        customerName: customer.name,
+        customerPhone: customer.phone,
+        provinceId: Number(shipping.province_id),
+        cityId: Number(shipping.city_id),
+        districtId: Number(shipping.district_id),
+        address: shipping.address,
+        postalCode: shipping.postal_code,
+        notes: shipping.notes || null,
+        paymentMethodId: paymentMethod.id,
+        courierCode: payment_method === 'cod' ? null : shipping.courier_code,
         subtotal,
-        shippingFee,
+        shippingCost,
         total,
-        status: 'pending',
-      }, t);
+        paymentProofUrl,
+      }, transaction);
 
-      for (const { product, qty, lineTotal } of lines) {
+      for (const { product, qty } of lines) {
         await orderRepository.createItem({
-          orderId:     newOrder.id,
-          productId:   product.id,
-          productName: product.name,  // snapshot
-          price:       product.price, // snapshot
+          orderId: newOrder.id,
+          productId: product.id,
+          price: product.price,
           qty,
-          lineTotal,
-        }, t);
+        }, transaction);
 
-        await productRepository.decrementStock(product.id, qty, t);
+        await productRepository.decrementStock(product.id, qty, transaction);
       }
 
       return newOrder;
     });
 
-    // Return the full order with items
     return orderRepository.findById(order.id);
   },
 

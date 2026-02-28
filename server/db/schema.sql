@@ -37,43 +37,6 @@ CREATE TABLE IF NOT EXISTS products (
     FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE RESTRICT
 );
 
--- ─── Orders ─────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS orders (
-    id CHAR(36) PRIMARY KEY,
-    -- UUID
-    customer_name VARCHAR(120) NOT NULL,
-    customer_phone VARCHAR(30) NOT NULL,
-    customer_address TEXT NOT NULL,
-    customer_city VARCHAR(80) NOT NULL,
-    customer_postal VARCHAR(10) NOT NULL,
-    customer_notes TEXT,
-    subtotal INT NOT NULL,
-    shipping_fee INT NOT NULL DEFAULT 0,
-    total INT NOT NULL,
-    status ENUM(
-        'pending',
-        'processing',
-        'shipped',
-        'delivered',
-        'cancelled'
-    ) NOT NULL DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- ─── Order Items ────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS order_items (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id CHAR(36) NOT NULL,
-    product_id INT NOT NULL,
-    product_name VARCHAR(100) NOT NULL,
-    price INT NOT NULL,
-    qty INT NOT NULL,
-    line_total INT NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
-);
-
 -- ─── Provinces ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS provinces (
     id INT PRIMARY KEY AUTO_INCREMENT,

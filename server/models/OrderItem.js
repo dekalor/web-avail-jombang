@@ -30,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
+      allowNull: false,
     },
     orderId: {
       type: DataTypes.UUID,
@@ -41,23 +42,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       field: 'product_id',
     },
-    productName: {
-      type: DataTypes.STRING(100),  // snapshot at purchase time
-      allowNull: false,
-      field: 'product_name',
-    },
     price: {
-      type: DataTypes.INTEGER,      // snapshot at purchase time
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     qty: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    },
-    lineTotal: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'line_total',
     },
   }, {
     sequelize,

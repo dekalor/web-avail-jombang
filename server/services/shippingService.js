@@ -1,6 +1,7 @@
 const shippingRepository = require('../repositories/shippingRepository');
 const { fetchShippingCost } = require('../utils/rajaOngkirService')
 const retry = require('../utils/retry')
+const utils = require('../utils/stringHelper')
 
 const shippingService = {
 
@@ -57,7 +58,7 @@ const shippingService = {
 
           return staleCache.map(item => ({
             code: item.courier,
-            etd: item.etd,
+            etd: utils.formatEtd(item.etd),
             price: this.calculateCost(item.pricePerKg, weight),
             is_stale: true
           }));
@@ -70,7 +71,7 @@ const shippingService = {
 
     return cachedShippingCost.map(item => ({
       code: item.courier,
-      etd: item.etd,
+      etd: utils.formatEtd(item.etd),
       price: this.calculateCost(item.pricePerKg, weight),
       is_stale: false
     }));
