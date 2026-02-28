@@ -63,6 +63,8 @@ export const useCheckoutStore = defineStore(
     }
 
     async function fetchPaymentMethods() {
+      await cartStore.refreshCartPrices()
+
       const res = await get("/orders/get-payment-method")
 
       if (res.success) {

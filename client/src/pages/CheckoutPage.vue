@@ -686,6 +686,7 @@
 
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import {
   CheckCircle, MapPin, User, Phone, Home, Wallet,
@@ -713,14 +714,14 @@ const { formatPrice, formatWeight } = useProducts()
 
 // Reactive state
 const copiedBank = ref(null)
-const cart = cartStore.items
+const { items: cart } = storeToRefs(cartStore)
 
 const filterNumber = () => {
   checkoutStore.postalCode = checkoutStore.postalCode.replace(/\D/g, '')
 }
 
 // Redirect to cart if empty and not in success state
-watch(() => cart.length, (newLength) => {
+watch(() => cart.value.length, (newLength) => {
   redirectToCart(newLength)
 })
 
@@ -773,7 +774,7 @@ watch(() => checkoutStore.paymentMethodType, (method) => {
 })
 
 onMounted(async () => {
-  redirectToCart(cart.length)
+  redirectToCart(cart.value.length)
 
   // fetch payment method
   checkoutStore.fetchPaymentMethods()
@@ -852,8 +853,6 @@ function setShipping(courierCode) {
 }
 
 function redirectToCart(cartLength) {
-  console.log('==<',cartLength)
-  console.log(checkoutStore.success)
   if (cartLength === 0 && !checkoutStore.success) {
     router.push('/cart')
   }
