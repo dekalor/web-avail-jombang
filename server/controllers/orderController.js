@@ -11,7 +11,12 @@ const orderController = {
       res.status(201).json({
         success: true,
         message: 'Order placed successfully',
-        data:    { orderId: order.id, total: order.total, status: order.status },
+        data:    {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          total: order.total,
+          status: order.status
+        },
       });
     } catch (err) { next(err); }
   },

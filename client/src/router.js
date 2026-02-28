@@ -31,7 +31,12 @@ const routes = [
         path: 'checkout',
         name: 'Checkout',
         component: () => import('./pages/CheckoutPage.vue')
-      }
+      },
+      {
+        path: 'order-success',
+        name: 'Order Success',
+        component: () => import('./pages/OrderSuccess.vue')
+      },
     ]
   }
 ]

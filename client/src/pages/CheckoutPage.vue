@@ -531,7 +531,7 @@
                 >
 
                   <!-- Image -->
-                  <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                  <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200">
                     <img
                       :src="item.imageUrl"
                       :alt="item.name"
@@ -818,10 +818,17 @@ onMounted(async () => {
 
 // Methods
 async function handleSubmit() {
-  await checkoutStore.submitOrder()
+  const order = await checkoutStore.submitOrder()
 
-  if (checkoutStore.success)
-    router.push("/order-success/")
+  if (checkoutStore.success) {
+    router.push({
+      path: "/order-success/",
+      query: {
+        order_number: order?.orderNumber || '',
+        total: order?.total || 0,
+      }
+    })
+  }
 }
 
 function setPaymentMethodType(paymentMethodType) {
