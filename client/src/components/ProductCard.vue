@@ -71,12 +71,15 @@
           <!-- Button -->
           <button
             @click="handleAddToCart"
+            :disabled="isQtyAtStockLimit"
             :class="[
-              'w-full text-lg py-3 rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer',
+              'w-full text-lg py-3 rounded-lg flex items-center justify-center gap-2 transition-all',
 
               isAdded
-                ? 'bg-green-600 hover:bg-green-700 text-white'
-                : 'bg-[#7BA87D] hover:bg-[#6A9570] text-white'
+                ? 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
+                : isQtyAtStockLimit
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-[#7BA87D] hover:bg-[#6A9570] text-white cursor-pointer'
             ]"
           >
 
@@ -86,9 +89,13 @@
             <!-- Cart icon -->
             <ShoppingCart v-else class="w-5 h-5" />
             
-            {{ isAdded ? 'Ditambahkan!' : 'Tambah ke Keranjang' }}
+            {{ isOutOfStock ? 'Stok Habis' : isAdded ? 'Ditambahkan!' : 'Tambah ke Keranjang' }}
 
           </button>
+
+          <p v-if="!isOutOfStock && isQtyAtStockLimit" class="text-xs text-red-500 mt-2">
+            Stok habis, tidak bisa tambah ke keranjang.
+          </p>
 
         </div>
 
@@ -123,8 +130,24 @@ const discount = computed(() =>
   calculateDiscount(props.product.price, props.product.originalPrice)
 )
 
+const cartItem = computed(() =>
+  cart.items.find(item => item.id === props.product.id)
+)
+
+const isOutOfStock = computed(() =>
+  Number(props.product.stock || 0) <= 0
+)
+
+const isQtyAtStockLimit = computed(() => {
+  const stock = Number(props.product.stock || 0)
+  if (stock <= 0) return true
+  return Number(cartItem.value?.quantity || 0) >= stock
+})
+
 function handleAddToCart(event) {
   event.preventDefault()
+
+  if (isQtyAtStockLimit.value) return
 
   cart.addToCart(props.product)
   isAdded.value = true

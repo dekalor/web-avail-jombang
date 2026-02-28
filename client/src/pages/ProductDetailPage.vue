@@ -142,12 +142,22 @@
 
                 <button
                   @click="incrementQuantity"
-                  class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-2 border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10 flex items-center justify-center"
+                  :disabled="isQtyAtStockLimit"
+                  class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-2 flex items-center justify-center"
+                  :class="isQtyAtStockLimit
+                    ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10'"
                 >
                   <Plus class="w-4 h-4 sm:w-6 sm:h-6"/>
                 </button>
 
               </div>
+
+              <p v-if="isQtyAtStockLimit" class="text-xs text-red-500 mt-2">
+                {{ isOutOfStock
+                  ? 'Stok habis, tidak bisa tambah ke keranjang.'
+                  : 'Qty maksimal untuk ditambahkan sudah tercapai.' }}
+              </p>
 
             </div>
 
@@ -156,6 +166,7 @@
 
               <button
                 @click="addToCart"
+                :disabled="isOutOfStock"
                 class="w-full sm:flex-1 bg-[#7BA87D] hover:bg-[#6A9570]
                   text-white
                   py-3 sm:py-4
@@ -165,11 +176,12 @@
                   font-semibold
                   transition-all hover:shadow-lg
                   flex items-center justify-center gap-2"
+                :class="isOutOfStock ? 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300 hover:shadow-none' : ''"
               >
 
                 <ShoppingCart class="w-5 h-5 sm:w-6 sm:h-6"/>
 
-                Tambah ke Keranjang
+                {{ isOutOfStock ? 'Stok Habis' : 'Tambah ke Keranjang' }}
 
               </button>
 
@@ -211,7 +223,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
@@ -226,16 +238,38 @@ const { products, product, getProductById, formatPrice, calculateDiscount } = us
 const quantity = ref(1)
 
 const discount = computed(() =>
-  product ? calculateDiscount(product.price, product.originalPrice) : 0
+  product.value ? calculateDiscount(product.value.price, product.value.originalPrice) : 0
+)
+
+const maxStock = computed(() =>
+  Number(product.value?.stock || 0)
+)
+
+const cartQtyForThisProduct = computed(() => {
+  const inCart = cart.items.find(item => item.id === product.value?.id)
+  return Number(inCart?.quantity || 0)
+})
+
+const availableStockToAdd = computed(() =>
+  Math.max(maxStock.value - cartQtyForThisProduct.value, 0)
+)
+
+const isOutOfStock = computed(() =>
+  availableStockToAdd.value <= 0
+)
+
+const isQtyAtStockLimit = computed(() =>
+  isOutOfStock.value || quantity.value >= availableStockToAdd.value
 )
 
 const relatedProducts = computed(() =>
   products.value
-    .filter(p => p.id !== route.params.id && p.category === product?.category)
+    .filter(p => String(p.id) !== String(route.params.id))
     .slice(0, 3)
 )
 
 function incrementQuantity() {
+  if (isQtyAtStockLimit.value) return
   quantity.value++
 }
 
@@ -244,12 +278,27 @@ function decrementQuantity() {
 }
 
 function addToCart() {
-  if (!product) return
-  for (let i = 0; i < quantity.value; i++) {
+  if (!product.value) return
+
+  if (isOutOfStock.value) return
+
+  const qtyToAdd = Math.min(quantity.value, availableStockToAdd.value)
+  for (let i = 0; i < qtyToAdd; i++) {
     cart.addToCart(product.value)
   }
   router.push('/cart')
 }
+
+watch([availableStockToAdd, isOutOfStock], () => {
+  if (isOutOfStock.value) {
+    quantity.value = 1
+    return
+  }
+
+  if (quantity.value > availableStockToAdd.value) {
+    quantity.value = availableStockToAdd.value
+  }
+}, { immediate: true })
 
 onMounted(() => {
   const product_id = route.params.id

@@ -89,25 +89,36 @@
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mt-3 sm:mt-4">
 
                   <!-- Quantity -->
-                  <div class="flex items-center gap-2 sm:gap-3">
+                  <div>
+                    <div class="flex items-center gap-2 sm:gap-3">
 
-                    <button
-                      @click="decrementQuantity(item)"
-                      class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10 flex items-center justify-center"
-                    >
-                      <Minus class="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
+                      <button
+                        @click="decrementQuantity(item)"
+                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10 flex items-center justify-center"
+                      >
+                        <Minus class="w-3 h-3 sm:w-4 sm:h-4" />
+                      </button>
 
-                    <span class="text-lg sm:text-xl font-semibold min-w-[2.5rem] text-center">
-                      {{ item.quantity }}
-                    </span>
+                      <span class="text-lg sm:text-xl font-semibold min-w-[2.5rem] text-center">
+                        {{ item.quantity }}
+                      </span>
 
-                    <button
-                      @click="incrementQuantity(item)"
-                      class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10 flex items-center justify-center"
-                    >
-                      <Plus class="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
+                      <button
+                        @click="incrementQuantity(item)"
+                        :disabled="isQtyAtStockLimit(item)"
+                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 flex items-center justify-center"
+                        :class="isQtyAtStockLimit(item)
+                          ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10'"
+                      >
+                        <Plus class="w-3 h-3 sm:w-4 sm:h-4" />
+                      </button>
+
+                    </div>
+
+                    <p v-if="isQtyAtStockLimit(item)" class="text-xs text-red-500 mt-2">
+                      Stok habis, tidak bisa tambah ke keranjang.
+                    </p>
 
                   </div>
 
@@ -227,6 +238,7 @@ const total = computed(() => subtotal.value)
 
 // Methods
 function incrementQuantity(item) {
+  if (isQtyAtStockLimit(item)) return
   cart.updateQuantity(item.id, item.quantity + 1)
 }
 
@@ -244,5 +256,11 @@ function removeItem(productId) {
 
 function goToCheckout() {
   router.push('/checkout')
+}
+
+function isQtyAtStockLimit(item) {
+  const stock = Number(item.stock || 0)
+  if (stock <= 0) return true
+  return item.quantity >= stock
 }
 </script>
