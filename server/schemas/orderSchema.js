@@ -27,6 +27,8 @@ const orderSchema = z.object({
   ),
   payment_method_id: z.coerce.number().optional(),
   payment_proof_data: z.string().optional(),
+  guest_checkout_token: z.string().min(20, "Guest token tidak valid"),
+  challenge_id: z.string().min(10, "Challenge token tidak valid"),
 
   items: z.array(
     z.object({

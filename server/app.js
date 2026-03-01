@@ -10,6 +10,7 @@ const shippingRoutes   = require('./routes/shippingRoutes');
 
 const SequelizeSessionStore = require('./middleware/sequelizeSessionStore');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
+const security = require('./middleware/security');
 const { SESSION } = require('./config/config');
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -36,6 +37,7 @@ async function createApp() {
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
   // ─── Base Route ──────────────────────────────────────────────────────────
+  app.use('/api', security);
   app.use('/api/products', productRoutes);
   app.use('/api/orders',   orderRoutes);
   app.use('/api/admin',    adminRoutes);

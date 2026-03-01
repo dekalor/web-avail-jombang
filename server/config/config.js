@@ -28,4 +28,15 @@ module.exports = {
     CACHE_DAYS: process.env.RAJAONGKIR_CACHE_DAYS,
     DEFAULT_WEIGHT: process.env.DEFAULT_WEIGHT
   },
+
+  API_SECURITY: {
+    CORS_ORIGINS: (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5173')
+      .split(',')
+      .map(origin => origin.trim())
+      .filter(Boolean),
+    ORDER_CREATE_RATE_LIMIT_WINDOW_MS: parseInt(process.env.ORDER_CREATE_RATE_LIMIT_WINDOW_MS || '600000', 10),
+    ORDER_CREATE_RATE_LIMIT_MAX: parseInt(process.env.ORDER_CREATE_RATE_LIMIT_MAX || '10', 10),
+    CHECKOUT_CHALLENGE_MIN_SUBMIT_MS: parseInt(process.env.CHECKOUT_CHALLENGE_MIN_SUBMIT_MS || '3000', 10),
+    CHECKOUT_CHALLENGE_TTL_MS: parseInt(process.env.CHECKOUT_CHALLENGE_TTL_MS || '600000', 10),
+  },
 };

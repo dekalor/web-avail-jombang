@@ -41,6 +41,9 @@ export const useCheckoutStore = defineStore(
     const loading = ref(false)
     const error = ref("")
     const success = ref(false)
+    const guestCheckoutToken = ref("")
+    const challengeId = ref("")
+    const challengeLoadedAt = ref(0)
 
     // order
     // subtotal comes from cartStore (computed reference)
@@ -77,6 +80,16 @@ export const useCheckoutStore = defineStore(
       }
     }
 
+    async function fetchCheckoutProtection() {
+      const res = await get("/orders/checkout-protection")
+
+      if (res.success) {
+        guestCheckoutToken.value = res.data.guest_checkout_token || ""
+        challengeId.value = res.data.challenge_id || ""
+        challengeLoadedAt.value = Date.now()
+      }
+    }
+
     async function submitOrder() {
 
       loading.value = true
@@ -84,6 +97,10 @@ export const useCheckoutStore = defineStore(
       success.value = false
 
       try {
+        if (!guestCheckoutToken.value || !challengeId.value) {
+          await fetchCheckoutProtection()
+        }
+
         let paymentProofData = null
         if (paymentProof.value) {
           paymentProofData = await fileToDataUrl(paymentProof.value)
@@ -107,6 +124,8 @@ export const useCheckoutStore = defineStore(
           payment_method: paymentMethodType.value,
           ...(paymentMethod.value ? { payment_method_id: paymentMethod.value } : {}),
           ...(paymentProofData ? { payment_proof_data: paymentProofData } : {}),
+          guest_checkout_token: guestCheckoutToken.value,
+          challenge_id: challengeId.value,
           items: cartStore.items.map(item => ({
             product_id: item.id,
             qty: item.quantity,
@@ -115,7 +134,7 @@ export const useCheckoutStore = defineStore(
           subtotal: subtotal.value,
         }
 
-        const res = await post("/orders", payload)
+        const res = await post("/orders/create", payload)
         if (res.success) {
           success.value = true
 
@@ -125,6 +144,9 @@ export const useCheckoutStore = defineStore(
 
           return res.data
         }
+
+        // refresh challenge when submit failed from server response
+        await fetchCheckoutProtection()
 
       } catch (err) {
         error.value =
@@ -147,7 +169,6 @@ export const useCheckoutStore = defineStore(
       shippingEtd.value = ""
       paymentMethodType.value = "cod"
       paymentMethod.value = null
-      success.value = false
       handleRemovePaymentProof()
     }
 
@@ -212,6 +233,9 @@ export const useCheckoutStore = defineStore(
       loading,
       error,
       success,
+      guestCheckoutToken,
+      challengeId,
+      challengeLoadedAt,
 
       subtotal,
       grandTotal,
@@ -219,6 +243,7 @@ export const useCheckoutStore = defineStore(
       setShipping,
       clearShipping,
       fetchPaymentMethods,
+      fetchCheckoutProtection,
       submitOrder,
       resetAfterCheckout,
       handlePaymentProofChange,

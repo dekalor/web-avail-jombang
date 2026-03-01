@@ -778,6 +778,7 @@ onMounted(async () => {
 
   // fetch payment method
   checkoutStore.fetchPaymentMethods()
+  checkoutStore.fetchCheckoutProtection()
 
   if (!shippingStore.provinces.length)
     shippingStore.fetchProvinces()
