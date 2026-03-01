@@ -1,5 +1,5 @@
 const { Op, fn, col, literal } = require('sequelize');
-const { Order, OrderItem, PaymentMethod } = require('../models');
+const { Order, OrderItem, PaymentMethod, Product } = require('../models');
 
 const orderRepository = {
 
@@ -13,7 +13,7 @@ const orderRepository = {
     const where = status ? { status } : {};
     return Order.findAll({
       where,
-      order:  [['created_at', 'DESC']],
+      order: [['created_at', 'DESC']],
       limit,
       offset,
     });
@@ -60,34 +60,41 @@ const orderRepository = {
     return Order.findAll({
       attributes: [
         [fn('DATE', col('created_at')), 'day'],
-        [fn('SUM', col('total')),       'revenue'],
+        [fn('SUM', col('total')), 'revenue'],
       ],
       where: {
         created_at: { [Op.gte]: literal('DATE_SUB(CURDATE(), INTERVAL 6 DAY)') },
-        status:     { [Op.ne]:  'cancelled' },
+        status: { [Op.ne]: 'cancelled' },
       },
       group: [fn('DATE', col('created_at'))],
       order: [[fn('DATE', col('created_at')), 'ASC']],
-      raw:   true,
+      raw: true,
     });
   },
 
   getTopProducts(limit = 5) {
     return OrderItem.findAll({
       attributes: [
-        'product_name',
+        [col('product.name'), 'product_name'],
         [fn('SUM', col('OrderItem.qty')), 'units_sold'],
       ],
-      include: [{
-        model:      Order,
-        as:         'order',
-        attributes: [],
-        where:      { status: { [Op.ne]: 'cancelled' } },
-      }],
-      group:  ['OrderItem.product_id', 'OrderItem.product_name'],
-      order:  [[fn('SUM', col('OrderItem.qty')), 'DESC']],
+      include: [
+        {
+          model: Order,
+          as: 'order',
+          attributes: [],
+          where: { status: { [Op.ne]: 'cancelled' } },
+        },
+        {
+          model: Product,
+          as: 'product',
+          attributes: ['name'],
+        },
+      ],
+      group: ['OrderItem.product_id', 'product.name'],
+      order: [[fn('SUM', col('OrderItem.qty')), 'DESC']],
       limit,
-      raw:    true,
+      raw: true,
     });
   },
 
