@@ -1,27 +1,48 @@
-// server/middleware/adminAuth.js
-// Session-based auth for the admin API using express-session + DB store.
-
+const { Op } = require('sequelize');
+const { User } = require('../models');
 const { ADMIN } = require('../config/config');
+const { hashPassword, verifyPassword } = require('../utils/password');
 
 // POST /api/admin/login
-function login(req, res) {
+async function login(req, res) {
   const { username, password } = req.body;
-  if (username !== ADMIN.USERNAME || password !== ADMIN.PASSWORD) {
+  if (!username || !password) {
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
   }
 
-  req.session.regenerate(err => {
-    if (err) return res.status(500).json({ success: false, message: 'Failed to start session' });
-
-    req.session.isAdmin = true;
-    req.session.adminUsername = username;
-    req.session.save(saveErr => {
-      if (saveErr) {
-        return res.status(500).json({ success: false, message: 'Failed to persist session' });
-      }
-      return res.json({ success: true });
+  try {
+    let user = await User.findOne({
+      where: {
+        role: 'admin',
+        active: true,
+        [Op.or]: [{ username }, { email: username }],
+      },
     });
-  });
+
+    const isValid = !!user && verifyPassword(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    await user.update({ lastLoginAt: new Date() });
+
+    return req.session.regenerate(err => {
+      if (err) return res.status(500).json({ success: false, message: 'Failed to start session' });
+
+      req.session.isAdmin = true;
+      req.session.adminUserId = user.id;
+      req.session.adminUsername = user.username || user.email || username;
+      req.session.save(saveErr => {
+        if (saveErr) {
+          return res.status(500).json({ success: false, message: 'Failed to persist session' });
+        }
+        return res.json({ success: true });
+      });
+    });
+  } catch (err) {
+    console.error('[adminAuth.login] error:', err);
+    return res.status(500).json({ success: false, message: 'Login failed' });
+  }
 }
 
 // POST /api/admin/logout
