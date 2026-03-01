@@ -67,7 +67,7 @@ async function createApp() {
     // Admin Vite instance — handles requests under /admin
     const adminVite = await createViteServer({
       root: path.join(__dirname, '../admin'),
-      configFile: path.join(__dirname, '../admin/vite.config.js'),
+      configFile: path.join(__dirname, '../admin/vite.config.mjs'),
       server: {
         middlewareMode: true,
         hmr: { port: adminHmrPort },

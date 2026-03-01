@@ -1,59 +1,130 @@
 <template>
-  <!-- Login gate -->
-  <LoginPage v-if="!isLoggedIn" @login-success="onLoginSuccess" />
+  <div v-if="authChecking" class="flex min-h-screen items-center justify-center bg-slate-100">
+    <div class="panel px-5 py-4 text-sm font-medium text-slate-600">Checking session…</div>
+  </div>
 
-  <!-- Main layout -->
-  <div v-else class="layout">
-    <TheSidebar :current-page="currentPage" :pages="pages" @navigate="currentPage = $event" @logout="doLogout" />
+  <LoginPage v-else-if="!isLoggedIn" @login-success="onLoginSuccess" />
 
-    <div class="main">
-      <div class="topbar">
-        <span class="topbar-title">{{ pages.find(p => p.id === currentPage)?.label }}</span>
-      </div>
+  <div v-else class="min-h-screen bg-slate-100 text-slate-900">
+    <TheSidebar
+      :current-page="currentPage"
+      :pages="pages"
+      :open="sidebarOpen"
+      @navigate="navigateTo"
+      @logout="doLogout"
+      @close="sidebarOpen = false"
+    />
 
-      <DashboardPage v-if="currentPage === 'dashboard'" />
-      <OrdersPage  v-else-if="currentPage === 'orders'" />
-      <ProductsPage v-else-if="currentPage === 'products'" />
-      <ProductCategoriesPage v-else-if="currentPage === 'product-categories'" />
+    <div class="md:pl-72">
+      <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div class="flex h-16 items-center justify-between px-4 md:px-6">
+          <div class="flex items-center gap-3">
+            <button
+              class="btn-base btn-secondary md:hidden"
+              @click="sidebarOpen = true"
+              aria-label="Open sidebar"
+            >
+              <span>☰</span>
+            </button>
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Admin Panel</p>
+              <h1 class="text-lg font-bold text-slate-900">{{ currentLabel }}</h1>
+            </div>
+          </div>
+          <a href="/" target="_blank" class="btn-base btn-secondary">Lihat Toko</a>
+        </div>
+      </header>
+
+      <main class="p-4 md:p-6">
+        <RouterView />
+      </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useApi }      from './composables/useApi.js'
-import LoginPage       from './components/LoginPage.vue'
-import TheSidebar      from './components/TheSidebar.vue'
-import OrdersPage      from './components/OrdersPage.vue'
-import ProductsPage    from './components/ProductsPage.vue'
-import ProductCategoriesPage    from './components/ProductCategoriesPage.vue'
-import DashboardPage from './components/DashboardPage.vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useApi } from './composables/useApi.js'
+import LoginPage from './pages/LoginPage.vue'
+import TheSidebar from './components/TheSidebar.vue'
 
 const { get, post } = useApi()
+const route = useRoute()
+const router = useRouter()
 
-const isLoggedIn  = ref(false)
-const currentPage = ref('dashboard')
+const isLoggedIn = ref(false)
+const authChecking = ref(true)
+const sidebarOpen = ref(false)
+
 const pages = [
-  { id: 'dashboard',   label: 'Dashboard',   icon: '📊' },
-  { id: 'orders',   label: 'Pesanan',   icon: '🛒' },
-  { id: 'products', label: 'Produk', icon: '📦' },
-  { id: 'product-categories', label: 'Kategori Produk', icon: '🗂️' },
+  { id: 'dashboard', path: '/dashboard', label: 'Dashboard', icon: '📊' },
+  { id: 'orders', path: '/orders', label: 'Pesanan', icon: '🛒' },
+  { id: 'products', path: '/products', label: 'Produk', icon: '📦' },
+  { id: 'product-categories', path: '/product-categories', label: 'Kategori Produk', icon: '🗂️' },
 ]
 
-function onLoginSuccess() {
-  isLoggedIn.value  = true
-  currentPage.value = 'dashboard'
+const currentPage = computed(() => String(route.name || 'dashboard'))
+const currentLabel = computed(() => {
+  if (route.meta?.title) return String(route.meta.title)
+  return pages.find(p => p.id === currentPage.value)?.label || 'Dashboard'
+})
+
+function navigateTo(pageId) {
+  const page = pages.find(p => p.id === pageId)
+  if (!page) return
+  sidebarOpen.value = false
+  if (route.path !== page.path) router.push(page.path)
+}
+
+async function onLoginSuccess() {
+  isLoggedIn.value = true
+  if (route.path === '/login') {
+    await router.push('/dashboard')
+  }
 }
 
 async function doLogout() {
   await post('/logout').catch(() => {})
   isLoggedIn.value = false
+  sidebarOpen.value = false
+  if (route.path !== '/login') {
+    await router.push('/login')
+  }
 }
 
 async function bootstrapAuth() {
+  authChecking.value = true
   const json = await get('/session').catch(() => null)
   isLoggedIn.value = !!json?.success
+
+  if (isLoggedIn.value) {
+    if (route.path === '/login') {
+      await router.replace('/dashboard')
+    }
+  } else if (route.path !== '/login') {
+    await router.replace('/login')
+  }
+
+  authChecking.value = false
 }
+
+watch(
+  () => route.path,
+  async (path) => {
+    sidebarOpen.value = false
+    if (authChecking.value) return
+
+    if (!isLoggedIn.value && path !== '/login') {
+      await router.replace('/login')
+      return
+    }
+
+    if (isLoggedIn.value && path === '/login') {
+      await router.replace('/dashboard')
+    }
+  },
+)
 
 onMounted(bootstrapAuth)
 </script>
