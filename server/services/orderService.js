@@ -15,18 +15,6 @@ const orderService = {
       throw Object.assign(new Error('Bukti pembayaran wajib diupload untuk metode pembayaran ini'), { status: 400 });
     }
 
-    let paymentMethod = null;
-    if (payment_method_id) {
-      paymentMethod = await orderRepository.findPaymentMethod({
-        id: payment_method_id,
-        type: payment_method, 
-        active: true
-      });
-    }
-    if (!paymentMethod) {
-      throw Object.assign(new Error('Metode pembayaran tidak ditemukan'), { status: 404 });
-    }
-
     const lines = [];
     let calc_subtotal = 0; // Calculate subtotal from items submitted
 
@@ -36,7 +24,7 @@ const orderService = {
 
       const product = await productRepository.findById(productId);
       if (!product) {
-        throw Object.assign(new Error(`Product id ${productId} not found`), { status: 404 });
+        throw Object.assign(new Error(`Product id ${productId} not found`), { status: 400 });
       }
       if (!product.active) {
         throw Object.assign(new Error(`Product "${product.name}" is unavailable`), { status: 400 });
@@ -54,7 +42,7 @@ const orderService = {
     }
 
     if (calc_subtotal != subtotal) {
-      throw Object.assign(new Error(`Terdapat perubahan harga, silahkan refresh halaman`), { status: 404 });
+      throw Object.assign(new Error(`Terdapat perubahan harga, silahkan refresh halaman`), { status: 400 });
     }
 
     const shippingCost = payment_method === 'cod' ? 0 : Number(shipping.cost || 0);
@@ -78,7 +66,7 @@ const orderService = {
         address: shipping.address,
         postalCode: shipping.postal_code,
         notes: shipping.notes || null,
-        paymentMethodId: paymentMethod.id,
+        paymentMethodId: payment_method_id,
         courierCode: payment_method === 'cod' ? null : shipping.courier_code,
         subtotal,
         shippingCost,

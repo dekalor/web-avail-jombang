@@ -1,4 +1,5 @@
 const { z } = require("zod")
+const orderRepository = require("../repositories/orderRepository")
 
 const orderSchema = z.object({
   customer: z.object({
@@ -13,18 +14,11 @@ const orderSchema = z.object({
     address: z.string().min(1, "Alamat wajib diisi"),
     postal_code: z.string().min(3, "Kode pos tidak valid"),
     notes: z.string().optional(),
-    courier_code: z.string(),
+    courier_code: z.string().optional(),
     cost: z.coerce.number().min(0, "Ongkir tidak valid"),
   }),
 
-  payment_method: z.enum(
-    ["cod", "qris", "bank"],
-    {
-      errorMap: () => ({
-        message: "Metode pembayaran tidak valid"
-      })
-    }
-  ),
+  payment_method: z.string().min(1, "Metode pembayaran wajib diisi"),
   payment_method_id: z.coerce.number().optional(),
   payment_proof_data: z.string().optional(),
   guest_checkout_token: z.string().min(20, "Guest token tidak valid"),
@@ -39,6 +33,50 @@ const orderSchema = z.object({
   ).min(1, "Keranjang kosong"),
   
   subtotal: z.coerce.number(),
+}).superRefine(async (data, ctx) => {
+  const paymentMethodType = data.payment_method?.trim()
+  if (!paymentMethodType) {
+    return
+  }
+
+  if (data.payment_method_id) {
+    const selectedMethod = await orderRepository.findPaymentMethodById(data.payment_method_id)
+
+    if (!selectedMethod || !selectedMethod.active) {
+      ctx.addIssue({
+        code: 'custom',
+        message: "Metode pembayaran tidak ditemukan",
+        path: ['payment_method_id'],
+      })
+    } else if (selectedMethod.type !== paymentMethodType) {
+      ctx.addIssue({
+        code: 'custom',
+        message: "Metode pembayaran dan ID pembayaran tidak sesuai",
+        path: ['payment_method_id'],
+      })
+    }
+  } else {
+    const paymentMethod = await orderRepository.findPaymentMethod({
+      type: paymentMethodType,
+      active: true,
+    })
+
+    if (!paymentMethod) {
+      ctx.addIssue({
+        code: 'custom',
+        message: "Metode pembayaran tidak valid",
+        path: ['payment_method'],
+      })
+    }
+  }
+
+  if (data.payment_method !== 'cod' && !data.shipping.courier_code?.trim()) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Kurir wajib dipilih untuk metode pembayaran ini',
+      path: ['shipping', 'courier_code'],
+    });
+  }
 })
 
 module.exports = orderSchema

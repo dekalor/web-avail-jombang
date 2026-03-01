@@ -103,7 +103,11 @@ const orderRepository = {
     return PaymentMethod.findOne({
       where,
     });
-  }
+  },
+
+  findPaymentMethodById(id) {
+    return PaymentMethod.findByPk(id);
+  },
 
 };
 

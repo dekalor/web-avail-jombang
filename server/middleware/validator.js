@@ -1,8 +1,8 @@
 const { ZodError } = require("zod")
 
-module.exports = (schema) => (req, res, next) => {
+module.exports = (schema) => async (req, res, next) => {
   try {
-    const result = schema.parse(req.body)
+    const result = await schema.parseAsync(req.body)
 
     req.validated = result
     next()
