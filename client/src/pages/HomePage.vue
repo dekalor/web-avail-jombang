@@ -5,7 +5,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center">
           <!-- Hero Content -->
-          <div>
+          <div class="reveal-on-scroll">
             <div class="inline-block bg-[#7BA87D]/10 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6">
               <span class="text-[#7BA87D] text-sm sm:text-base lg:text-lg font-semibold">
                 ✨ Produk Herbal Terpercaya
@@ -41,7 +41,7 @@
           </div>
 
           <!-- Hero Image -->
-          <div class="relative">
+          <div class="relative reveal-on-scroll" data-delay="120">
             <div class="aspect-square rounded-3xl overflow-hidden shadow-2xl">
               <img src="../assets/images/Home.jpeg" alt="AVAIL Product" class="w-full h-full object-cover" />
             </div>
@@ -64,7 +64,7 @@
     </section>
 
     <!-- Benefits Section -->
-    <section class="py-10 sm:py-14 lg:py-16 bg-white">
+    <section class="py-10 sm:py-14 lg:py-16 bg-white reveal-on-scroll">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-8 sm:mb-10 lg:mb-12">
           <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C4A2F] mb-3 sm:mb-4">
@@ -76,7 +76,7 @@
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          <div class="p-5 sm:p-6 lg:p-8 text-center hover:shadow-lg transition-shadow rounded-2xl border border-gray-100">
+          <div class="p-5 sm:p-6 lg:p-8 text-center hover:shadow-lg transition-shadow rounded-2xl border border-gray-100 reveal-on-scroll" data-delay="40">
             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-[#7BA87D]/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
               <Leaf class="w-8 h-8 sm:w-10 sm:h-10 text-[#7BA87D]" />
             </div>
@@ -88,7 +88,7 @@
             </p>
           </div>
 
-          <div class="p-5 sm:p-6 lg:p-8 text-center hover:shadow-lg transition-shadow rounded-2xl border border-gray-100">
+          <div class="p-5 sm:p-6 lg:p-8 text-center hover:shadow-lg transition-shadow rounded-2xl border border-gray-100 reveal-on-scroll" data-delay="90">
             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-[#7BA87D]/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
               <Shield class="w-8 h-8 sm:w-10 sm:h-10 text-[#7BA87D]" />
             </div>
@@ -100,7 +100,7 @@
             </p>
           </div>
 
-          <div class="p-5 sm:p-6 lg:p-8 text-center hover:shadow-lg transition-shadow rounded-2xl border border-gray-100 sm:col-span-2 lg:col-span-1">
+          <div class="p-5 sm:p-6 lg:p-8 text-center hover:shadow-lg transition-shadow rounded-2xl border border-gray-100 sm:col-span-2 lg:col-span-1 reveal-on-scroll" data-delay="140">
             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-[#7BA87D]/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
               <Zap class="w-8 h-8 sm:w-10 sm:h-10 text-[#7BA87D]" />
             </div>
@@ -116,7 +116,7 @@
     </section>
 
     <!-- Featured Products -->
-    <section class="py-10 sm:py-14 lg:py-16">
+    <section class="py-10 sm:py-14 lg:py-16 reveal-on-scroll">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-8 sm:mb-10 lg:mb-12">
           <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C4A2F] mb-3 sm:mb-4">
@@ -128,7 +128,14 @@
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          <ProductCard v-for="product in featuredProducts" :key="product.id" :product="product" />
+          <div
+            v-for="(product, index) in featuredProducts"
+            :key="product.id"
+            class="reveal-on-scroll"
+            :data-delay="String(index * 70)"
+          >
+            <ProductCard :product="product" />
+          </div>
         </div>
 
         <div class="text-center mt-8 sm:mt-10 lg:mt-12">
@@ -141,9 +148,9 @@
     </section>
 
     <!-- WhatsApp Quick Order Section -->
-    <section class="py-10 sm:py-14 lg:py-16">
+    <section class="py-10 sm:py-14 lg:py-16 reveal-on-scroll">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-[#7BA87D] rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl">
+        <div class="bg-[#7BA87D] rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl reveal-on-scroll">
           <div class="flex flex-col lg:flex-row items-center gap-8">
 
             <div class="text-center lg:text-left text-white flex-1">
@@ -170,7 +177,7 @@
     </section>
 
     <!-- Galery Avail Tips n Benefit -->
-    <section id="gallery-avail-tips-benefit" class="py-10 sm:py-14 lg:py-16 bg-white">
+    <section id="gallery-avail-tips-benefit" class="py-10 sm:py-14 lg:py-16 bg-white reveal-on-scroll">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-8 sm:mb-10 lg:mb-12">
           <h2 class="text-2xl md:text-4xl font-bold text-[#2C4A2F] mb-4">
@@ -183,7 +190,8 @@
 
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
           <div v-for="(image, index) in galleryImages" :key="image.url"
-            class="group relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer"
+            class="group relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer reveal-on-scroll"
+            :data-delay="String((index % 3) * 70)"
             @click="selectedImageIndex = index">
             <img :src="image.url" :alt="image.alt"
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
@@ -209,7 +217,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import ProductCard from '../components/ProductCard.vue'
 import { useProducts } from '../composables/useProducts'
 import { ArrowDown, ArrowRight, Award, Leaf, Shield, Zap } from 'lucide-vue-next'
@@ -218,6 +226,7 @@ import ImageModal from '../components/ImageModal.vue';
 const { loadProducts, products } = useProducts()
 
 const selectedImageIndex = ref(null);
+let revealObserver = null
 
 const galleryImages = [
   {
@@ -267,7 +276,18 @@ const galleryImages = [
   },
 ];
 
-onMounted(() => loadProducts())
+onMounted(async () => {
+  await loadProducts()
+  await nextTick()
+  initScrollReveal()
+})
+
+onUnmounted(() => {
+  if (revealObserver) {
+    revealObserver.disconnect()
+    revealObserver = null
+  }
+})
 
 // Featured products (first 3)
 const featuredProducts = computed(() => products.value.slice(0, 3))
@@ -281,4 +301,51 @@ function scrollToGallery() {
     block: 'start',
   })
 }
+
+function initScrollReveal() {
+  const nodes = Array.from(document.querySelectorAll('.reveal-on-scroll'))
+  if (!nodes.length) return
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    nodes.forEach((node) => node.classList.add('is-visible'))
+    return
+  }
+
+  revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue
+      const delay = Number(entry.target.dataset.delay || 0)
+      entry.target.style.transitionDelay = `${delay}ms`
+      entry.target.classList.add('is-visible')
+      revealObserver.unobserve(entry.target)
+    }
+  }, {
+    threshold: 0.14,
+    rootMargin: '0px 0px -8% 0px',
+  })
+
+  nodes.forEach((node) => revealObserver.observe(node))
+}
 </script>
+
+<style scoped>
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 560ms ease, transform 560ms ease;
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+</style>
