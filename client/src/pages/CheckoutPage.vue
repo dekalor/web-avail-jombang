@@ -293,7 +293,7 @@
                 <div class="bg-white border-3 border-[#7BA87D] rounded-xl p-8 text-center">
                   <div class="w-full max-w-xs aspect-square mx-auto bg-gray-100 rounded-xl flex items-center justify-center mb-4">
                     <div class="text-center">
-                      <QrCode class="w-32 h-32 text-gray-400 mx-auto mb-4" />
+                      <img src="/src/assets/images/QRCode.jpeg">
                       <p class="text-lg text-gray-500">QR Code Pembayaran</p>
                     </div>
                   </div>
