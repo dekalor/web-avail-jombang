@@ -32,9 +32,7 @@
             @click="$router.push('/cart')"
             class="relative text-lg px-6 py-3 border-2 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
-            </svg>
+            <ShoppingCart class="w-6 h-6" />
             <span
               v-if="totalItems > 0"
               class="absolute -top-2 -right-2 bg-[#7BA87D] text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold"
@@ -52,26 +50,66 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-[#2C4A2F] text-white py-12">
+    <footer class="bg-[#2C4A2F] text-white py-10 sm:py-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10">
           <div>
-            <h3 class="text-2xl font-semibold mb-4">AVAIL</h3>
-            <p class="text-gray-300">Solusi kesehatan herbal alami terpercaya untuk keluarga Indonesia.</p>
+            <h3 class="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">AVAIL</h3>
+            <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
+              Solusi kesehatan herbal alami terpercaya untuk keluarga Indonesia.
+            </p>
+            <div class="mt-5 sm:mt-6 space-y-2">
+              <div class="flex items-center gap-3">
+                <MessageCircleCheck class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[#7BA87D]" />
+                <a href="https://wa.me/6281332224169" class="text-sm sm:text-base text-gray-300 hover:text-white transition-colors">
+                  +62 813-3222-4169
+                </a>
+              </div>
+              <div class="flex items-center gap-3">
+                <Mail class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[#7BA87D]" />
+                <a href="mailto:yunari.deta@gmail.com" class="text-sm sm:text-base text-gray-300 hover:text-white transition-colors break-all">
+                  yunari.deta@gmail.com
+                </a>
+              </div>
+            </div>
           </div>
-          <div>
-            <h4 class="text-lg font-semibold mb-4">Hubungi Kami</h4>
-            <p class="text-gray-300">Email: info@avail.co.id</p>
-            <p class="text-gray-300">WhatsApp: +62 812-3456-7890</p>
-          </div>
-          <div>
-            <h4 class="text-lg font-semibold mb-4">Jam Operasional</h4>
-            <p class="text-gray-300">Senin - Jumat: 08:00 - 17:00</p>
-            <p class="text-gray-300">Sabtu: 09:00 - 15:00</p>
+
+          <div class="lg:col-span-2">
+            <h4 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Lokasi Toko & Jam Operasional</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              <article
+                v-for="store in stores"
+                :key="store.name"
+                class="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5"
+              >
+                <h5 class="text-sm sm:text-base font-semibold text-white mb-3">{{ store.name }}</h5>
+                <a
+                  :href="store.mapsUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex items-start gap-3 text-sm sm:text-base text-gray-300 hover:text-white transition-colors"
+                >
+                  <MapPin class="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 flex-shrink-0 text-[#7BA87D]" />
+                  <span class="leading-relaxed">{{ store.address }}</span>
+                </a>
+
+                <div class="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+                  <p
+                    v-for="hour in store.hours"
+                    :key="`${store.name}-${hour.day}`"
+                    class="text-xs sm:text-sm text-gray-300"
+                  >
+                    <span class="text-gray-200">{{ hour.day }}:</span>
+                    {{ hour.time }}
+                  </p>
+                </div>
+              </article>
+            </div>
           </div>
         </div>
-        <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
-          © 2025 AVAIL. All rights reserved.
+
+        <div class="mt-8 pt-6 sm:pt-8 border-t border-gray-700 text-center text-xs sm:text-sm text-gray-400">
+          © {{ currentYear }} AVAIL Jombang. Semua hak cipta dilindungi.
         </div>
       </div>
     </footer>
@@ -81,7 +119,30 @@
 <script setup>
 import { computed } from 'vue'
 import { useCartStore } from '../stores/cartStore'
+import { MapPin, MessageCircleCheck, Mail, ShoppingCart } from 'lucide-vue-next';
 
 const cart = useCartStore()
 const totalItems = computed(() => cart.totalItems)
+const currentYear = new Date().getFullYear()
+
+const stores = [
+  {
+    name: 'Percetakan Prisma Offset',
+    mapsUrl: 'https://maps.app.goo.gl/bSz92r3zgQM5kuer5',
+    address: 'Jl. IR. H. Juanda No.56, Kepanjen, Jombang, Jawa Timur',
+    hours: [
+      { day: 'Senin - Sabtu', time: '08:00 - 16:30' },
+      { day: 'Minggu', time: 'Tutup' },
+    ],
+  },
+  {
+    name: 'Perum Pulo Asri',
+    mapsUrl: 'https://maps.app.goo.gl/J8BeUBBHZC3jZR2s7',
+    address: 'Perum Pulo Asri Blok K-8, Pulo Lor, Jombang, Jawa Timur',
+    hours: [
+      { day: 'Senin - Sabtu', time: '17:00 - 21:30' },
+      { day: 'Minggu', time: '08:00 - 17:00' },
+    ],
+  },
+]
 </script>

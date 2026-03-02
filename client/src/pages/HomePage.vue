@@ -18,7 +18,7 @@
             </h1>
 
             <p class="text-xl text-gray-700 mb-8 leading-relaxed">
-              <em>AVAIL BIO Sanitary Pad</em> 
+              <em>AVAIL BIO Sanitary Pad</em>
               merupakan pilihan terbaik untuk pembalut wanita. <em>AVAIL</em> dibuat dari kapas yang mengandung
               herbal dan antiseptik alami, bebas dari bahan-bahan kimia berbahaya.
             </p>
@@ -27,10 +27,15 @@
               <button @click="$router.push('/products')"
                 class="bg-[#7BA87D] hover:bg-[#6A9570] text-white text-xl px-8 py-4 rounded-lg font-semibold flex items-center gap-2 transition-all hover:shadow-lg cursor-pointer">
                 Lihat Produk
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
-                  </path>
-                </svg>
+                <ArrowRight class="w-6 h-6" />
+              </button>
+              <button
+                type="button"
+                @click="scrollToGallery"
+                class="bg-white hover:bg-gray-50 text-[#2C4A2F] border-2 border-[#2C4A2F]/20 text-xl px-8 py-4 rounded-lg font-semibold flex items-center gap-2 transition-all hover:shadow-lg"
+              >
+                Pelajari Lebih Lanjut
+                <ArrowDown class="w-6 h-6" />
               </button>
             </div>
           </div>
@@ -38,18 +43,14 @@
           <!-- Hero Image -->
           <div class="relative">
             <div class="aspect-square rounded-3xl overflow-hidden shadow-2xl">
-              <img src="../assets/images/Home.jpeg" alt="AVAIL Product"
-                class="w-full h-full object-cover" />
+              <img src="../assets/images/Home.jpeg" alt="AVAIL Product" class="w-full h-full object-cover" />
             </div>
 
             <!-- Floating Badge -->
             <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-6">
               <div class="flex items-center gap-4">
                 <div class="w-14 h-14 bg-[#7BA87D] rounded-full flex items-center justify-center">
-                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
+                  <Award class="w-8 h-8 text-white" />
                 </div>
                 <div>
                   <p class="text-2xl font-bold text-[#2C4A2F]">100%</p>
@@ -115,7 +116,7 @@
     </section>
 
     <!-- Featured Products -->
-    <section class="py-16 bg-gray-50">
+    <section class="py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-4xl font-bold text-[#2C4A2F] mb-4">
@@ -153,7 +154,7 @@
                 Konsultasi gratis dan pesan langsung dengan admin kami.
                 Respon cepat dan pelayanan ramah untuk Anda.
               </p>
-              <a href="https://wa.me/6281234567890?text=Halo%20AVAIL,%20saya%20ingin%20bertanya%20tentang%20produk"
+              <a href="https://wa.me/6281332224169?text=Halo%20AVAIL%20Jombang,%20saya%20ingin%20bertanya%20tentang%20produk-produk%20Avail"
                 target="_blank" rel="noopener noreferrer"
                 class="inline-flex items-center gap-3 bg-white text-[#7BA87D] hover:bg-gray-100 px-8 py-5 rounded-2xl text-xl font-semibold transition-all hover:scale-105 shadow-lg">
                 <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
@@ -167,19 +168,117 @@
         </div>
       </div>
     </section>
+
+    <!-- Galery Avail Tips n Benefit -->
+    <section id="gallery-avail-tips-benefit" class="py-16 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h2 class="text-2xl md:text-4xl font-bold text-[#2C4A2F] mb-4">
+            Pelajari Lebih Lanjut
+          </h2>
+          <p class="text-base md:text-xl text-gray-600">
+            Ribuan pelanggan telah merasakan manfaatnya
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-6">
+          <div v-for="(image, index) in galleryImages" :key="image.url"
+            class="group relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer"
+            @click="selectedImageIndex = index">
+            <img :src="image.url" :alt="image.alt"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+              <div class="absolute bottom-4 left-4 right-4">
+                <p class="text-white text-sm md:text-lg font-semibold">{{ image.title }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Image Modal -->
+    <ImageModal v-if="selectedImageIndex !== null" 
+      :imageUrl="galleryImages[selectedImageIndex].url"
+      :title="galleryImages[selectedImageIndex].title"
+      :onNext="() => selectedImageIndex = (selectedImageIndex + 1) % galleryImages.length"
+      :onPrevious="() => selectedImageIndex = (selectedImageIndex - 1 + galleryImages.length) % galleryImages.length"
+      :onClose="() => selectedImageIndex = null" />
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ProductCard from '../components/ProductCard.vue'
 import { useProducts } from '../composables/useProducts'
-import { Leaf, Shield, Zap } from 'lucide-vue-next'
+import { ArrowDown, ArrowRight, Award, Leaf, Shield, Zap } from 'lucide-vue-next'
+import ImageModal from '../components/ImageModal.vue';
 
 const { loadProducts, products } = useProducts()
+
+const selectedImageIndex = ref(null);
+
+const galleryImages = [
+  {
+    url: "/src/assets/images/Materi_1.jpeg",
+    title: "Informasi",
+    alt: "Informasi"
+  },
+  {
+    url: "/src/assets/images/Materi_2.jpeg",
+    title: "Informasi",
+    alt: "Informasi"
+  },
+  {
+    url: "/src/assets/images/Materi_3.jpeg",
+    title: "Tips",
+    alt: "Tips"
+  },
+  {
+    url: "/src/assets/images/Materi_4.jpeg",
+    title: "Tips",
+    alt: "Tips"
+  },
+  {
+    url: "/src/assets/images/Materi_5.jpeg",
+    title: "Tips",
+    alt: "Tips"
+  },
+  {
+    url: "/src/assets/images/Materi_6.jpeg",
+    title: "Tips",
+    alt: "Tips"
+  },
+  {
+    url: "/src/assets/images/Materi_7.jpeg",
+    title: "Tips",
+    alt: "Tips"
+  },
+  {
+    url: "/src/assets/images/Materi_8.jpeg",
+    title: "Tips",
+    alt: "Tips"
+  },
+  {
+    url: "/src/assets/images/Materi_9.jpeg",
+    title: "Informasi",
+    alt: "Informasi"
+  },
+];
 
 onMounted(() => loadProducts())
 
 // Featured products (first 3)
 const featuredProducts = computed(() => products.value.slice(0, 3))
+
+function scrollToGallery() {
+  const section = document.getElementById('gallery-avail-tips-benefit')
+  if (!section) return
+
+  section.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start',
+  })
+}
 </script>
