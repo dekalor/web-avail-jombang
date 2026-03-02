@@ -32,7 +32,7 @@ export const useCheckoutStore = defineStore(
     // payment
     const paymentMethods = ref([])
     const bankAccounts = ref([])
-    const paymentMethodType = ref("cod")
+    const paymentMethodType = ref("")
     const paymentMethod = ref(null)
     const paymentProof = ref(null)
     const paymentProofPreview = ref(null)
@@ -167,7 +167,7 @@ export const useCheckoutStore = defineStore(
       courierCode.value = ""
       shippingCost.value = 0
       shippingEtd.value = ""
-      paymentMethodType.value = "cod"
+      paymentMethodType.value = ""
       paymentMethod.value = null
       handleRemovePaymentProof()
     }

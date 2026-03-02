@@ -140,15 +140,27 @@
                 </h2>
               </div>
 
+              <p
+                v-if="!isCodAvailable"
+                class="mb-4 text-sm sm:text-base text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"
+              >
+                Metode pembayaran COD hanya tersedia untuk kota Jombang.
+              </p>
+
               <div v-for="paymentMethod in checkoutStore.paymentMethods" :key="paymentMethod.id" class="space-y-4">
 
                 <!-- Option -->
                 <div
-                  @click="setPaymentMethodType(paymentMethod.type); setPaymentMethod(paymentMethod.id)"
-                  class="border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all hover:border-[#7BA87D] hover:bg-[#7BA87D]/5"
-                  :class="checkoutStore.paymentMethodType === paymentMethod.type
-                    ? 'border-[#7BA87D] bg-[#7BA87D]/5'
-                    : 'border-gray-200'"
+                  @click="selectPaymentMethod(paymentMethod)"
+                  class="border-2 rounded-xl p-4 sm:p-6 transition-all"
+                  :class="[
+                    checkoutStore.paymentMethodType === paymentMethod.type
+                      ? 'border-[#7BA87D] bg-[#7BA87D]/5'
+                      : 'border-gray-200',
+                    canSelectCod(paymentMethod.type)
+                      ? 'cursor-pointer hover:border-[#7BA87D] hover:bg-[#7BA87D]/5'
+                      : 'cursor-not-allowed opacity-60'
+                  ]"
                 >
                   <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0">
 
@@ -715,6 +727,9 @@ const { formatPrice, formatWeight } = useProducts()
 // Reactive state
 const copiedBank = ref(null)
 const { items: cart } = storeToRefs(cartStore)
+const isCodAvailable = computed(() =>
+  Number(checkoutStore.cityId) === 389
+)
 
 const filterNumber = () => {
   checkoutStore.postalCode = checkoutStore.postalCode.replace(/\D/g, '')
@@ -744,6 +759,11 @@ watch(() => checkoutStore.cityId, async (cityId) => {
     checkoutStore.districtId = ""
     shippingStore.clearShippingCosts()
     checkoutStore.clearShipping()
+
+    if (Number(cityId) !== 389 && checkoutStore.paymentMethodType === 'cod') {
+      checkoutStore.paymentMethodType = ""
+      checkoutStore.paymentMethod = null
+    }
 
     if (cityId)
       await shippingStore.fetchDistricts(cityId)
@@ -775,6 +795,11 @@ watch(() => checkoutStore.paymentMethodType, (method) => {
 
 onMounted(async () => {
   redirectToCart(cart.value.length)
+
+  if (!isCodAvailable.value && checkoutStore.paymentMethodType === 'cod') {
+    checkoutStore.paymentMethodType = ""
+    checkoutStore.paymentMethod = null
+  }
 
   // fetch payment method
   checkoutStore.fetchPaymentMethods()
@@ -833,11 +858,24 @@ async function handleSubmit() {
 }
 
 function setPaymentMethodType(paymentMethodType) {
+  if (paymentMethodType === 'cod' && !isCodAvailable.value) return
   checkoutStore.paymentMethodType = paymentMethodType
 }
 
 function setPaymentMethod(paymentMethodId) {
   checkoutStore.paymentMethod = paymentMethodId
+}
+
+function selectPaymentMethod(paymentMethod) {
+  if (!canSelectCod(paymentMethod.type)) return
+
+  setPaymentMethodType(paymentMethod.type)
+  setPaymentMethod(paymentMethod.id)
+}
+
+function canSelectCod(type) {
+  if (type !== 'cod') return true
+  return isCodAvailable.value
 }
 
 function handleCopyAccountNumber(bankId) {
