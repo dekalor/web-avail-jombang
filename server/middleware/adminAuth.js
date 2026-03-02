@@ -1,7 +1,6 @@
 const { Op } = require('sequelize');
 const { User } = require('../models');
-const { ADMIN } = require('../config/config');
-const { hashPassword, verifyPassword } = require('../utils/password');
+const { verifyPassword } = require('../utils/password');
 
 // POST /api/admin/login
 async function login(req, res) {
