@@ -3,6 +3,7 @@ const orderRepository = require('../repositories/orderRepository');
 const productRepository = require('../repositories/productRepository');
 const generateOrderNumber = require("../utils/generateOrderNumber")
 const { storeOrderPaymentProof } = require('../utils/localImageStore');
+const { FREE_SHIPPING_MIN } = require('../config/config');
 
 const VALID_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -45,7 +46,10 @@ const orderService = {
       throw Object.assign(new Error(`Terdapat perubahan harga, silahkan refresh halaman`), { status: 400 });
     }
 
-    const shippingCost = payment_method === 'cod' ? 0 : Number(shipping.cost || 0);
+    const shippingCost =
+      payment_method === 'cod' || calc_subtotal >= FREE_SHIPPING_MIN
+        ? 0
+        : Number(shipping.cost || 0);
     const total = calc_subtotal + shippingCost;
 
     let paymentProofUrl = null

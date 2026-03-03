@@ -344,6 +344,7 @@
               :shippingCosts="shippingStore.shippingCosts"
               :loading="shippingStore.loadingShippingCosts"
               :paymentMethod="checkoutStore.paymentMethodType"
+              :isFreeShippingEligible="checkoutStore.isFreeShippingEligible"
             />
 
             <!-- Payment Proof Upload (for QRIS and BCA) -->
@@ -572,6 +573,23 @@
               <!-- Totals -->
               <div class="space-y-2 sm:space-y-3 mb-4 sm:mb-6 border-t pt-3 sm:pt-4">
 
+                <template v-if="checkoutStore.paymentMethodType !== 'cod'">
+                  <div
+                    v-if="checkoutStore.freeShippingMin > 0 && !checkoutStore.isFreeShippingEligible"
+                    class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs sm:text-sm text-amber-800"
+                  >
+                    Belanja lagi <span class="font-semibold">{{ formatPrice(checkoutStore.remainingForFreeShipping) }}</span>
+                    untuk dapat gratis ongkir.
+                  </div>
+
+                  <div
+                    v-else-if="checkoutStore.freeShippingMin > 0 && checkoutStore.isFreeShippingEligible"
+                    class="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs sm:text-sm text-green-800"
+                  >
+                    🎉 Selamat! Pesanan Anda memenuhi syarat gratis ongkir.
+                  </div>
+                </template>
+
                 <div class="flex justify-between text-sm sm:text-base lg:text-lg gap-3">
                   <span class="text-gray-600">Subtotal</span>
                   <span class="font-semibold text-right break-all">
@@ -593,14 +611,14 @@
                   </span>
 
                   <span
-                    v-else-if="checkoutStore.shippingCost !== 0"
+                    v-else-if="checkoutStore.appliedShippingCost !== 0"
                     class="font-semibold text-right break-all"
                   >
-                    {{ formatPrice(checkoutStore.shippingCost) }}
+                    {{ formatPrice(checkoutStore.appliedShippingCost) }}
                   </span>
 
                   <span
-                    v-else-if="checkoutStore.paymentMethodType === 'cod'"
+                    v-else-if="checkoutStore.paymentMethodType === 'cod' || checkoutStore.isFreeShippingEligible"
                     class="font-semibold text-green-600"
                   >
                     GRATIS
@@ -802,6 +820,7 @@ onMounted(async () => {
   }
 
   // fetch payment method
+  checkoutStore.fetchCheckoutConfig()
   checkoutStore.fetchPaymentMethods()
   checkoutStore.fetchCheckoutProtection()
 

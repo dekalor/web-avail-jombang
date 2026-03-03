@@ -1,4 +1,5 @@
 const orderService = require('../services/orderService');
+const { FREE_SHIPPING_MIN } = require('../config/config');
 
 const orderController = {
 
@@ -40,6 +41,17 @@ const orderController = {
     try {
       const paymentMethod = await orderService.getPaymentMethod();
       res.json({ success: true, data: paymentMethod });
+    } catch (err) { next(err); }
+  },
+
+  async getCheckoutConfig(req, res, next) {
+    try {
+      res.json({
+        success: true,
+        data: {
+          free_shipping_min: FREE_SHIPPING_MIN,
+        },
+      });
     } catch (err) { next(err); }
   },
 };

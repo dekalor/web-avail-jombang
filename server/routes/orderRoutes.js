@@ -14,6 +14,7 @@ const orderController = require('../controllers/orderController');
 const orderSchema = require('../schemas/orderSchema')
 
 router.get('/get-payment-method', orderController.getPaymentMethod);
+router.get('/checkout-config', orderController.getCheckoutConfig);
 router.get('/checkout-protection', issueCheckoutProtection);
 router.post(
   '/create',

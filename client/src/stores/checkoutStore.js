@@ -41,6 +41,7 @@ export const useCheckoutStore = defineStore(
     const loading = ref(false)
     const error = ref("")
     const success = ref(false)
+    const freeShippingMin = ref(0)
     const guestCheckoutToken = ref("")
     const challengeId = ref("")
     const challengeLoadedAt = ref(0)
@@ -51,8 +52,23 @@ export const useCheckoutStore = defineStore(
       cartStore.totalPrice
     )
 
+    const isFreeShippingEligible = computed(() =>
+      freeShippingMin.value > 0 && subtotal.value >= freeShippingMin.value
+    )
+
+    const remainingForFreeShipping = computed(() => {
+      if (!freeShippingMin.value) return 0
+      return Math.max(freeShippingMin.value - subtotal.value, 0)
+    })
+
+    const appliedShippingCost = computed(() => {
+      if (paymentMethodType.value === "cod") return 0
+      if (isFreeShippingEligible.value) return 0
+      return shippingCost.value
+    })
+
     const grandTotal = computed(() =>
-      subtotal.value + shippingCost.value
+      subtotal.value + appliedShippingCost.value
     )
 
     function setShipping(cost, etd) {
@@ -77,6 +93,13 @@ export const useCheckoutStore = defineStore(
 
         paymentMethods.value = result
         bankAccounts.value = res.data.filter(item => item.type === 'bank')
+      }
+    }
+
+    async function fetchCheckoutConfig() {
+      const res = await get("/orders/checkout-config")
+      if (res.success) {
+        freeShippingMin.value = Number(res.data?.free_shipping_min || 0)
       }
     }
 
@@ -119,7 +142,7 @@ export const useCheckoutStore = defineStore(
             postal_code: postalCode.value,
             notes: notes.value,
             courier_code: courierCode.value,
-            cost: shippingCost.value,
+            cost: appliedShippingCost.value,
           },
           payment_method: paymentMethodType.value,
           ...(paymentMethod.value ? { payment_method_id: paymentMethod.value } : {}),
@@ -233,15 +256,20 @@ export const useCheckoutStore = defineStore(
       loading,
       error,
       success,
+      freeShippingMin,
       guestCheckoutToken,
       challengeId,
       challengeLoadedAt,
 
       subtotal,
+      isFreeShippingEligible,
+      remainingForFreeShipping,
+      appliedShippingCost,
       grandTotal,
 
       setShipping,
       clearShipping,
+      fetchCheckoutConfig,
       fetchPaymentMethods,
       fetchCheckoutProtection,
       submitOrder,

@@ -12,14 +12,24 @@
 
     <!-- Courier list -->
     <div class="grid gap-3">
+      <div
+        v-if="loading"
+        class="rounded-lg border border-[#7BA87D]/30 bg-[#7BA87D]/10 px-3 py-2 text-sm text-[#2C4A2F]"
+      >
+        Menghitung ongkir terbaik...
+      </div>
+
       <div v-for="courier in couriers" 
         :key="courier.code" 
-        @click="emit('update:modelValue', courier.code)" 
+        @click="!loading && emit('update:modelValue', courier.code)" 
         :class="[
-          'border-2 rounded-xl p-4 cursor-pointer transition',
+          'border-2 rounded-xl p-4 transition',
           modelValue === courier.code
             ? 'border-[#7BA87D] bg-[#7BA87D]/5'
-            : 'border-gray-200 hover:border-gray-300'
+            : 'border-gray-200',
+          loading
+            ? 'cursor-wait opacity-80'
+            : 'cursor-pointer hover:border-gray-300'
         ]"
       >
 
@@ -39,7 +49,7 @@
 
               <div class="text-sm text-gray-500">
                 <span v-if="loading">
-                  Menghitung...
+                  <span class="block h-4 w-24 rounded bg-gray-200 animate-pulse"></span>
                 </span>
 
                 <span v-else>
@@ -51,13 +61,24 @@
           </div>
 
           <!-- Right -->
-          <div class="font-bold text-[#7BA87D]">
+          <div class="font-bold text-[#7BA87D] text-right">
             <span v-if="loading">
-              ...
+              <span class="inline-block h-6 w-20 rounded bg-gray-200 animate-pulse"></span>
             </span>
 
             <span v-else-if="shippingCosts[courier.code]">
-              {{ formatPrice(shippingCosts[courier.code].price) }}
+              <template v-if="isFreeShippingEligible">
+                <span class="text-green-600">
+                  GRATIS
+                </span>
+                <span class="block text-xs font-medium text-gray-500 line-through">
+                  {{ formatPrice(shippingCosts[courier.code].price) }}
+                </span>
+              </template>
+
+              <template v-else>
+                {{ formatPrice(shippingCosts[courier.code].price) }}
+              </template>
             </span>
 
             <span v-else>
@@ -92,9 +113,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
 import { Truck } from "lucide-vue-next"
-import { useShippingStore } from "../stores/shippingStore"
 import { useProducts } from "../composables/useProducts"
 import Card from '../components/ui/Card.vue'
 
@@ -106,9 +125,8 @@ const props = defineProps({
   shippingCosts: Object,
   loading: Boolean,
   paymentMethod: String,
+  isFreeShippingEligible: Boolean,
 })
 
 const emit = defineEmits(["update:modelValue"])
-
-const shippingStore = useShippingStore()
 </script>
