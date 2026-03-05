@@ -21,6 +21,25 @@ module.exports = (sequelize, DataTypes) => {
         },
         as: 'category',
       });
+
+      Product.hasMany(models.ProductUnit, {
+        foreignKey: {
+          name: 'productId',
+          field: 'product_id',
+          allowNull: false,
+        },
+        as: 'units',
+      });
+
+      Product.hasOne(models.ProductUnit, {
+        foreignKey: {
+          name: 'productId',
+          field: 'product_id',
+          allowNull: false,
+        },
+        as: 'defaultUnit',
+      });
+
     }
 
   }
@@ -44,10 +63,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       field: 'category_id',
     },
-    price: {
-      type: DataTypes.INTEGER,   // IDR, stored as whole number
-      allowNull: false,
-    },
     imageUrl: {
       type: DataTypes.STRING(255),
       allowNull: true,
@@ -61,10 +76,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 100,
-    },
-    weight: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
     },
     active: {
       type: DataTypes.BOOLEAN,

@@ -1,5 +1,5 @@
 const { Op }    = require('sequelize');
-const { Product, ProductCategory } = require('../models');
+const { Product, ProductCategory, ProductUnit } = require('../models');
 
 const productRepository = {
 
@@ -10,8 +10,12 @@ const productRepository = {
     }
 
     const order = [];
-    if (priceSort === 'asc') order.push(['price', 'ASC']);
-    if (priceSort === 'desc') order.push(['price', 'DESC']);
+    if (priceSort === 'asc') {
+      order.push([{ model: ProductUnit, as: 'defaultUnit' }, 'price', 'ASC']);
+    }
+    if (priceSort === 'desc') {
+      order.push([{ model: ProductUnit, as: 'defaultUnit' }, 'price', 'DESC']);
+    }
     order.push(['id', 'ASC']);
 
     return Product.findAll({
@@ -21,23 +25,59 @@ const productRepository = {
         as: 'category',
         attributes: ['id', 'name'],
         required: false,
+      }, {
+        model: ProductUnit,
+        as: 'defaultUnit',
+        required: false,
+        where: {
+          unitCode: 'pcs',
+          active: true,
+        },
+      }, {
+        model: ProductUnit,
+        as: 'units',
+        required: false,
+        where: { active: true },
+        separate: true,
       }],
       order,
+      distinct: true,
     });
   },
 
   findById(id) {
-    return Product.findByPk(id);
+    return Product.findByPk(id, {
+      include: [{
+        model: ProductCategory,
+        as: 'category',
+        attributes: ['id', 'name'],
+        required: false,
+      }, {
+        model: ProductUnit,
+        as: 'defaultUnit',
+        required: false,
+        where: {
+          unitCode: 'pcs',
+          active: true,
+        },
+      }, {
+        model: ProductUnit,
+        as: 'units',
+        required: false,
+        where: { active: true },
+        separate: true,
+      }],
+    });
   },
 
-  create(data) {
-    return Product.create(data);
+  create(data, transaction) {
+    return Product.create(data, { transaction });
   },
 
-  async update(id, data) {
+  async update(id, data, transaction) {
     const product = await Product.findByPk(id);
     if (!product) return null;
-    return product.update(data);
+    return product.update(data, { transaction });
   },
 
   async softDelete(id) {
@@ -57,6 +97,35 @@ const productRepository = {
 
   decrementStock(id, qty, transaction) {
     return Product.decrement('stock', { by: qty, where: { id }, transaction });
+  },
+
+  findUnitById(id) {
+    return ProductUnit.findByPk(id);
+  },
+
+  findUnit(productId, unitCode) {
+    return ProductUnit.findOne({
+      where: {
+        productId,
+        unitCode,
+        active: true,
+      },
+      order: [['id', 'ASC']],
+    });
+  },
+
+  findFirstUnit(productId) {
+    return ProductUnit.findOne({
+      where: {
+        productId,
+        active: true,
+      },
+      order: [['id', 'ASC']],
+    });
+  },
+
+  upsertUnit(data, transaction) {
+    return ProductUnit.upsert(data, { transaction });
   },
 };
 

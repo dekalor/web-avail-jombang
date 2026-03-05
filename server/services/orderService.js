@@ -30,16 +30,49 @@ const orderService = {
       if (!product.active) {
         throw Object.assign(new Error(`Product "${product.name}" is unavailable`), { status: 400 });
       }
-      if (product.stock < qty) {
+      let unit = null;
+      if (item.product_unit_id) {
+        unit = await productRepository.findUnitById(Number(item.product_unit_id));
+        if (unit && unit.productId !== product.id) unit = null;
+        
+      } else if (item.unit_code) {
+        unit = await productRepository.findUnit(product.id, String(item.unit_code).toLowerCase());
+      } else {
+        unit = await productRepository.findUnit(product.id, 'pcs');
+        if (!unit) {
+          unit = await productRepository.findFirstUnit(product.id);
+        }
+      }
+
+      if (!unit || !unit.active) {
+        throw Object.assign(new Error(`Product unit for "${product.name}" not found`), { status: 400 });
+      }
+
+      const qtyPerUnit = Number(unit.qtyPerUnit || 1);
+      if (!Number.isFinite(qtyPerUnit) || qtyPerUnit <= 0) {
         throw Object.assign(
-          new Error(`Insufficient stock for "${product.name}" (available: ${product.stock})`),
+          new Error(`Invalid qty_per_unit for "${product.name}" (${unit.unitCode})`),
           { status: 400 }
         );
       }
 
-      const lineTotal = product.price * qty;
+      const qtyInPcs = qty * qtyPerUnit;
+      if (product.stock < qtyInPcs) {
+        throw Object.assign(
+          new Error(`Insufficient stock for "${product.name}" (available: ${product.stock} pcs)`),
+          { status: 400 }
+        );
+      }
+
+      const lineTotal = Number(unit.price) * qty;
       calc_subtotal += lineTotal;
-      lines.push({ product, qty, lineTotal });
+      lines.push({
+        product,
+        qty,
+        qtyInPcs,
+        lineTotal,
+        unit,
+      });
     }
 
     if (calc_subtotal != subtotal) {
@@ -78,15 +111,16 @@ const orderService = {
         paymentProofUrl,
       }, transaction);
 
-      for (const { product, qty } of lines) {
+      for (const { product, qty, qtyInPcs, unit } of lines) {
         await orderRepository.createItem({
           orderId: newOrder.id,
           productId: product.id,
-          price: product.price,
+          productUnitId: unit.id,
+          price: unit.price,
           qty,
         }, transaction);
 
-        await productRepository.decrementStock(product.id, qty, transaction);
+        await productRepository.decrementStock(product.id, qtyInPcs, transaction);
       }
 
       return newOrder;
