@@ -86,12 +86,12 @@ module.exports = {
 
     await queryInterface.bulkInsert('product_units', [
       { product_id: productMap.get('Avail FC Pantiliner'), unit_code: 'pcs', label: 'PCS', price: 35000, weight: 50, qty_per_unit: 1 },
-      { product_id: productMap.get('Avail FC Pantiliner'), unit_code: 'bal', label: 'BAL', price: 310000, weight: 500, qty_per_unit: 10 },
+      { product_id: productMap.get('Avail FC Pantiliner'), unit_code: 'ball', label: 'BALL', price: 310000, weight: 500, qty_per_unit: 10 },
       { product_id: productMap.get('Avail FC Night Use'), unit_code: 'pcs', label: 'PCS', price: 40000, weight: 50, qty_per_unit: 1 },
-      { product_id: productMap.get('Avail FC Night Use'), unit_code: 'bal', label: 'BAL', price: 310000, weight: 500, qty_per_unit: 8 },
+      { product_id: productMap.get('Avail FC Night Use'), unit_code: 'ball', label: 'BALL', price: 310000, weight: 500, qty_per_unit: 8 },
       { product_id: productMap.get('Avail FC Day Use'), unit_code: 'pcs', label: 'PCS', price: 38000, weight: 50, qty_per_unit: 1 },
-      { product_id: productMap.get('Avail FC Day Use'), unit_code: 'bal', label: 'BAL', price: 345000, weight: 500, qty_per_unit: 10 },
-      { product_id: productMap.get('Avail FC Kombinasi'), unit_code: 'bal', label: 'BAL', price: 312000, weight: 600, qty_per_unit: 1 },
+      { product_id: productMap.get('Avail FC Day Use'), unit_code: 'ball', label: 'BALL', price: 345000, weight: 500, qty_per_unit: 10 },
+      { product_id: productMap.get('Avail FC Kombinasi'), unit_code: 'ball', label: 'BALL', price: 312000, weight: 600, qty_per_unit: 1 },
       { product_id: productMap.get('Avail A Cafe'), unit_code: 'box', label: 'BOX', price: 265000, weight: 150, qty_per_unit: 1 },
       { product_id: productMap.get('Avail Nutrashake (ANS)'), unit_code: 'box', label: 'BOX', price: 335000, weight: 80, qty_per_unit: 1 },
       { product_id: productMap.get('Avail Nutracella (ANC)'), unit_code: 'box', label: 'BOX', price: 550000, weight: 80, qty_per_unit: 1 },
@@ -101,7 +101,7 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('product_units', {
       unit_code: {
-        [Sequelize.Op.in]: ['pcs', 'bal', 'box'],
+        [Sequelize.Op.in]: ['pcs', 'ball', 'box'],
       },
     });
 

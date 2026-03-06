@@ -42,7 +42,7 @@
 
           <div
             v-for="item in cart.items"
-            :key="item.id"
+            :key="item.cartKey"
             class="bg-white rounded-xl shadow-sm p-4 sm:p-5 lg:p-6 hover:shadow-md transition-shadow"
           >
 
@@ -75,10 +75,25 @@
                       <Weight class="w-4 h-4 sm:w-5 sm:h-5" />
                       {{ formatWeight(item.weight * item.quantity) }}
                     </p>
+
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      <button
+                        v-for="unit in item.units || []"
+                        :key="unit.id"
+                        type="button"
+                        @click="handleUnitChange(item, unit.unitCode)"
+                        class="px-2.5 py-1 rounded-full border text-xs font-semibold transition"
+                        :class="item.unitCode === unit.unitCode
+                          ? 'bg-[#7BA87D] border-[#7BA87D] text-white'
+                          : 'bg-white border-gray-300 text-gray-700 hover:border-[#7BA87D] hover:text-[#2C4A2F]'"
+                      >
+                        {{ unit.label || unit.unitCode.toUpperCase() }}
+                      </button>
+                    </div>
                   </div>
 
                   <button
-                    @click="removeItem(item.id)"
+                    @click="removeItem(item.cartKey)"
                     class="text-red-500 hover:text-red-700 p-1 sm:p-2 flex-shrink-0"
                   >
                     <Trash2 class="w-5 h-5 sm:w-6 sm:h-6" />
@@ -129,7 +144,7 @@
                     </div>
 
                     <div class="text-xs sm:text-sm text-gray-500">
-                      {{ formatPrice(item.price) }} / item
+                      {{ formatPrice(item.price) }} / {{ item.unitLabel || item.unitCode?.toUpperCase() || 'unit' }}
                     </div>
                   </div>
 
@@ -239,18 +254,18 @@ const total = computed(() => subtotal.value)
 // Methods
 function incrementQuantity(item) {
   if (isQtyAtStockLimit(item)) return
-  cart.updateQuantity(item.id, item.quantity + 1)
+  cart.updateQuantity(item.cartKey, item.quantity + 1)
 }
 
 function decrementQuantity(item) {
   if (item.quantity > 1) {
-    cart.updateQuantity(item.id, item.quantity - 1)
+    cart.updateQuantity(item.cartKey, item.quantity - 1)
   }
 }
 
-function removeItem(productId) {
+function removeItem(cartKey) {
   if (confirm('Hapus produk dari keranjang?')) {
-    cart.removeFromCart(productId)
+    cart.removeFromCart(cartKey)
   }
 }
 
@@ -259,8 +274,14 @@ function goToCheckout() {
 }
 
 function isQtyAtStockLimit(item) {
-  const stock = Number(item.stock || 0)
-  if (stock <= 0) return true
-  return item.quantity >= stock
+  const stockPcs = Number(item.stock || 0)
+  const qtyPerUnit = Number(item.qtyPerUnit || 1)
+  const maxQty = qtyPerUnit > 0 ? Math.floor(stockPcs / qtyPerUnit) : 0
+  if (maxQty <= 0) return true
+  return item.quantity >= maxQty
+}
+
+async function handleUnitChange(item, nextUnitCode) {
+  await cart.updateItemUnit(item.cartKey, nextUnitCode)
 }
 </script>

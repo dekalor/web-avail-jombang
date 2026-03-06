@@ -35,8 +35,6 @@ const orderService = {
         unit = await productRepository.findUnitById(Number(item.product_unit_id));
         if (unit && unit.productId !== product.id) unit = null;
         
-      } else if (item.unit_code) {
-        unit = await productRepository.findUnit(product.id, String(item.unit_code).toLowerCase());
       } else {
         unit = await productRepository.findUnit(product.id, 'pcs');
         if (!unit) {

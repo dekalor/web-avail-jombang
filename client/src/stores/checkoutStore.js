@@ -151,6 +151,7 @@ export const useCheckoutStore = defineStore(
           challenge_id: challengeId.value,
           items: cartStore.items.map(item => ({
             product_id: item.id,
+            product_unit_id: item.productUnitId,
             qty: item.quantity,
             price: item.price
           })),

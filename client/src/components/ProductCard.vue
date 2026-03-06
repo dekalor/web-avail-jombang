@@ -1,7 +1,8 @@
 <template>
-  <RouterLink :to="`/products/${product.id}`">
-
-    <div class="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col bg-white rounded-xl">
+  <div
+    class="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col bg-white rounded-xl cursor-pointer"
+    @click="goToProductDetail"
+  >
 
       <!-- Image -->
       <div class="relative aspect-square overflow-hidden bg-gray-100">
@@ -62,9 +63,27 @@
             </span>
 
             <span class="text-2xl font-bold text-[#7BA87D]">
-              {{ formatPrice(product.price) }}
+              {{ formatPrice(selectedUnitPrice) }}
             </span>
 
+          </div>
+
+          <div class="mb-4">
+            <p class="text-xs text-gray-500 mb-2">Pilih satuan</p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="unit in availableUnits"
+                :key="unit.id"
+                type="button"
+                @click.stop="selectedUnitCode = unit.unitCode"
+                class="px-3 py-1.5 rounded-full border text-xs font-semibold transition"
+                :class="selectedUnitCode === unit.unitCode
+                  ? 'bg-[#7BA87D] border-[#7BA87D] text-white'
+                  : 'bg-white border-gray-300 text-gray-700 hover:border-[#7BA87D] hover:text-[#2C4A2F]'"
+              >
+                {{ unit.label || unit.unitCode.toUpperCase() }}
+              </button>
+            </div>
           </div>
 
 
@@ -101,14 +120,12 @@
 
       </div>
 
-    </div>
-
-  </RouterLink>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
 import { ShoppingCart, Check } from 'lucide-vue-next'
@@ -121,8 +138,10 @@ const props = defineProps({
 })
 
 // Router and stores
+const router = useRouter()
 const cart = useCartStore()
 const isAdded = ref(false)
+const selectedUnitCode = ref('')
 
 const { formatPrice, calculateDiscount } = useProducts()
 
@@ -130,30 +149,67 @@ const discount = computed(() =>
   calculateDiscount(props.product.price, props.product.originalPrice)
 )
 
-const cartItem = computed(() =>
-  cart.items.find(item => item.id === props.product.id)
+const availableUnits = computed(() =>
+  Array.isArray(props.product?.units) ? props.product.units : []
+)
+
+const selectedUnit = computed(() => {
+  if (!availableUnits.value.length) return null
+  return availableUnits.value.find(unit => unit.unitCode === selectedUnitCode.value)
+    || availableUnits.value.find(unit => unit.unitCode === props.product?.unitCode)
+    || availableUnits.value[0]
+})
+
+const selectedUnitPrice = computed(() =>
+  Number(selectedUnit.value?.price || props.product.price || 0)
+)
+
+const selectedQtyPerUnit = computed(() =>
+  Number(selectedUnit.value?.qtyPerUnit || 1)
+)
+
+const cartQtyForSelectedUnit = computed(() =>
+  cart.items
+    .filter(item => item.id === props.product.id && item.unitCode === selectedUnitCode.value)
+    .reduce((sum, item) => sum + Number(item.quantity || 0), 0)
+)
+
+const maxQtyForSelectedUnit = computed(() =>
+  Math.floor(Number(props.product.stock || 0) / selectedQtyPerUnit.value)
 )
 
 const isOutOfStock = computed(() =>
-  Number(props.product.stock || 0) <= 0
+  maxQtyForSelectedUnit.value <= 0
 )
 
 const isQtyAtStockLimit = computed(() => {
-  const stock = Number(props.product.stock || 0)
-  if (stock <= 0) return true
-  return Number(cartItem.value?.quantity || 0) >= stock
+  if (maxQtyForSelectedUnit.value <= 0) return true
+  return cartQtyForSelectedUnit.value >= maxQtyForSelectedUnit.value
 })
 
 function handleAddToCart(event) {
+  event.stopPropagation()
   event.preventDefault()
 
   if (isQtyAtStockLimit.value) return
 
-  cart.addToCart(props.product)
+  cart.addToCart(props.product, selectedUnitCode.value)
   isAdded.value = true
 
   setTimeout(() => {
     isAdded.value = false
   }, 2000)
 }
+
+function goToProductDetail() {
+  router.push(`/products/${props.product.id}`)
+}
+
+watch(() => props.product, (value) => {
+  const units = Array.isArray(value?.units) ? value.units : []
+  if (!units.length) return
+
+  const preferred = units.find(unit => unit.unitCode === value.unitCode)
+  selectedUnitCode.value = preferred?.unitCode || units[0].unitCode
+}, { immediate: true, deep: true })
 </script>

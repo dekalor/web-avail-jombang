@@ -539,7 +539,7 @@
 
                 <div
                   v-for="item in cart"
-                  :key="item.id"
+                  :key="item.cartKey"
                   class="flex gap-3 min-w-0 items-center"
                 >
 
@@ -560,7 +560,8 @@
                     </h3>
 
                     <p class="text-xs sm:text-sm text-gray-600 truncate">
-                      {{ item.quantity }}x @ Rp {{ item.price.toLocaleString('id-ID') }}
+                      {{ item.quantity }}x {{ item.unitLabel || item.unitCode?.toUpperCase() || 'unit' }}
+                      @ Rp {{ item.price.toLocaleString('id-ID') }}
                     </p>
 
                   </div>

@@ -29,7 +29,6 @@ const orderSchema = z.object({
       product_id: z.coerce.number(),
       qty: z.coerce.number().min(1, "Quantity tidak valid"),
       product_unit_id: z.coerce.number(),
-      unit_code: z.string(),
       price: z.coerce.number().min(0).optional()
     })
   ).min(1, "Keranjang kosong"),

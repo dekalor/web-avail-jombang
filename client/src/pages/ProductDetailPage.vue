@@ -43,7 +43,7 @@
               px-3 py-1.5 sm:px-4 sm:py-2
               rounded-full
               text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-              {{ product.category }}
+              {{ product.category.name }}
             </span>
 
             <!-- Title -->
@@ -62,7 +62,7 @@
               <div class="flex flex-wrap items-center gap-2 sm:gap-3">
 
                 <span class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#7BA87D]">
-                  {{ formatPrice(product.price) }}
+                  {{ formatPrice(selectedUnitPrice) }}
                 </span>
 
                 <span
@@ -81,6 +81,32 @@
 
               </div>
 
+            </div>
+
+            <!-- Unit -->
+            <div class="mb-6">
+              <label class="block text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+                Pilih Satuan
+              </label>
+
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="unit in availableUnits"
+                  :key="unit.id"
+                  type="button"
+                  @click="selectedUnitCode = unit.unitCode"
+                  class="px-4 py-2.5 rounded-full border text-sm sm:text-base font-semibold transition"
+                  :class="selectedUnitCode === unit.unitCode
+                    ? 'bg-[#7BA87D] border-[#7BA87D] text-white shadow-sm'
+                    : 'bg-white border-gray-300 text-gray-700 hover:border-[#7BA87D] hover:text-[#2C4A2F]'"
+                >
+                  {{ unit.label || unit.unitCode.toUpperCase() }}
+                </button>
+              </div>
+
+              <p class="text-xs sm:text-sm text-gray-500 mt-2">
+                Berat per unit: {{ formatWeight(selectedUnitWeight) }}
+              </p>
             </div>
 
             <!-- Benefits -->
@@ -233,12 +259,37 @@ import { ShoppingCart, Plus, Minus } from 'lucide-vue-next'
 const route = useRoute()
 const router = useRouter()
 const cart = useCartStore()
-const { products, product, getProductById, formatPrice, calculateDiscount } = useProducts()
+const { products, product, getProductById, formatPrice, formatWeight, calculateDiscount } = useProducts()
 
 const quantity = ref(1)
+const selectedUnitCode = ref('')
 
 const discount = computed(() =>
   product.value ? calculateDiscount(product.value.price, product.value.originalPrice) : 0
+)
+
+const availableUnits = computed(() => {
+  const units = Array.isArray(product.value?.units) ? [...product.value.units] : []
+  return units.sort((a, b) => Number(a.id || 0) - Number(b.id || 0))
+})
+
+const selectedUnit = computed(() => {
+  if (!availableUnits.value.length) return null
+  return availableUnits.value.find(unit => unit.unitCode === selectedUnitCode.value)
+    || availableUnits.value.find(unit => unit.unitCode === product.value?.unitCode)
+    || availableUnits.value[0]
+})
+
+const selectedUnitPrice = computed(() =>
+  Number(selectedUnit.value?.price || product.value?.price || 0)
+)
+
+const selectedUnitWeight = computed(() =>
+  Number(selectedUnit.value?.weight || product.value?.weight || 0)
+)
+
+const selectedQtyPerUnit = computed(() =>
+  Number(selectedUnit.value?.qtyPerUnit || 1)
 )
 
 const maxStock = computed(() =>
@@ -246,12 +297,17 @@ const maxStock = computed(() =>
 )
 
 const cartQtyForThisProduct = computed(() => {
-  const inCart = cart.items.find(item => item.id === product.value?.id)
-  return Number(inCart?.quantity || 0)
+  if (!product.value?.id) return 0
+  return cart.items
+    .filter(item => item.id === product.value.id && item.unitCode === selectedUnitCode.value)
+    .reduce((sum, item) => sum + Number(item.quantity || 0), 0)
 })
 
 const availableStockToAdd = computed(() =>
-  Math.max(maxStock.value - cartQtyForThisProduct.value, 0)
+  Math.max(
+    Math.floor(maxStock.value / selectedQtyPerUnit.value) - cartQtyForThisProduct.value,
+    0
+  )
 )
 
 const isOutOfStock = computed(() =>
@@ -284,7 +340,7 @@ function addToCart() {
 
   const qtyToAdd = Math.min(quantity.value, availableStockToAdd.value)
   for (let i = 0; i < qtyToAdd; i++) {
-    cart.addToCart(product.value)
+    cart.addToCart(product.value, selectedUnitCode.value)
   }
   router.push('/cart')
 }
@@ -304,4 +360,13 @@ onMounted(() => {
   const product_id = route.params.id
   getProductById(product_id)
 })
+
+watch(product, (value) => {
+  if (!value) return
+  const units = Array.isArray(value.units) ? value.units : []
+  if (!units.length) return
+
+  const preferred = units.find(unit => unit.unitCode === value.unitCode)
+  selectedUnitCode.value = preferred?.unitCode || units[0].unitCode
+}, { immediate: true })
 </script>
