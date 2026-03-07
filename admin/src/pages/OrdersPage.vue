@@ -187,9 +187,72 @@
           </div>
           <div class="sm:col-span-2" v-if="selected.paymentProofUrl">
             <p class="label-base">Payment Proof</p>
-            <a :href="selected.paymentProofUrl" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-blue-600 hover:text-blue-700">
-              {{ selected.paymentProofUrl }}
-            </a>
+            <div class="rounded-xl border border-slate-200 bg-white p-3">
+              <div v-if="isImageProof(selected.paymentProofUrl)" class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  type="button"
+                  class="group relative h-28 w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50 sm:w-40"
+                  @click="openProofPreview(selected.paymentProofUrl)"
+                >
+                  <img
+                    :src="selected.paymentProofUrl"
+                    alt="Payment proof"
+                    class="h-full w-full object-cover transition group-hover:scale-[1.02]"
+                    @error="onProofThumbError"
+                  />
+                  <div class="absolute inset-x-0 bottom-0 bg-black/50 px-2 py-1 text-xs font-medium text-white">
+                    Click to preview
+                  </div>
+                </button>
+                <div class="min-w-0 space-y-2">
+                  <p class="truncate text-xs text-slate-500">{{ selected.paymentProofUrl }}</p>
+                  <div class="flex flex-wrap gap-2">
+                    <a
+                      :href="selected.paymentProofUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
+                    >
+                      Open
+                    </a>
+                    <a
+                      :href="selected.paymentProofUrl"
+                      download
+                      class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
+                    >
+                      Download
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="space-y-2">
+                <p class="truncate text-sm font-medium text-slate-700">{{ proofFileName(selected.paymentProofUrl) }}</p>
+                <p class="truncate text-xs text-slate-500">{{ selected.paymentProofUrl }}</p>
+                <div class="flex flex-wrap gap-2">
+                  <a
+                    :href="selected.paymentProofUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
+                  >
+                    Open
+                  </a>
+                  <a
+                    :href="selected.paymentProofUrl"
+                    download
+                    class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
+                  >
+                    Download
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sm:col-span-2" v-else>
+            <p class="label-base">Payment Proof</p>
+            <p class="text-sm text-slate-500">No proof uploaded.</p>
           </div>
         </div>
 
@@ -259,6 +322,23 @@
         </div>
       </div>
     </div>
+
+    <div class="modal-overlay" v-if="proofPreviewUrl" @click.self="proofPreviewUrl = ''">
+      <div class="modal-box !max-w-4xl">
+        <div class="mb-3 flex items-center justify-between">
+          <h4 class="text-base font-semibold text-slate-900">Payment Proof Preview</h4>
+          <button class="btn-base btn-secondary !px-2.5 !py-1 text-xs" @click="proofPreviewUrl = ''">Close</button>
+        </div>
+        <div class="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+          <img
+            :src="proofPreviewUrl"
+            alt="Payment proof preview"
+            class="max-h-[75vh] w-full object-contain"
+            @error="onProofPreviewError"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -279,6 +359,7 @@ const selectedDays = ref(0)
 const exporting = ref(false)
 const updatingById = ref({})
 const toast = ref({ message: '', type: 'success' })
+const proofPreviewUrl = ref('')
 const page = ref(1)
 const pageSize = ref(10)
 const totalItems = ref(0)
@@ -387,6 +468,32 @@ function isUpdating(id) {
 
 function getNextStatuses(status) {
   return STATUS_TRANSITIONS[status] || []
+}
+
+function isImageProof(url) {
+  if (!url) return false
+  return /\.(png|jpe?g|webp|gif|bmp|svg)(\?.*)?$/i.test(url)
+}
+
+function proofFileName(url) {
+  if (!url) return '-'
+  const path = String(url).split('?')[0]
+  const chunks = path.split('/')
+  return chunks[chunks.length - 1] || 'payment-proof'
+}
+
+function openProofPreview(url) {
+  if (!isImageProof(url)) return
+  proofPreviewUrl.value = url
+}
+
+function onProofThumbError(event) {
+  event?.target?.setAttribute('alt', 'Cannot load payment proof')
+}
+
+function onProofPreviewError() {
+  showToast('Cannot load payment proof preview', 'error')
+  proofPreviewUrl.value = ''
 }
 
 function showToast(message, type = 'success') {
