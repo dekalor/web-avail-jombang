@@ -11,11 +11,6 @@ module.exports = {
     DIALECT:  'mysql',
   },
 
-  ADMIN: {
-    USERNAME: process.env.ADMIN_USERNAME || 'admin',
-    PASSWORD: process.env.ADMIN_PASSWORD || 'bloom2025',
-  },
-
   SESSION: {
     SECRET: process.env.SESSION_SECRET || 'change-this-session-secret',
     MAX_AGE_MS: parseInt(process.env.SESSION_MAX_AGE_MS || '86400000', 10),
