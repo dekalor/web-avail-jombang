@@ -15,7 +15,6 @@
           <div class="flex items-center justify-between">
             <div>
               <h2 class="text-lg font-extrabold tracking-tight text-gray-900">AVAIL Jombang</h2>
-              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">TailAdmin UI</p>
             </div>
             <button class="text-gray-500 md:hidden" @click="$emit('close')">✕</button>
           </div>

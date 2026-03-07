@@ -1,9 +1,11 @@
 const db = require('../models');
 const orderRepository = require('../repositories/orderRepository');
 const productRepository = require('../repositories/productRepository');
+const shippingRepository = require('../repositories/shippingRepository');
 const generateOrderNumber = require("../utils/generateOrderNumber")
 const { storeOrderPaymentProof } = require('../utils/localImageStore');
 const { FREE_SHIPPING_MIN } = require('../config/config');
+const paymentmethod = require('../models/paymentmethod');
 
 const VALID_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -130,7 +132,21 @@ const orderService = {
   async getOrderById(id) {
     const order = await orderRepository.findById(id);
     if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
-    return order;
+
+    const [province, city, district, paymentMethod] = await Promise.all([
+      shippingRepository.provinceFindById(order.provinceId),
+      shippingRepository.cityFindById(order.cityId),
+      shippingRepository.districtFindById(order.districtId),
+      orderRepository.findPaymentMethodById(order.paymentMethodId)
+    ]);
+
+    const data = typeof order.toJSON === 'function' ? order.toJSON() : order;
+    data.provinceName = province?.name || null;
+    data.cityName = city?.name || null;
+    data.districtName = district?.name || null;
+    data.paymentMethodName = paymentMethod?.name || null;
+
+    return data;
   },
 
   async listOrders({ status, limit, offset, sortBy, sortDir } = {}) {

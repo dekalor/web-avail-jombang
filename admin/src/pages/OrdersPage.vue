@@ -168,17 +168,23 @@
             <p class="text-sm font-semibold text-slate-800">{{ selected.customerName }}</p>
           </div>
           <div>
-            <p class="label-base">No. Telepon</p>
+            <p class="label-base">No. Whatsapp</p>
             <p class="text-sm text-slate-700">{{ selected.customerPhone }}</p>
           </div>
           <div>
-            <p class="label-base">ID Metode Pembayaran</p>
-            <p class="text-sm text-slate-700">{{ selected.paymentMethodId }}</p>
+            <p class="label-base">Metode Pembayaran</p>
+            <p class="text-sm text-slate-700">{{ selected.paymentMethodName }}</p>
           </div>
           <div class="sm:col-span-2">
             <p class="label-base">Alamat</p>
             <p class="text-sm text-slate-700">
-              {{ selected.address }} (Prov: {{ selected.provinceId }}, Kota: {{ selected.cityId }}, Kec: {{ selected.districtId }}) {{ selected.postalCode }}
+              {{ selected.address }}
+              <br>
+              Provinsi {{ selected.provinceName ? toTitleCase(selected.provinceName) : `#${selected.provinceId}` }},
+              Kota/Kab {{ selected.cityName ? toTitleCase(selected.cityName) : `#${selected.cityId}` }},
+              Kecamatan {{ selected.districtName ? toTitleCase(selected.districtName) : `#${selected.districtId}` }}
+              <br>
+              Kodepos {{ selected.postalCode }}
             </p>
           </div>
           <div class="sm:col-span-2" v-if="selected.notes">
@@ -654,6 +660,12 @@ function resetFilters() {
 
 function formatCurrency(value) {
   return `Rp ${Number(value || 0).toLocaleString('id-ID')}`
+}
+
+function toTitleCase(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 function formatDate(value) {

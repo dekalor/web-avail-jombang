@@ -12,6 +12,10 @@ const shippingRepository = {
     });
   },
 
+  provinceFindById(id) {
+    return Province.findByPk(id);
+  },
+
   // City
   cityFindAll({ province_id, attributes = null } = {}) {
     const where = { province_id };
@@ -36,6 +40,10 @@ const shippingRepository = {
       where,
       order: [['name', 'ASC']],
     });
+  },
+
+  districtFindById(id) {
+    return District.findByPk(id);
   },
 
   // Courier
