@@ -19,7 +19,9 @@
           >
             {{ option.label }}
           </button>
-          <button class="btn-base btn-secondary" @click="exportCsv">Export</button>
+          <button class="btn-base btn-secondary" :disabled="exporting" @click="exportCsv">
+            {{ exporting ? 'Exporting...' : 'Export' }}
+          </button>
         </div>
       </header>
 
@@ -77,7 +79,11 @@
               <td class="text-slate-600">{{ order.customerEmail || '-' }}</td>
               <td class="font-semibold text-slate-800">{{ formatCurrency(order.total) }}</td>
               <td class="text-slate-600">{{ formatDate(order.dueDate || getOrderCreatedAt(order)) }}</td>
-              <td><span class="badge" :class="statusClass(order.status)">{{ order.status }}</span></td>
+              <td>
+                <Badge size="sm" :color="orderStatusColor(order.status)">
+                  {{ order.status }}
+                </Badge>
+              </td>
               <td>
                 <div class="flex items-center gap-2">
                   <button class="btn-base btn-secondary" @click="viewDetail(order.id)">View</button>
@@ -100,7 +106,9 @@
       <div class="modal-box">
         <div class="mb-4 flex items-center justify-between">
           <h3 class="text-lg font-bold text-slate-900">Transaction Detail</h3>
-          <span class="badge" :class="statusClass(selected.status)">{{ selected.status }}</span>
+          <Badge size="sm" :color="orderStatusColor(selected.status)">
+            {{ selected.status }}
+          </Badge>
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
@@ -144,6 +152,7 @@
               <thead>
                 <tr>
                   <th>Product</th>
+                  <th>Unit</th>
                   <th>Qty</th>
                   <th>Price</th>
                   <th>Total</th>
@@ -151,8 +160,11 @@
               </thead>
               <tbody>
                 <tr v-for="item in selected.items" :key="item.id">
-                  <td>{{ item.product?.name || `Product #${item.productId}` }}</td>
-                  <td>{{ item.qty }}</td>
+                  <td>{{ item.product?.name || `Product #${item.productId || item.product_id}` }}</td>
+                  <td>
+                    {{ formatOrderItemUnit(item) }}
+                  </td>
+                  <td>{{ item.qty }} {{ formatOrderItemUnitCode(item) }}</td>
                   <td>{{ formatCurrency(item.price) }}</td>
                   <td>{{ formatCurrency(Number(item.qty) * Number(item.price)) }}</td>
                 </tr>
@@ -188,6 +200,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useApi } from '../composables/useApi.js'
+import Badge from '../components/ui/Badge.vue'
 
 const { get, patch } = useApi()
 
@@ -198,6 +211,7 @@ const statusFilter = ref('')
 const selected = ref(null)
 const searchQuery = ref('')
 const selectedDays = ref(0)
+const exporting = ref(false)
 
 const dayOptions = [
   { label: 'All Time', value: 0 },
@@ -260,28 +274,74 @@ async function viewDetail(id) {
   if (json.success) selected.value = json.data
 }
 
-function exportCsv() {
+async function exportCsv() {
+  exporting.value = true
   const rows = [
-    ['Order ID', 'Customer', 'Phone', 'Email', 'Total', 'Status', 'Date'],
-    ...filteredOrders.value.map(order => [
-      order.orderNumber || `#${order.id}`,
-      order.customerName || '',
-      order.customerPhone || '',
-      order.customerEmail || '',
-      Number(order.total || 0),
-      order.status || '',
-      formatDate(getOrderCreatedAt(order)),
-    ]),
+    ['Order ID', 'Customer', 'Phone', 'Email', 'Status', 'Date', 'Product', 'Unit', 'Qty', 'Unit Price', 'Line Total', 'Order Subtotal', 'Shipping', 'Order Total'],
   ]
 
-  const csv = rows.map(r => r.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
+  try {
+    const detailResponses = await Promise.all(
+      filteredOrders.value.map(order => get(`/orders/${order.id}`))
+    )
+
+    filteredOrders.value.forEach((order, idx) => {
+      const detail = detailResponses[idx]?.success ? detailResponses[idx].data : order
+      const items = Array.isArray(detail.items) ? detail.items : []
+
+      if (!items.length) {
+        rows.push([
+          detail.orderNumber || `#${detail.id}`,
+          detail.customerName || '',
+          detail.customerPhone || '',
+          detail.customerEmail || '',
+          detail.status || '',
+          formatDate(getOrderCreatedAt(detail)),
+          '',
+          '',
+          '',
+          '',
+          '',
+          Number(detail.subtotal || 0),
+          Number(detail.shippingCost || 0),
+          Number(detail.total || 0),
+        ])
+        return
+      }
+
+      items.forEach(item => {
+        const qty = Number(item.qty || 0)
+        const price = Number(item.price || 0)
+        rows.push([
+          detail.orderNumber || `#${detail.id}`,
+          detail.customerName || '',
+          detail.customerPhone || '',
+          detail.customerEmail || '',
+          detail.status || '',
+          formatDate(getOrderCreatedAt(detail)),
+          item.product?.name || `Product #${item.productId || item.product_id || ''}`,
+          formatOrderItemUnit(item),
+          qty,
+          price,
+          qty * price,
+          Number(detail.subtotal || 0),
+          Number(detail.shippingCost || 0),
+          Number(detail.total || 0),
+        ])
+      })
+    })
+
+    const csv = rows.map(r => r.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  } finally {
+    exporting.value = false
+  }
 }
 
 function resetFilters() {
@@ -303,8 +363,33 @@ function getOrderCreatedAt(order) {
   return order?.createdAt || order?.created_at || null
 }
 
-function statusClass(status) {
-  return `badge-${status || 'pending'}`
+function formatOrderItemUnit(item) {
+  const unit = item?.unit
+  if (!unit) return '-'
+  return unit.label || String(unit.unitCode || '').toUpperCase() || '-'
+}
+
+function formatOrderItemUnitCode(item) {
+  const code = item?.unit?.unitCode
+  if (!code) return ''
+  return String(code).toUpperCase()
+}
+
+function orderStatusColor(status) {
+  switch (status) {
+    case 'pending':
+      return 'warning'
+    case 'processing':
+      return 'info'
+    case 'shipped':
+      return 'primary'
+    case 'delivered':
+      return 'success'
+    case 'cancelled':
+      return 'error'
+    default:
+      return 'light'
+  }
 }
 
 onMounted(loadOrders)

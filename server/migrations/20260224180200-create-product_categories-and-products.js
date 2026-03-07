@@ -72,6 +72,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 100,
+        comment: 'in Base Unit'
       },
       weight: {
         type: Sequelize.INTEGER,

@@ -1,11 +1,26 @@
 const { Op, fn, col, literal } = require('sequelize');
-const { Order, OrderItem, PaymentMethod, Product } = require('../models');
+const { Order, OrderItem, PaymentMethod, Product, ProductUnit } = require('../models');
 
 const orderRepository = {
 
   findById(id) {
     return Order.findByPk(id, {
-      include: [{ model: OrderItem, as: 'items' }],
+      include: [{
+        model: OrderItem,
+        as: 'items',
+        include: [
+          {
+            model: Product,
+            as: 'product',
+            attributes: ['id', 'name'],
+          },
+          {
+            model: ProductUnit,
+            as: 'unit',
+            attributes: ['id', 'unitCode', 'label', 'qtyPerUnit'],
+          },
+        ],
+      }],
     });
   },
 

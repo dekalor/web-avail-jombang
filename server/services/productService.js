@@ -33,13 +33,16 @@ const productService = {
   },
 
   async createProduct({ name, description, categoryId, category_id, price, imageUrl, badge, stock, weight, unitCode, units }) {
-    if (!name || price === undefined) {
-      throw Object.assign(new Error('name and price are required'), { status: 400 });
+    if (!name) {
+      throw Object.assign(new Error('name is required'), { status: 400 });
     }
 
-    const parsedPrice = +price;
-    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
-      throw Object.assign(new Error('price is invalid'), { status: 400 });
+    const hasUnitsPayload = Array.isArray(units) && units.length > 0
+    if (!hasUnitsPayload) {
+      const parsedPrice = +price
+      if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+        throw Object.assign(new Error('price is invalid'), { status: 400 })
+      }
     }
 
     const created = await db.sequelize.transaction(async (transaction) => {
@@ -68,6 +71,7 @@ const productService = {
           }, transaction);
         }
       } else {
+        const parsedPrice = +price
         const fallbackUnitCode = String(unitCode || 'pcs').toLowerCase();
         await productRepository.upsertUnit({
           productId: product.id,

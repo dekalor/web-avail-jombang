@@ -15,7 +15,7 @@
             <tr>
               <th>Nama Produk</th>
               <th>Kategori</th>
-              <th>Harga</th>
+              <th>Unit Produk</th>
               <th>Stok</th>
               <th>Badge</th>
               <th>Status</th>
@@ -37,16 +37,29 @@
                 </div>
               </td>
               <td>{{ p.category?.name || '-' }}</td>
-              <td>Rp {{ Number(p.price || 0).toLocaleString('id-ID') }}</td>
+              <td>
+                <div class="flex max-w-[260px] flex-wrap gap-1.5">
+                  <span
+                    v-for="unit in sortedUnits(p.units)"
+                    :key="unit.id || `${p.id}-${unit.unitCode}`"
+                  >
+                    <Badge size="sm" color="info">
+                      {{ unit.label || unit.unitCode?.toUpperCase() }}:
+                      Rp {{ Number(unit.price || 0).toLocaleString('id-ID') }}
+                    </Badge>
+                  </span>
+                  <span v-if="!p.units?.length" class="text-xs text-slate-400">—</span>
+                </div>
+              </td>
               <td :class="p.stock < 20 ? 'font-semibold text-red-600' : ''">{{ p.stock }}</td>
               <td>
-                <span v-if="p.badge" class="badge border-sky-200 bg-sky-50 text-sky-700">{{ p.badge }}</span>
+                <Badge v-if="p.badge" size="sm" color="info">{{ p.badge }}</Badge>
                 <span v-else class="text-xs text-slate-400">—</span>
               </td>
               <td>
-                <span class="badge" :class="p.active ? 'badge-delivered' : 'badge-cancelled'">
+                <Badge size="sm" :color="p.active ? 'success' : 'error'">
                   {{ p.active ? 'Active' : 'Inactive' }}
-                </span>
+                </Badge>
               </td>
               <td>
                 <div class="flex items-center gap-2">
@@ -69,10 +82,6 @@
             <label class="label-base">Name *</label>
             <input class="input-base" v-model="form.name" placeholder="Pantiliner" />
           </div>
-          <div>
-            <label class="label-base">Price (IDR) *</label>
-            <input class="input-base" type="number" v-model="form.price" placeholder="35000" />
-          </div>
         </div>
 
         <div class="mt-4">
@@ -94,6 +103,62 @@
                 {{ category.id }} - {{ category.name }}
               </option>
             </select>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="mb-2 flex items-center justify-between">
+            <label class="label-base !mb-0">Product Units *</label>
+            <button type="button" class="btn-base btn-secondary" @click="addUnit">+ Add Unit</button>
+          </div>
+
+          <div class="space-y-3">
+            <div
+              v-for="(unit, idx) in form.units"
+              :key="`unit-${idx}`"
+              class="rounded-lg border border-slate-200 p-3"
+            >
+              <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                <div>
+                  <label class="label-base">Unit Code</label>
+                  <input class="input-base" v-model="unit.unitCode" placeholder="pcs / bal / box" />
+                </div>
+                <div>
+                  <label class="label-base">Label</label>
+                  <input class="input-base" v-model="unit.label" placeholder="PCS / BAL / BOX" />
+                </div>
+                <div>
+                  <label class="label-base">Price</label>
+                  <input class="input-base" type="number" v-model="unit.price" placeholder="35000" />
+                </div>
+                <div>
+                  <label class="label-base">Weight (gr)</label>
+                  <input class="input-base" type="number" v-model="unit.weight" placeholder="50" />
+                </div>
+                <div>
+                  <label class="label-base">Qty / Unit</label>
+                  <input class="input-base" type="number" v-model="unit.qtyPerUnit" placeholder="1" />
+                </div>
+                <div>
+                  <label class="label-base">Status</label>
+                  <select class="input-base" v-model="unit.active">
+                    <option :value="1">Active</option>
+                    <option :value="0">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  class="btn-base btn-danger"
+                  :disabled="form.units.length === 1"
+                  @click="removeUnit(idx)"
+                >
+                  Remove Unit
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -140,6 +205,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useApi } from '../composables/useApi.js'
+import Badge from '../components/ui/Badge.vue'
 
 const { get, post, put, delete: del } = useApi()
 
@@ -154,9 +220,34 @@ const imagePreview = ref('')
 const removeImageFlag = ref(false)
 
 function defaultForm() {
-  return { name: '', description: '', categoryId: 1, price: '', imageUrl: '', badge: '', stock: 100, active: 1 }
+  return {
+    name: '',
+    description: '',
+    categoryId: 1,
+    imageUrl: '',
+    badge: '',
+    stock: 100,
+    active: 1,
+    units: [defaultUnit()],
+  }
 }
 const form = ref(defaultForm())
+
+function defaultUnit() {
+  return {
+    unitCode: 'pcs',
+    label: 'PCS',
+    price: '',
+    weight: 50,
+    qtyPerUnit: 1,
+    active: 1,
+  }
+}
+
+function sortedUnits(units) {
+  if (!Array.isArray(units)) return []
+  return [...units].sort((a, b) => Number(a.id || 0) - Number(b.id || 0))
+}
 
 async function loadProducts() {
   loaded.value = false
@@ -187,7 +278,17 @@ function openEdit(p) {
     imageUrl: p.imageUrl || '',
     badge: p.badge || '',
     active: p.active ? 1 : 0,
+    units: sortedUnits(p.units).map((unit) => ({
+      id: unit.id,
+      unitCode: unit.unitCode || '',
+      label: unit.label || '',
+      price: Number(unit.price || 0),
+      weight: Number(unit.weight || 0),
+      qtyPerUnit: Number(unit.qtyPerUnit || 1),
+      active: unit.active ? 1 : 0,
+    })),
   }
+  if (!form.value.units.length) form.value.units = [defaultUnit()]
   imageData.value = ''
   imagePreview.value = ''
   removeImageFlag.value = false
@@ -196,11 +297,28 @@ function openEdit(p) {
 
 async function save() {
   saving.value = true
+  const normalizedUnits = (Array.isArray(form.value.units) ? form.value.units : [])
+    .map((unit) => ({
+      ...(unit.id ? { id: unit.id } : {}),
+      unitCode: String(unit.unitCode || '').trim().toLowerCase(),
+      label: String(unit.label || '').trim(),
+      price: Number(unit.price || 0),
+      weight: Number(unit.weight || 0),
+      qtyPerUnit: Number(unit.qtyPerUnit || 1),
+      active: Number(unit.active) ? 1 : 0,
+    }))
+    .filter((unit) => unit.unitCode && unit.price > 0 && unit.weight > 0 && unit.qtyPerUnit > 0)
+
+  if (!normalizedUnits.length) {
+    saving.value = false
+    return alert('Minimal satu product unit aktif dengan harga/berat valid.')
+  }
+
   const body = {
     ...form.value,
     category_id: +form.value.categoryId,
-    price: +form.value.price,
     stock: +form.value.stock,
+    units: normalizedUnits,
     imageData: imageData.value || undefined,
     removeImage: removeImageFlag.value,
   }
@@ -219,6 +337,15 @@ async function save() {
     products.value.push(json.data)
   }
   showModal.value = false
+}
+
+function addUnit() {
+  form.value.units.push(defaultUnit())
+}
+
+function removeUnit(index) {
+  if (form.value.units.length <= 1) return
+  form.value.units.splice(index, 1)
 }
 
 function onImageChange(event) {
