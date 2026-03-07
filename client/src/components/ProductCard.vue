@@ -5,21 +5,19 @@
   >
 
       <!-- Image -->
-      <div class="relative aspect-square overflow-hidden bg-gray-100">
+      <div class="relative aspect-square overflow-hidden bg-white">
+        <div
+          v-if="product.badge"
+          class="absolute left-3 top-3 z-10 rounded-full bg-[#2C4A2F] px-3 py-1 text-xs font-semibold text-white shadow-sm"
+        >
+          {{ product.badge }}
+        </div>
 
         <img
           :src="product.imageUrl"
           :alt="product.name"
-          class="w-full h-full object-cover"
+          class="w-full h-full object-contain"
         />
-
-        <div
-          v-if="discount > 0"
-          class="absolute top-3 left-3 bg-[#E85D4A] text-white px-3 py-1.5 rounded-lg text-base font-semibold"
-        >
-          -{{ discount }}%
-        </div>
-
       </div>
 
 
@@ -54,18 +52,9 @@
 
           <!-- Price -->
           <div class="mb-4">
-
-            <span
-              v-if="product.originalPrice"
-              class="text-base text-gray-500 line-through mr-2"
-            >
-              {{ formatPrice(product.originalPrice) }}
-            </span>
-
             <span class="text-2xl font-bold text-[#7BA87D]">
               {{ formatPrice(selectedUnitPrice) }}
             </span>
-
           </div>
 
           <div class="mb-4">
@@ -143,11 +132,7 @@ const cart = useCartStore()
 const isAdded = ref(false)
 const selectedUnitCode = ref('')
 
-const { formatPrice, calculateDiscount } = useProducts()
-
-const discount = computed(() =>
-  calculateDiscount(props.product.price, props.product.originalPrice)
-)
+const { formatPrice } = useProducts()
 
 const availableUnits = computed(() =>
   Array.isArray(props.product?.units) ? props.product.units : []

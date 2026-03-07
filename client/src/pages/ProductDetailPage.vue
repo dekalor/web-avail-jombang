@@ -39,12 +39,21 @@
           <div>
 
             <!-- Category -->
-            <span class="inline-block bg-[#7BA87D]/10 text-[#7BA87D]
-              px-3 py-1.5 sm:px-4 sm:py-2
-              rounded-full
-              text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-              {{ product.category.name }}
-            </span>
+            <div class="mb-3 sm:mb-4 flex flex-wrap items-center gap-2">
+              <span class="inline-block bg-[#7BA87D]/10 text-[#7BA87D]
+                px-3 py-1.5 sm:px-4 sm:py-2
+                rounded-full
+                text-xs sm:text-sm font-semibold">
+                {{ product.category.name }}
+              </span>
+
+              <span
+                v-if="product.badge"
+                class="inline-block bg-[#2C4A2F] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-sm"
+              >
+                {{ product.badge }}
+              </span>
+            </div>
 
             <!-- Title -->
             <h1 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#2C4A2F] mb-3 sm:mb-4">
@@ -60,25 +69,9 @@
             <div class="mb-6 sm:mb-8">
 
               <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-
                 <span class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#7BA87D]">
                   {{ formatPrice(selectedUnitPrice) }}
                 </span>
-
-                <span
-                  v-if="product.originalPrice"
-                  class="text-lg sm:text-xl lg:text-2xl text-gray-400 line-through"
-                >
-                  {{ formatPrice(product.originalPrice) }}
-                </span>
-
-                <span
-                  v-if="discount > 0"
-                  class="bg-red-500 text-white px-2.5 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold"
-                >
-                  Hemat {{ discount }}%
-                </span>
-
               </div>
 
             </div>
@@ -259,14 +252,10 @@ import { ShoppingCart, Plus, Minus } from 'lucide-vue-next'
 const route = useRoute()
 const router = useRouter()
 const cart = useCartStore()
-const { products, product, getProductById, formatPrice, formatWeight, calculateDiscount } = useProducts()
+const { products, product, getProductById, formatPrice, formatWeight } = useProducts()
 
 const quantity = ref(1)
 const selectedUnitCode = ref('')
-
-const discount = computed(() =>
-  product.value ? calculateDiscount(product.value.price, product.value.originalPrice) : 0
-)
 
 const availableUnits = computed(() => {
   const units = Array.isArray(product.value?.units) ? [...product.value.units] : []

@@ -53,7 +53,7 @@ module.exports = {
         name: 'Avail Nutrashake (ANS)',
         description: 'Suplemen serat alami yang sangat dibutuhkan oleh tubuh, terutama dalam mendukung fungsi dan kesehatan pencernaan.',
         category_id: 2,
-        image_url: '/uploads/products/Nutrashake.jpg',
+        image_url: '/uploads/products/Nutrashake.png',
         stock: 50,
       },
       {
