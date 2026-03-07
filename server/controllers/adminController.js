@@ -28,28 +28,25 @@ const adminController = {
         offset = 0,
         page,
         page_size,
-        pageSize,
         sort_by,
-        sortBy,
         sort_dir,
-        sortDir,
       } = req.query;
       
-      const resolvedPageSize = page_size ?? pageSize;
-      const resolvedSortBy = sort_by ?? sortBy;
-      const resolvedSortDir = sort_dir ?? sortDir;
+      const pageSize = page_size;
+      const sortBy = sort_by;
+      const sortDir = sort_dir;
       const hasPaginationParams =
         page !== undefined ||
-        resolvedPageSize !== undefined ||
-        resolvedSortBy !== undefined ||
-        resolvedSortDir !== undefined;
+        pageSize !== undefined ||
+        sortBy !== undefined ||
+        sortDir !== undefined;
 
       if (!hasPaginationParams) {
         const result = await orderService.listOrders({ status, limit: +limit, offset: +offset });
         return res.json({ success: true, data: result.rows || [] });
       }
 
-      const normalizedPageSize = Math.min(Math.max(Number(resolvedPageSize || limit || 10), 1), 100);
+      const normalizedPageSize = Math.min(Math.max(Number(pageSize || limit || 10), 1), 100);
       const normalizedPage = Math.max(Number(page || 1), 1);
       const normalizedOffset = (normalizedPage - 1) * normalizedPageSize;
 
@@ -57,8 +54,8 @@ const adminController = {
         status,
         limit: normalizedPageSize,
         offset: normalizedOffset,
-        sortBy: resolvedSortBy,
-        sortDir: resolvedSortDir,
+        sortBy: sortBy,
+        sortDir: sortDir,
       });
 
       res.json({
@@ -69,8 +66,8 @@ const adminController = {
           pageSize: normalizedPageSize,
           total: Number(result.count || 0),
           totalPages: Math.max(Math.ceil(Number(result.count || 0) / normalizedPageSize), 1),
-          sortBy: resolvedSortBy || 'createdAt',
-          sortDir: String(resolvedSortDir || 'desc').toLowerCase() === 'asc' ? 'asc' : 'desc',
+          sortBy: sortBy || 'createdAt',
+          sortDir: String(sortDir || 'desc').toLowerCase() === 'asc' ? 'asc' : 'desc',
         },
       });
     } catch (err) { next(err); }
