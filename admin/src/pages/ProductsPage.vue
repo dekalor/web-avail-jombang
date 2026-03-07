@@ -178,7 +178,7 @@
             <input class="input-base" v-model="form.badge" placeholder="Baru, Terlaris…" />
           </div>
           <div>
-            <label class="label-base">Stock</label>
+            <label class="label-base">Stock (dalam pcs)</label>
             <input class="input-base" type="number" v-model="form.stock" placeholder="100" />
           </div>
         </div>

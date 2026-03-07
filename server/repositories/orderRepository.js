@@ -66,7 +66,7 @@ const orderRepository = {
 
   sumRevenue() {
     return Order.sum('total', {
-      where: { status: { [Op.ne]: 'cancelled' } },
+      where: { status: { [Op.notIn]: ['cancelled', 'pending'] } },
     });
   },
 
