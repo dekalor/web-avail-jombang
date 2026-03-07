@@ -62,10 +62,39 @@
       </div>
 
       <!-- Loading -->
-      <div v-if="loading" class="text-center py-8 sm:py-10">
-        <p class="text-sm sm:text-base lg:text-lg text-gray-600">
-          Loading products...
-        </p>
+      <div
+        v-if="loading"
+        class="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-3
+          xl:grid-cols-4
+          gap-4 sm:gap-6
+        "
+      >
+        <div
+          v-for="n in 8"
+          :key="`skeleton-${n}`"
+          class="overflow-hidden bg-white rounded-xl shadow-sm animate-pulse"
+        >
+          <div class="aspect-square bg-gray-200"></div>
+          <div class="p-5">
+            <div class="h-5 w-24 bg-gray-200 rounded-full mb-4"></div>
+            <div class="h-6 w-3/4 bg-gray-200 rounded mb-3"></div>
+            <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
+            <div class="h-4 w-2/3 bg-gray-200 rounded mb-6"></div>
+            <div class="h-8 w-1/2 bg-gray-200 rounded mb-4"></div>
+            <div class="space-y-2 mb-4">
+              <div class="h-3 w-20 bg-gray-200 rounded"></div>
+              <div class="flex gap-2">
+                <div class="h-8 w-14 bg-gray-200 rounded-full"></div>
+                <div class="h-8 w-14 bg-gray-200 rounded-full"></div>
+              </div>
+            </div>
+            <div class="h-11 w-full bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Products Grid -->

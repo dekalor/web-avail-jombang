@@ -152,6 +152,7 @@ export function useProducts() {
     products,
     product,
     categories: categoryOptions,
+    loading,
     selectedCategoryId,
     loadProducts,
     loadCategories,
