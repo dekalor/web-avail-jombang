@@ -2,20 +2,20 @@
   <div class="space-y-4">
     <section class="panel overflow-hidden">
       <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-        <h2 class="text-sm font-bold text-slate-800">Product Categories</h2>
-        <button class="btn-base btn-primary" @click="openCreate">+ Add Category</button>
+        <h2 class="text-sm font-bold text-slate-800">Kategori Produk</h2>
+        <button class="btn-base btn-primary" @click="openCreate">+ Tambah Kategori</button>
       </header>
 
-      <div v-if="!loaded" class="px-4 py-6 text-sm text-slate-600">Loading product categories…</div>
-      <div v-else-if="productCategories.length === 0" class="px-4 py-10 text-center text-sm text-slate-500">No product categories yet</div>
+      <div v-if="!loaded" class="px-4 py-6 text-sm text-slate-600">Memuat kategori produk…</div>
+      <div v-else-if="productCategories.length === 0" class="px-4 py-10 text-center text-sm text-slate-500">Belum ada kategori produk</div>
 
       <div v-else class="table-wrap">
         <table class="table-base">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>Nama</th>
               <th>Status</th>
-              <th>Actions</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -23,13 +23,13 @@
               <td class="font-medium text-slate-800">{{ category.name }}</td>
               <td>
                 <span class="badge" :class="category.active ? 'badge-delivered' : 'badge-cancelled'">
-                  {{ category.active ? 'Active' : 'Inactive' }}
+                  {{ category.active ? 'Aktif' : 'Nonaktif' }}
                 </span>
               </td>
               <td>
                 <div class="flex items-center gap-2">
-                  <button class="btn-base btn-secondary" @click="openEdit(category)">Edit</button>
-                  <button v-if="category.active" class="btn-base btn-danger" @click="deactivate(category.id)">Deactivate</button>
+                  <button class="btn-base btn-secondary" @click="openEdit(category)">Ubah</button>
+                  <button v-if="category.active" class="btn-base btn-danger" @click="deactivate(category.id)">Nonaktifkan</button>
                 </div>
               </td>
             </tr>
@@ -40,25 +40,25 @@
 
     <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
       <div class="modal-box max-w-md">
-        <h3 class="text-lg font-bold text-slate-900">{{ editing ? 'Edit Product Category' : 'New Product Category' }}</h3>
+        <h3 class="text-lg font-bold text-slate-900">{{ editing ? 'Ubah Kategori Produk' : 'Kategori Produk Baru' }}</h3>
 
         <div class="mt-4">
-          <label class="label-base">Name</label>
+          <label class="label-base">Nama</label>
           <input class="input-base" v-model="form.name" />
         </div>
 
         <div class="mt-4" v-if="editing">
           <label class="label-base">Status</label>
           <select class="input-base" v-model="form.active">
-            <option :value="1">Active</option>
-            <option :value="0">Inactive</option>
+            <option :value="1">Aktif</option>
+            <option :value="0">Nonaktif</option>
           </select>
         </div>
 
         <div class="mt-6 flex justify-end gap-2">
-          <button class="btn-base btn-secondary" @click="showModal = false">Cancel</button>
+          <button class="btn-base btn-secondary" @click="showModal = false">Batal</button>
           <button class="btn-base btn-primary" @click="save" :disabled="saving">
-            {{ saving ? 'Saving…' : (editing ? 'Update' : 'Create') }}
+            {{ saving ? 'Menyimpan…' : (editing ? 'Simpan Perubahan' : 'Buat Kategori') }}
           </button>
         </div>
       </div>
@@ -113,7 +113,7 @@ async function save() {
     : await post('/product-categories', body)
 
   saving.value = false
-  if (!json.success) return alert(json.message || 'Error saving product category')
+  if (!json.success) return alert(json.message || 'Gagal menyimpan kategori produk')
 
   if (editing.value) {
     const idx = productCategories.value.findIndex(category => category.id === editing.value.id)
@@ -125,7 +125,7 @@ async function save() {
 }
 
 async function deactivate(id) {
-  if (!confirm('Deactivate this product categories?')) return
+  if (!confirm('Nonaktifkan kategori produk ini?')) return
   const json = await del(`/product-categories/${id}`)
   if (json.success) {
     const idx = productCategories.value.findIndex(p => p.id === id)

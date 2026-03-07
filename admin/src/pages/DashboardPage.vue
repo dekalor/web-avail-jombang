@@ -1,39 +1,39 @@
 <template>
-  <div v-if="!loaded" class="panel p-6 text-sm font-medium text-slate-600">Loading dashboard…</div>
+  <div v-if="!loaded" class="panel p-6 text-sm font-medium text-slate-600">Memuat dashboard…</div>
 
   <div v-else class="space-y-6">
     <section>
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-xl font-bold text-slate-900">eCommerce Dashboard</h2>
-          <p class="text-sm text-slate-500">Overview performa toko, order, dan pendapatan.</p>
+          <h2 class="text-xl font-bold text-slate-900">Dashboard</h2>
+          <p class="text-sm text-slate-500">Ringkasan performa toko, pesanan, dan pendapatan.</p>
         </div>
-        <button class="btn-base btn-secondary" @click="loadDashboard">Refresh</button>
+        <button class="btn-base btn-secondary" @click="loadDashboard">Muat Ulang</button>
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article class="stat-card">
-          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Customers</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Pelanggan</p>
           <p class="mt-3 text-3xl font-bold text-slate-900">{{ stats.total_orders }}</p>
-          <p class="mt-1 text-xs text-slate-500">{{ stats.today }} new today</p>
+          <p class="mt-1 text-xs text-slate-500">{{ stats.today }} pesanan baru hari ini</p>
         </article>
 
         <article class="stat-card">
-          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Orders</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Pesanan</p>
           <p class="mt-3 text-3xl font-bold text-slate-900">{{ stats.total_orders }}</p>
-          <p class="mt-1 text-xs text-amber-600">{{ stats.pending }} pending</p>
+          <p class="mt-1 text-xs text-amber-600">{{ stats.pending }} belum diproses</p>
         </article>
 
         <article class="stat-card">
-          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Revenue</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Pendapatan</p>
           <p class="mt-3 text-2xl font-bold text-slate-900">Rp {{ Number(stats.total_revenue).toLocaleString('id-ID') }}</p>
-          <p class="mt-1 text-xs text-slate-500">Paid orders only</p>
+          <p class="mt-1 text-xs text-slate-500">Hanya pesanan yang dibayar</p>
         </article>
 
         <article class="stat-card">
-          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Active Products</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Produk Aktif</p>
           <p class="mt-3 text-3xl font-bold text-emerald-600">{{ stats.total }}</p>
-          <p class="mt-1 text-xs text-rose-600">{{ stats.low_stock }} low stock</p>
+          <p class="mt-1 text-xs text-rose-600">{{ stats.low_stock }} stok menipis</p>
         </article>
       </div>
     </section>
@@ -41,8 +41,8 @@
     <section class="grid gap-6 xl:grid-cols-3">
       <article class="panel overflow-hidden xl:col-span-2">
         <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h3 class="text-sm font-bold text-slate-800">Monthly Sales</h3>
-          <span class="text-xs font-semibold text-slate-500">Last 7 days</span>
+          <h3 class="text-sm font-bold text-slate-800">Penjualan Bulanan</h3>
+          <span class="text-xs font-semibold text-slate-500">7 hari terakhir</span>
         </div>
 
         <BarChartOne />
@@ -65,11 +65,11 @@
 
       <article class="panel p-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-800">Monthly Target</h3>
+          <h3 class="text-sm font-bold text-slate-800">Target Bulanan</h3>
           <span class="text-xs font-semibold text-blue-600">{{ progressPercent }}%</span>
         </div>
 
-        <p class="mt-1 text-xs text-slate-500">Progress against estimated monthly revenue target.</p>
+        <p class="mt-1 text-xs text-slate-500">Progres terhadap estimasi target pendapatan bulanan.</p>
 
         <div class="mt-4 h-2 overflow-hidden rounded bg-slate-100">
           <div class="h-full rounded bg-blue-600" :style="{ width: `${progressPercent}%` }"></div>
@@ -81,11 +81,11 @@
             <span class="font-semibold text-slate-800">Rp {{ monthlyTarget.toLocaleString('id-ID') }}</span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-slate-500">Current</span>
+            <span class="text-slate-500">Saat Ini</span>
             <span class="font-semibold text-slate-800">Rp {{ Number(stats.total_revenue || 0).toLocaleString('id-ID') }}</span>
           </div>
           <div class="flex items-center justify-between border-t border-slate-200 pt-3">
-            <span class="text-slate-500">Today Orders</span>
+            <span class="text-slate-500">Pesanan Hari Ini</span>
             <span class="font-semibold text-slate-800">{{ stats.today }}</span>
           </div>
         </div>
@@ -95,7 +95,7 @@
     <section class="grid gap-6 xl:grid-cols-2">
       <article class="panel overflow-hidden">
         <div class="border-b border-slate-200 px-4 py-3">
-          <h3 class="text-sm font-bold text-slate-800">Top Products</h3>
+          <h3 class="text-sm font-bold text-slate-800">Produk Terlaris</h3>
         </div>
 
         <div v-if="stats.topProducts?.length" class="divide-y divide-slate-200">
@@ -111,25 +111,25 @@
                 <div class="h-full rounded bg-emerald-500" :style="{ width: `${(p.units_sold / topMax) * 100}%` }"></div>
               </div>
             </div>
-            <p class="text-xs font-semibold text-slate-500">{{ p.units_sold }} units</p>
+            <p class="text-xs font-semibold text-slate-500">{{ p.units_sold }} unit</p>
           </div>
         </div>
 
-        <div v-else class="px-4 py-10 text-center text-sm text-slate-500">No sales yet</div>
+        <div v-else class="px-4 py-10 text-center text-sm text-slate-500">Belum ada penjualan</div>
       </article>
 
       <article class="panel overflow-hidden">
         <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h3 class="text-sm font-bold text-slate-800">Recent Orders</h3>
-          <span class="text-xs text-slate-500">Latest 5</span>
+          <h3 class="text-sm font-bold text-slate-800">Pesanan Terbaru</h3>
+          <span class="text-xs text-slate-500">5 terbaru</span>
         </div>
 
         <div v-if="recentOrders.length" class="table-wrap">
           <table class="table-base">
             <thead>
               <tr>
-                <th>Order</th>
-                <th>Customer</th>
+                <th>Pesanan</th>
+                <th>Pelanggan</th>
                 <th>Total</th>
                 <th>Status</th>
               </tr>
@@ -142,13 +142,13 @@
                   <p class="text-xs text-slate-500">{{ formatDate(order.createdAt) }}</p>
                 </td>
                 <td>{{ formatCurrency(order.total) }}</td>
-                <td><span class="badge" :class="statusClass(order.status)">{{ order.status }}</span></td>
+                <td><span class="badge" :class="statusClass(order.status)">{{ statusLabel(order.status) }}</span></td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div v-else class="px-4 py-10 text-center text-sm text-slate-500">No recent orders</div>
+        <div v-else class="px-4 py-10 text-center text-sm text-slate-500">Belum ada pesanan terbaru</div>
       </article>
     </section>
   </div>
@@ -215,6 +215,23 @@ function formatCurrency(value) {
 
 function statusClass(status) {
   return `badge-${status || 'pending'}`
+}
+
+function statusLabel(status) {
+  switch (status) {
+    case 'pending':
+      return 'belum diproses'
+    case 'processing':
+      return 'diproses'
+    case 'shipped':
+      return 'dikirim'
+    case 'delivered':
+      return 'terkirim'
+    case 'cancelled':
+      return 'dibatalkan'
+    default:
+      return status || '-'
+  }
 }
 
 onMounted(loadDashboard)

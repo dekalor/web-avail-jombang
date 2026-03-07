@@ -13,8 +13,8 @@
     <section class="panel overflow-hidden">
       <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-900">Transactions</h2>
-          <p class="text-sm text-slate-500">Follow the transaction table pattern from TailAdmin.</p>
+          <h2 class="text-lg font-bold text-slate-900">Transaksi</h2>
+          <p class="text-sm text-slate-500">Kelola transaksi pelanggan dengan cepat dan aman.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -30,44 +30,44 @@
             {{ option.label }}
           </button>
           <button class="btn-base btn-secondary" :disabled="exporting" @click="exportCsv">
-            {{ exporting ? 'Exporting...' : 'Export' }}
+            {{ exporting ? 'Mengekspor...' : 'Ekspor' }}
           </button>
         </div>
       </header>
 
       <div class="border-b border-slate-200 px-4 py-3">
         <div class="grid gap-3 md:grid-cols-6">
-          <input class="input-base" v-model="searchQuery" placeholder="Search by order number or customer" />
+          <input class="input-base" v-model="searchQuery" placeholder="Cari nomor pesanan atau nama pelanggan" />
           <select class="input-base" v-model="statusFilter" @change="applyServerFilters">
-            <option value="">All Status</option>
-            <option v-for="s in ORDER_STATUSES" :key="s" :value="s">{{ s }}</option>
+            <option value="">Semua Status</option>
+            <option v-for="s in ORDER_STATUSES" :key="s" :value="s">{{ statusLabel(s) }}</option>
           </select>
           <select class="input-base" v-model="sortBy" @change="applyServerFilters">
             <option v-for="option in sortOptions" :key="option.value" :value="option.value">
-              Sort: {{ option.label }}
+              Urutkan: {{ option.label }}
             </option>
           </select>
           <select class="input-base" v-model="sortDir" @change="applyServerFilters">
-            <option value="desc">Newest / Highest</option>
-            <option value="asc">Oldest / Lowest</option>
+            <option value="desc">Terbaru / Tertinggi</option>
+            <option value="asc">Terlama / Terendah</option>
           </select>
           <select class="input-base" v-model.number="pageSize" @change="applyServerFilters">
-            <option :value="10">10 / page</option>
-            <option :value="20">20 / page</option>
-            <option :value="50">50 / page</option>
+            <option :value="10">10 / halaman</option>
+            <option :value="20">20 / halaman</option>
+            <option :value="50">50 / halaman</option>
           </select>
-          <button class="btn-base btn-primary" @click="loadOrders">Refresh Data</button>
+          <button class="btn-base btn-primary" @click="loadOrders">Muat Ulang</button>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-4 py-2">
         <p class="text-xs text-slate-600">
-          Showing
+          Menampilkan
           <span class="font-semibold text-slate-800">{{ pageRangeStart }}-{{ pageRangeEnd }}</span>
-          of
-          <span class="font-semibold text-slate-800">{{ totalItems }}</span> transactions
+          dari
+          <span class="font-semibold text-slate-800">{{ totalItems }}</span> transaksi
           <span v-if="hiddenByFiltersCount > 0">
-            (<span class="font-semibold text-amber-700">{{ hiddenByFiltersCount }}</span> hidden by filters)
+            (<span class="font-semibold text-amber-700">{{ hiddenByFiltersCount }}</span> tersembunyi karena filter)
           </span>
         </p>
         <div class="flex items-center gap-2">
@@ -76,39 +76,39 @@
             :disabled="page <= 1 || !loaded"
             @click="goToPage(page - 1)"
           >
-            Prev
+            Sebelumnya
           </button>
-          <span class="text-xs text-slate-600">Page {{ page }} / {{ totalPages }}</span>
+          <span class="text-xs text-slate-600">Halaman {{ page }} / {{ totalPages }}</span>
           <button
             class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
             :disabled="page >= totalPages || !loaded"
             @click="goToPage(page + 1)"
           >
-            Next
+            Berikutnya
           </button>
           <button
             v-if="hasActiveFilters"
             class="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
             @click="resetFilters"
           >
-            Reset filters
+            Reset Filter
           </button>
         </div>
       </div>
 
-      <div v-if="!loaded" class="px-4 py-6 text-sm text-slate-600">Loading transactions…</div>
-      <div v-else-if="filteredOrders.length === 0" class="px-4 py-10 text-center text-sm text-slate-500">No transactions found</div>
+      <div v-if="!loaded" class="px-4 py-6 text-sm text-slate-600">Memuat transaksi…</div>
+      <div v-else-if="filteredOrders.length === 0" class="px-4 py-10 text-center text-sm text-slate-500">Tidak ada transaksi</div>
 
       <div v-else class="table-wrap">
         <table class="table-base">
           <thead>
             <tr>
-              <th>Order ID</th>
-              <th>Customer</th>
-              <th>Total Amount</th>
-              <th>Due Date</th>
+              <th>ID Pesanan</th>
+              <th>Pelanggan</th>
+              <th>Total Belanja</th>
+              <th>Tanggal</th>
               <th>Status</th>
-              <th>Action</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -122,12 +122,12 @@
               <td class="text-slate-600">{{ formatDate(order.dueDate || getOrderCreatedAt(order)) }}</td>
               <td>
                 <Badge size="sm" :color="orderStatusColor(order.status)">
-                  {{ order.status }}
+                  {{ statusLabel(order.status) }}
                 </Badge>
               </td>
               <td>
                 <div class="flex items-center gap-2">
-                  <button class="btn-base btn-secondary" @click="viewDetail(order.id)">View</button>
+                  <button class="btn-base btn-secondary" @click="viewDetail(order.id)">Detail</button>
                   <select
                     class="input-base !w-[140px]"
                     :disabled="isUpdating(order.id) || !getNextStatuses(order.status).length"
@@ -135,10 +135,10 @@
                     @change="onRowStatusChange(order, $event.target.value)"
                   >
                     <option :value="order.status">
-                      {{ isUpdating(order.id) ? 'Updating…' : `Current: ${order.status}` }}
+                      {{ isUpdating(order.id) ? 'Memperbarui…' : `Saat ini: ${statusLabel(order.status)}` }}
                     </option>
                     <option v-for="s in getNextStatuses(order.status)" :key="s" :value="s">
-                      Move to: {{ s }}
+                      Ubah ke: {{ statusLabel(s) }}
                     </option>
                   </select>
                 </div>
@@ -152,41 +152,41 @@
     <div class="modal-overlay" v-if="selected" @click.self="selected = null">
       <div class="modal-box">
         <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-bold text-slate-900">Transaction Detail</h3>
+          <h3 class="text-lg font-bold text-slate-900">Detail Transaksi</h3>
           <Badge size="sm" :color="orderStatusColor(selected.status)">
-            {{ selected.status }}
+            {{ statusLabel(selected.status) }}
           </Badge>
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <p class="label-base">Order Number</p>
+            <p class="label-base">Nomor Pesanan</p>
             <p class="text-sm font-semibold text-slate-800">{{ selected.orderNumber || `#${selected.id}` }}</p>
           </div>
           <div>
-            <p class="label-base">Customer</p>
+            <p class="label-base">Pelanggan</p>
             <p class="text-sm font-semibold text-slate-800">{{ selected.customerName }}</p>
           </div>
           <div>
-            <p class="label-base">Phone</p>
+            <p class="label-base">No. Telepon</p>
             <p class="text-sm text-slate-700">{{ selected.customerPhone }}</p>
           </div>
           <div>
-            <p class="label-base">Payment Method ID</p>
+            <p class="label-base">ID Metode Pembayaran</p>
             <p class="text-sm text-slate-700">{{ selected.paymentMethodId }}</p>
           </div>
           <div class="sm:col-span-2">
-            <p class="label-base">Address</p>
+            <p class="label-base">Alamat</p>
             <p class="text-sm text-slate-700">
               {{ selected.address }} (Prov: {{ selected.provinceId }}, Kota: {{ selected.cityId }}, Kec: {{ selected.districtId }}) {{ selected.postalCode }}
             </p>
           </div>
           <div class="sm:col-span-2" v-if="selected.notes">
-            <p class="label-base">Notes</p>
+            <p class="label-base">Catatan</p>
             <p class="text-sm text-slate-700">{{ selected.notes }}</p>
           </div>
           <div class="sm:col-span-2" v-if="selected.paymentProofUrl">
-            <p class="label-base">Payment Proof</p>
+            <p class="label-base">Bukti Pembayaran</p>
             <div class="rounded-xl border border-slate-200 bg-white p-3">
               <div v-if="isImageProof(selected.paymentProofUrl)" class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button
@@ -201,7 +201,7 @@
                     @error="onProofThumbError"
                   />
                   <div class="absolute inset-x-0 bottom-0 bg-black/50 px-2 py-1 text-xs font-medium text-white">
-                    Click to preview
+                    Klik untuk pratinjau
                   </div>
                 </button>
                 <div class="min-w-0 space-y-2">
@@ -213,14 +213,14 @@
                       rel="noopener noreferrer"
                       class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
                     >
-                      Open
+                      Buka
                     </a>
                     <a
                       :href="selected.paymentProofUrl"
                       download
                       class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
                     >
-                      Download
+                      Unduh
                     </a>
                   </div>
                 </div>
@@ -236,14 +236,14 @@
                     rel="noopener noreferrer"
                     class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
                   >
-                    Open
+                    Buka
                   </a>
                   <a
                     :href="selected.paymentProofUrl"
                     download
                     class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
                   >
-                    Download
+                    Unduh
                   </a>
                 </div>
               </div>
@@ -251,13 +251,13 @@
           </div>
 
           <div class="sm:col-span-2" v-else>
-            <p class="label-base">Payment Proof</p>
-            <p class="text-sm text-slate-500">No proof uploaded.</p>
+            <p class="label-base">Bukti Pembayaran</p>
+            <p class="text-sm text-slate-500">Tidak ada bukti pembayaran.</p>
           </div>
         </div>
 
         <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <p class="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Quick Status Action</p>
+          <p class="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Aksi Cepat Status</p>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="nextStatus in getNextStatuses(selected.status)"
@@ -266,10 +266,10 @@
               :disabled="isUpdating(selected.id)"
               @click="updateStatus(selected.id, nextStatus)"
             >
-              {{ isUpdating(selected.id) ? 'Updating…' : `Mark as ${nextStatus}` }}
+              {{ isUpdating(selected.id) ? 'Memperbarui…' : `Tandai ${statusLabel(nextStatus)}` }}
             </button>
             <p v-if="!getNextStatuses(selected.status).length" class="text-sm text-slate-500">
-              No further action for this status.
+              Tidak ada aksi lanjutan untuk status ini.
             </p>
           </div>
         </div>
@@ -279,16 +279,16 @@
             <table class="table-base">
               <thead>
                 <tr>
-                  <th>Product</th>
-                  <th>Unit</th>
+                  <th>Produk</th>
+                  <th>Satuan</th>
                   <th>Qty</th>
-                  <th>Price</th>
+                  <th>Harga</th>
                   <th>Total</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="item in selected.items" :key="item.id">
-                  <td>{{ item.product?.name || `Product #${item.productId || item.product_id}` }}</td>
+                  <td>{{ item.product?.name || `Produk #${item.productId || item.product_id}` }}</td>
                   <td>
                     {{ formatOrderItemUnit(item) }}
                   </td>
@@ -299,7 +299,7 @@
               </tbody>
             </table>
           </div>
-          <div v-else class="px-4 py-6 text-center text-sm text-slate-500">No line items</div>
+          <div v-else class="px-4 py-6 text-center text-sm text-slate-500">Tidak ada item pesanan</div>
         </div>
 
         <div class="mt-5 space-y-2 text-sm">
@@ -308,7 +308,7 @@
             <span class="font-semibold text-slate-800">{{ formatCurrency(selected.subtotal) }}</span>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-slate-500">Shipping</span>
+            <span class="text-slate-500">Ongkir</span>
             <span class="font-semibold text-slate-800">{{ formatCurrency(selected.shippingCost) }}</span>
           </div>
           <div class="flex items-center justify-between border-t border-slate-200 pt-2">
@@ -318,7 +318,7 @@
         </div>
 
         <div class="mt-5 flex justify-end">
-          <button class="btn-base btn-secondary" @click="selected = null">Close</button>
+          <button class="btn-base btn-secondary" @click="selected = null">Tutup</button>
         </div>
       </div>
     </div>
@@ -326,8 +326,8 @@
     <div class="modal-overlay" v-if="proofPreviewUrl" @click.self="proofPreviewUrl = ''">
       <div class="modal-box !max-w-4xl">
         <div class="mb-3 flex items-center justify-between">
-          <h4 class="text-base font-semibold text-slate-900">Payment Proof Preview</h4>
-          <button class="btn-base btn-secondary !px-2.5 !py-1 text-xs" @click="proofPreviewUrl = ''">Close</button>
+          <h4 class="text-base font-semibold text-slate-900">Pratinjau Bukti Pembayaran</h4>
+          <button class="btn-base btn-secondary !px-2.5 !py-1 text-xs" @click="proofPreviewUrl = ''">Tutup</button>
         </div>
         <div class="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
           <img
@@ -367,10 +367,10 @@ const sortBy = ref('createdAt')
 const sortDir = ref('desc')
 
 const sortOptions = [
-  { label: 'Created At', value: 'createdAt' },
-  { label: 'Order Number', value: 'orderNumber' },
-  { label: 'Customer Name', value: 'customerName' },
-  { label: 'Total', value: 'total' },
+  { label: 'Tanggal Dibuat', value: 'createdAt' },
+  { label: 'Nomor Pesanan', value: 'orderNumber' },
+  { label: 'Nama Pelanggan', value: 'customerName' },
+  { label: 'Total Belanja', value: 'total' },
   { label: 'Status', value: 'status' },
 ]
 
@@ -383,10 +383,10 @@ const STATUS_TRANSITIONS = {
 }
 
 const dayOptions = [
-  { label: 'All Time', value: 0 },
-  { label: '7 Days', value: 7 },
-  { label: '30 Days', value: 30 },
-  { label: '90 Days', value: 90 },
+  { label: 'Semua Waktu', value: 0 },
+  { label: '7 Hari', value: 7 },
+  { label: '30 Hari', value: 30 },
+  { label: '90 Hari', value: 90 },
 ]
 
 const filteredOrders = computed(() => {
@@ -470,6 +470,23 @@ function getNextStatuses(status) {
   return STATUS_TRANSITIONS[status] || []
 }
 
+function statusLabel(status) {
+  switch (status) {
+    case 'pending':
+      return 'belum diproses'
+    case 'processing':
+      return 'diproses'
+    case 'shipped':
+      return 'dikirim'
+    case 'delivered':
+      return 'terkirim'
+    case 'cancelled':
+      return 'dibatalkan'
+    default:
+      return status || '-'
+  }
+}
+
 function isImageProof(url) {
   if (!url) return false
   return /\.(png|jpe?g|webp|gif|bmp|svg)(\?.*)?$/i.test(url)
@@ -492,7 +509,7 @@ function onProofThumbError(event) {
 }
 
 function onProofPreviewError() {
-  showToast('Cannot load payment proof preview', 'error')
+  showToast('Gagal memuat pratinjau bukti pembayaran', 'error')
   proofPreviewUrl.value = ''
 }
 
@@ -516,12 +533,12 @@ async function updateStatus(id, status) {
   if (!currentStatus || currentStatus === status) return
 
   if (!getNextStatuses(currentStatus).includes(status)) {
-    showToast(`Invalid transition: ${currentStatus} -> ${status}`, 'error')
+    showToast(`Perubahan status tidak valid: ${statusLabel(currentStatus)} -> ${statusLabel(status)}`, 'error')
     return
   }
 
   if (status === 'cancelled' || status === 'delivered') {
-    const confirmed = window.confirm(`Confirm status change from ${currentStatus} to ${status}?`)
+    const confirmed = window.confirm(`Konfirmasi perubahan status dari ${statusLabel(currentStatus)} ke ${statusLabel(status)}?`)
     if (!confirmed) return
   }
 
@@ -532,7 +549,7 @@ async function updateStatus(id, status) {
 
   const json = await patch(`/orders/${id}`, { status })
   if (!json.success) {
-    showToast(json.message || `Failed to update status to ${status}`, 'error')
+    showToast(json.message || `Gagal memperbarui status menjadi ${statusLabel(status)}`, 'error')
     updatingById.value = {
       ...updatingById.value,
       [id]: false,
@@ -543,7 +560,7 @@ async function updateStatus(id, status) {
   const idx = orders.value.findIndex(o => o.id === id)
   if (idx !== -1) orders.value[idx].status = status
   if (selected.value?.id === id) selected.value.status = status
-  showToast(`Order ${order?.orderNumber || `#${id}`} updated to ${status}`)
+  showToast(`Pesanan ${order?.orderNumber || `#${id}`} berhasil diubah ke ${statusLabel(status)}`)
 
   updatingById.value = {
     ...updatingById.value,
@@ -559,7 +576,7 @@ async function viewDetail(id) {
 async function exportCsv() {
   exporting.value = true
   const rows = [
-    ['Order ID', 'Customer', 'Phone', 'Status', 'Date', 'Product', 'Unit', 'Qty', 'Unit Price', 'Line Total', 'Order Subtotal', 'Shipping', 'Order Total'],
+    ['ID Pesanan', 'Pelanggan', 'Telepon', 'Status', 'Tanggal', 'Produk', 'Satuan', 'Qty', 'Harga Satuan', 'Total Item', 'Subtotal Pesanan', 'Ongkir', 'Total Pesanan'],
   ]
 
   try {
@@ -616,7 +633,7 @@ async function exportCsv() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`
+    link.download = `transaksi-${new Date().toISOString().slice(0, 10)}.csv`
     link.click()
     URL.revokeObjectURL(url)
   } finally {
