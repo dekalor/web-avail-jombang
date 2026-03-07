@@ -93,7 +93,7 @@
                   </div>
 
                   <button
-                    @click="removeItem(item.cartKey)"
+                    @click="openRemoveConfirm(item)"
                     class="text-red-500 hover:text-red-700 p-1 sm:p-2 flex-shrink-0"
                   >
                     <Trash2 class="w-5 h-5 sm:w-6 sm:h-6" />
@@ -220,11 +220,43 @@
 
       </div>
     </div>
+
+    <div
+      v-if="removeConfirm.open"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      @click.self="closeRemoveConfirm"
+    >
+      <div class="w-full max-w-md rounded-xl bg-white p-5 sm:p-6 shadow-xl">
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+          Hapus Produk?
+        </h3>
+        <p class="text-sm sm:text-base text-gray-600 mb-5">
+          Produk <span class="font-semibold text-gray-800">"{{ removeConfirm.itemName }}"</span> akan dihapus dari keranjang.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
+          <button
+            type="button"
+            class="w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+            @click="closeRemoveConfirm"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            class="w-full sm:w-auto px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+            @click="confirmRemoveItem"
+          >
+            Ya, Hapus
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
@@ -250,6 +282,11 @@ const discount = computed(() =>
 )
 
 const total = computed(() => subtotal.value)
+const removeConfirm = ref({
+  open: false,
+  cartKey: null,
+  itemName: '',
+})
 
 // Methods
 function incrementQuantity(item) {
@@ -263,10 +300,27 @@ function decrementQuantity(item) {
   }
 }
 
-function removeItem(cartKey) {
-  if (confirm('Hapus produk dari keranjang?')) {
-    cart.removeFromCart(cartKey)
+function openRemoveConfirm(item) {
+  removeConfirm.value = {
+    open: true,
+    cartKey: item.cartKey,
+    itemName: item.name,
   }
+}
+
+function closeRemoveConfirm() {
+  removeConfirm.value = {
+    open: false,
+    cartKey: null,
+    itemName: '',
+  }
+}
+
+function confirmRemoveItem() {
+  if (removeConfirm.value.cartKey) {
+    cart.removeFromCart(removeConfirm.value.cartKey)
+  }
+  closeRemoveConfirm()
 }
 
 function goToCheckout() {
