@@ -36,11 +36,25 @@
       </header>
 
       <div class="border-b border-slate-200 px-4 py-3">
-        <div class="grid gap-3 md:grid-cols-3">
+        <div class="grid gap-3 md:grid-cols-6">
           <input class="input-base" v-model="searchQuery" placeholder="Search by order number or customer" />
-          <select class="input-base" v-model="statusFilter">
+          <select class="input-base" v-model="statusFilter" @change="applyServerFilters">
             <option value="">All Status</option>
             <option v-for="s in ORDER_STATUSES" :key="s" :value="s">{{ s }}</option>
+          </select>
+          <select class="input-base" v-model="sortBy" @change="applyServerFilters">
+            <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+              Sort: {{ option.label }}
+            </option>
+          </select>
+          <select class="input-base" v-model="sortDir" @change="applyServerFilters">
+            <option value="desc">Newest / Highest</option>
+            <option value="asc">Oldest / Lowest</option>
+          </select>
+          <select class="input-base" v-model.number="pageSize" @change="applyServerFilters">
+            <option :value="10">10 / page</option>
+            <option :value="20">20 / page</option>
+            <option :value="50">50 / page</option>
           </select>
           <button class="btn-base btn-primary" @click="loadOrders">Refresh Data</button>
         </div>
@@ -48,19 +62,38 @@
 
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-4 py-2">
         <p class="text-xs text-slate-600">
-          Showing <span class="font-semibold text-slate-800">{{ filteredOrders.length }}</span> of
-          <span class="font-semibold text-slate-800">{{ orders.length }}</span> transactions
+          Showing
+          <span class="font-semibold text-slate-800">{{ pageRangeStart }}-{{ pageRangeEnd }}</span>
+          of
+          <span class="font-semibold text-slate-800">{{ totalItems }}</span> transactions
           <span v-if="hiddenByFiltersCount > 0">
             (<span class="font-semibold text-amber-700">{{ hiddenByFiltersCount }}</span> hidden by filters)
           </span>
         </p>
-        <button
-          v-if="hasActiveFilters"
-          class="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-          @click="resetFilters"
-        >
-          Reset filters
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
+            :disabled="page <= 1 || !loaded"
+            @click="goToPage(page - 1)"
+          >
+            Prev
+          </button>
+          <span class="text-xs text-slate-600">Page {{ page }} / {{ totalPages }}</span>
+          <button
+            class="btn-base btn-secondary !px-2.5 !py-1 text-xs"
+            :disabled="page >= totalPages || !loaded"
+            @click="goToPage(page + 1)"
+          >
+            Next
+          </button>
+          <button
+            v-if="hasActiveFilters"
+            class="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+            @click="resetFilters"
+          >
+            Reset filters
+          </button>
+        </div>
       </div>
 
       <div v-if="!loaded" class="px-4 py-6 text-sm text-slate-600">Loading transactions…</div>
@@ -72,7 +105,6 @@
             <tr>
               <th>Order ID</th>
               <th>Customer</th>
-              <th>Email</th>
               <th>Total Amount</th>
               <th>Due Date</th>
               <th>Status</th>
@@ -86,7 +118,6 @@
                 <p class="font-semibold text-slate-800">{{ order.customerName }}</p>
                 <p class="text-xs text-slate-500">{{ order.customerPhone || '-' }}</p>
               </td>
-              <td class="text-slate-600">{{ order.customerEmail || '-' }}</td>
               <td class="font-semibold text-slate-800">{{ formatCurrency(order.total) }}</td>
               <td class="text-slate-600">{{ formatDate(order.dueDate || getOrderCreatedAt(order)) }}</td>
               <td>
@@ -248,6 +279,19 @@ const selectedDays = ref(0)
 const exporting = ref(false)
 const updatingById = ref({})
 const toast = ref({ message: '', type: 'success' })
+const page = ref(1)
+const pageSize = ref(10)
+const totalItems = ref(0)
+const sortBy = ref('createdAt')
+const sortDir = ref('desc')
+
+const sortOptions = [
+  { label: 'Created At', value: 'createdAt' },
+  { label: 'Order Number', value: 'orderNumber' },
+  { label: 'Customer Name', value: 'customerName' },
+  { label: 'Total', value: 'total' },
+  { label: 'Status', value: 'status' },
+]
 
 const STATUS_TRANSITIONS = {
   pending: ['processing', 'cancelled'],
@@ -269,8 +313,6 @@ const filteredOrders = computed(() => {
   const now = Date.now()
 
   return orders.value.filter(order => {
-    if (statusFilter.value && order.status !== statusFilter.value) return false
-
     if (selectedDays.value > 0) {
       const createdValue = order.createdAt || order.created_at
       const createdTime = new Date(createdValue).getTime()
@@ -289,19 +331,54 @@ const filteredOrders = computed(() => {
 })
 
 const hiddenByFiltersCount = computed(() => Math.max(orders.value.length - filteredOrders.value.length, 0))
+const totalPages = computed(() => Math.max(Math.ceil(totalItems.value / pageSize.value), 1))
+const pageRangeStart = computed(() => {
+  if (totalItems.value === 0) return 0
+  return (page.value - 1) * pageSize.value + 1
+})
+const pageRangeEnd = computed(() => {
+  if (totalItems.value === 0) return 0
+  return Math.min(page.value * pageSize.value, totalItems.value)
+})
 
 const hasActiveFilters = computed(() => (
   !!statusFilter.value ||
   !!searchQuery.value.trim() ||
-  selectedDays.value > 0
+  selectedDays.value > 0 ||
+  sortBy.value !== 'createdAt' ||
+  sortDir.value !== 'desc' ||
+  pageSize.value !== 10
 ))
 
 async function loadOrders() {
   loaded.value = false
-  const qs = statusFilter.value ? `?status=${statusFilter.value}` : ''
-  const json = await get(`/orders${qs}`)
-  if (json.success) orders.value = json.data
+  const params = new URLSearchParams()
+  params.set('page', String(page.value))
+  params.set('page_size', String(pageSize.value))
+  params.set('sort_by', sortBy.value)
+  params.set('sort_dir', sortDir.value)
+  if (statusFilter.value) params.set('status', statusFilter.value)
+
+  const json = await get(`/orders?${params.toString()}`)
+  if (json.success) {
+    orders.value = Array.isArray(json.data) ? json.data : []
+    totalItems.value = Number(json.meta?.total ?? orders.value.length)
+    const serverPage = Number(json.meta?.page || page.value)
+    const serverTotalPages = Number(json.meta?.totalPages || totalPages.value)
+    page.value = Math.min(Math.max(serverPage, 1), Math.max(serverTotalPages, 1))
+  }
   loaded.value = true
+}
+
+function applyServerFilters() {
+  page.value = 1
+  loadOrders()
+}
+
+function goToPage(nextPage) {
+  if (nextPage < 1 || nextPage > totalPages.value || nextPage === page.value) return
+  page.value = nextPage
+  loadOrders()
 }
 
 function isUpdating(id) {
@@ -375,7 +452,7 @@ async function viewDetail(id) {
 async function exportCsv() {
   exporting.value = true
   const rows = [
-    ['Order ID', 'Customer', 'Phone', 'Email', 'Status', 'Date', 'Product', 'Unit', 'Qty', 'Unit Price', 'Line Total', 'Order Subtotal', 'Shipping', 'Order Total'],
+    ['Order ID', 'Customer', 'Phone', 'Status', 'Date', 'Product', 'Unit', 'Qty', 'Unit Price', 'Line Total', 'Order Subtotal', 'Shipping', 'Order Total'],
   ]
 
   try {
@@ -392,7 +469,6 @@ async function exportCsv() {
           detail.orderNumber || `#${detail.id}`,
           detail.customerName || '',
           detail.customerPhone || '',
-          detail.customerEmail || '',
           detail.status || '',
           formatDate(getOrderCreatedAt(detail)),
           '',
@@ -414,7 +490,6 @@ async function exportCsv() {
           detail.orderNumber || `#${detail.id}`,
           detail.customerName || '',
           detail.customerPhone || '',
-          detail.customerEmail || '',
           detail.status || '',
           formatDate(getOrderCreatedAt(detail)),
           item.product?.name || `Product #${item.productId || item.product_id || ''}`,
@@ -446,6 +521,11 @@ function resetFilters() {
   searchQuery.value = ''
   statusFilter.value = ''
   selectedDays.value = 0
+  sortBy.value = 'createdAt'
+  sortDir.value = 'desc'
+  pageSize.value = 10
+  page.value = 1
+  loadOrders()
 }
 
 function formatCurrency(value) {

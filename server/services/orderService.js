@@ -133,8 +133,8 @@ const orderService = {
     return order;
   },
 
-  async listOrders({ status, limit, offset } = {}) {
-    return orderRepository.findAll({ status, limit, offset });
+  async listOrders({ status, limit, offset, sortBy, sortDir } = {}) {
+    return orderRepository.findAll({ status, limit, offset, sortBy, sortDir });
   },
 
   async updateOrderStatus(id, status) {

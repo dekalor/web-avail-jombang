@@ -24,11 +24,22 @@ const orderRepository = {
     });
   },
 
-  findAll({ status, limit = 50, offset = 0 } = {}) {
+  findAll({ status, limit = 50, offset = 0, sortBy = 'createdAt', sortDir = 'DESC' } = {}) {
     const where = status ? { status } : {};
-    return Order.findAll({
+    const sortableColumns = {
+      createdAt: 'created_at',
+      orderNumber: 'order_number',
+      customerName: 'customer_name',
+      total: 'total',
+      status: 'status',
+    };
+
+    const resolvedSortBy = sortableColumns[sortBy] || sortableColumns.createdAt;
+    const resolvedSortDir = String(sortDir || 'DESC').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+    return Order.findAndCountAll({
       where,
-      order: [['created_at', 'DESC']],
+      order: [[resolvedSortBy, resolvedSortDir]],
       limit,
       offset,
     });

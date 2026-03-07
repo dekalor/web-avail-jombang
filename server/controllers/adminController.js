@@ -22,9 +22,57 @@ const adminController = {
   // ── Orders ────────────────────────────────────────────────────────────────
   async getOrders(req, res, next) {
     try {
-      const { status, limit = 50, offset = 0 } = req.query;
-      const orders = await orderService.listOrders({ status, limit: +limit, offset: +offset });
-      res.json({ success: true, data: orders });
+      const {
+        status,
+        limit = 50,
+        offset = 0,
+        page,
+        page_size,
+        pageSize,
+        sort_by,
+        sortBy,
+        sort_dir,
+        sortDir,
+      } = req.query;
+      
+      const resolvedPageSize = page_size ?? pageSize;
+      const resolvedSortBy = sort_by ?? sortBy;
+      const resolvedSortDir = sort_dir ?? sortDir;
+      const hasPaginationParams =
+        page !== undefined ||
+        resolvedPageSize !== undefined ||
+        resolvedSortBy !== undefined ||
+        resolvedSortDir !== undefined;
+
+      if (!hasPaginationParams) {
+        const result = await orderService.listOrders({ status, limit: +limit, offset: +offset });
+        return res.json({ success: true, data: result.rows || [] });
+      }
+
+      const normalizedPageSize = Math.min(Math.max(Number(resolvedPageSize || limit || 10), 1), 100);
+      const normalizedPage = Math.max(Number(page || 1), 1);
+      const normalizedOffset = (normalizedPage - 1) * normalizedPageSize;
+
+      const result = await orderService.listOrders({
+        status,
+        limit: normalizedPageSize,
+        offset: normalizedOffset,
+        sortBy: resolvedSortBy,
+        sortDir: resolvedSortDir,
+      });
+
+      res.json({
+        success: true,
+        data: result.rows || [],
+        meta: {
+          page: normalizedPage,
+          pageSize: normalizedPageSize,
+          total: Number(result.count || 0),
+          totalPages: Math.max(Math.ceil(Number(result.count || 0) / normalizedPageSize), 1),
+          sortBy: resolvedSortBy || 'createdAt',
+          sortDir: String(resolvedSortDir || 'desc').toLowerCase() === 'asc' ? 'asc' : 'desc',
+        },
+      });
     } catch (err) { next(err); }
   },
 
