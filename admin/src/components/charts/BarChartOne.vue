@@ -7,17 +7,42 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 
-const series = ref([
+const props = defineProps({
+  categories: {
+    type: Array,
+    default: () => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+  },
+  seriesData: {
+    type: Array,
+    default: () => [168, 385, 201, 298, 187, 195, 291],
+  },
+  seriesName: {
+    type: String,
+    default: 'Penjualan',
+  },
+})
+
+const series = computed(() => [
   {
-    name: 'Sales',
-    data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
+    name: props.seriesName,
+    data: props.seriesData,
   },
 ])
 
-const chartOptions = ref({
+function formatCompactRupiah(value) {
+  const num = Number(value || 0)
+  const abs = Math.abs(num)
+
+  if (abs >= 1_000_000_000) return `Rp ${(num / 1_000_000_000)} M`
+  if (abs >= 1_000_000) return `Rp ${(num / 1_000_000)} Jt`
+  if (abs >= 1_000) return `Rp ${(num / 1_000)} Rb`
+  return `Rp ${num}`
+}
+
+const chartOptions = computed(() => ({
   colors: ['#465fff'],
   chart: {
     fontFamily: 'Outfit, sans-serif',
@@ -43,20 +68,7 @@ const chartOptions = ref({
     colors: ['transparent'],
   },
   xaxis: {
-    categories: [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ],
+    categories: props.categories,
     axisBorder: {
       show: false,
     },
@@ -75,6 +87,11 @@ const chartOptions = ref({
   },
   yaxis: {
     title: false,
+    labels: {
+      formatter: function (val) {
+        return formatCompactRupiah(val)
+      },
+    },
   },
   grid: {
     yaxis: {
@@ -92,9 +109,9 @@ const chartOptions = ref({
     },
     y: {
       formatter: function (val) {
-        return val.toString()
+        return `Rp ${Number(val || 0).toLocaleString('id-ID')}`
       },
     },
   },
-})
+}))
 </script>

@@ -150,20 +150,38 @@ const orderService = {
   },
 
   async getOrderStats() {
-    const [total_orders, total_revenue, pending, today, revenue7d, topProducts] = await Promise.all([
+    const [total_orders, unique_customers, total_revenue, pending, today, revenue7d, topProducts, todayStatusRows] = await Promise.all([
       orderRepository.countAll(),
+      orderRepository.countUniqueCustomers(),
       orderRepository.sumRevenue(),
       orderRepository.countByStatus('pending'),
       orderRepository.countToday(),
       orderRepository.getRevenueLast7Days(),
       orderRepository.getTopProducts(),
+      orderRepository.getTodayStatusCounts(),
     ]);
+
+    const today_status_counts = {
+      pending: 0,
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+    };
+
+    for (const row of todayStatusRows || []) {
+      const key = row.status;
+      if (!Object.prototype.hasOwnProperty.call(today_status_counts, key)) continue;
+      today_status_counts[key] = Number(row.count || 0);
+    }
 
     return {
       total_orders,
+      unique_customers,
       total_revenue: total_revenue || 0,
       pending,
       today,
+      today_status_counts,
       revenue7d,
       topProducts,
     };

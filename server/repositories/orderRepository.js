@@ -64,6 +64,13 @@ const orderRepository = {
     return Order.count();
   },
 
+  countUniqueCustomers() {
+    return Order.count({
+      distinct: true,
+      col: 'customer_phone',
+    });
+  },
+
   sumRevenue() {
     return Order.sum('total', {
       where: { status: { [Op.notIn]: ['cancelled', 'pending'] } },
@@ -82,6 +89,20 @@ const orderRepository = {
     });
   },
 
+  getTodayStatusCounts() {
+    return Order.findAll({
+      attributes: [
+        'status',
+        [fn('COUNT', col('id')), 'count'],
+      ],
+      where: {
+        created_at: { [Op.gte]: literal('CURDATE()') },
+      },
+      group: ['status'],
+      raw: true,
+    });
+  },
+
   getRevenueLast7Days() {
     return Order.findAll({
       attributes: [
@@ -90,7 +111,7 @@ const orderRepository = {
       ],
       where: {
         created_at: { [Op.gte]: literal('DATE_SUB(CURDATE(), INTERVAL 6 DAY)') },
-        status: { [Op.ne]: 'cancelled' },
+        status: { [Op.notIn]: ['cancelled', 'pending'] },
       },
       group: [fn('DATE', col('created_at'))],
       order: [[fn('DATE', col('created_at')), 'ASC']],
