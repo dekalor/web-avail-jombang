@@ -1,11 +1,11 @@
 <template>
-  <div v-if="authChecking" class="flex min-h-screen items-center justify-center bg-slate-100">
-    <div class="panel px-5 py-4 text-sm font-medium text-slate-600">Checking session…</div>
+  <div v-if="authChecking" class="flex min-h-screen items-center justify-center bg-gray-50">
+    <div class="panel px-5 py-4 text-sm font-medium text-gray-600">Checking session…</div>
   </div>
 
   <LoginPage v-else-if="!isLoggedIn" @login-success="onLoginSuccess" />
 
-  <div v-else class="min-h-screen bg-slate-100 text-slate-900">
+  <div v-else class="min-h-screen bg-gray-50 text-gray-900">
     <TheSidebar
       :current-page="currentPage"
       :pages="pages"
@@ -16,7 +16,7 @@
     />
 
     <div class="md:pl-72">
-      <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <header class="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur">
         <div class="flex h-16 items-center justify-between px-4 md:px-6">
           <div class="flex items-center gap-3">
             <button
@@ -27,8 +27,8 @@
               <span>☰</span>
             </button>
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Admin Panel</p>
-              <h1 class="text-lg font-bold text-slate-900">{{ currentLabel }}</h1>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Admin Panel</p>
+              <h1 class="text-lg font-bold text-gray-900">{{ currentLabel }}</h1>
             </div>
           </div>
           <a href="/" target="_blank" class="btn-base btn-secondary">Lihat Toko</a>

@@ -1,5 +1,15 @@
 <template>
   <div class="space-y-4">
+    <div
+      v-if="toast.message"
+      class="fixed right-4 top-4 z-[70] rounded-lg border px-3 py-2 text-sm font-medium shadow-theme-sm"
+      :class="toast.type === 'error'
+        ? 'border-error-200 bg-error-50 text-error-700'
+        : 'border-success-200 bg-success-50 text-success-700'"
+    >
+      {{ toast.message }}
+    </div>
+
     <section class="panel overflow-hidden">
       <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
         <div>
@@ -89,10 +99,16 @@
                   <button class="btn-base btn-secondary" @click="viewDetail(order.id)">View</button>
                   <select
                     class="input-base !w-[140px]"
+                    :disabled="isUpdating(order.id) || !getNextStatuses(order.status).length"
                     :value="order.status"
-                    @change="updateStatus(order.id, $event.target.value)"
+                    @change="onRowStatusChange(order, $event.target.value)"
                   >
-                    <option v-for="s in ORDER_STATUSES" :key="s" :value="s">{{ s }}</option>
+                    <option :value="order.status">
+                      {{ isUpdating(order.id) ? 'Updating…' : `Current: ${order.status}` }}
+                    </option>
+                    <option v-for="s in getNextStatuses(order.status)" :key="s" :value="s">
+                      Move to: {{ s }}
+                    </option>
                   </select>
                 </div>
               </td>
@@ -143,6 +159,24 @@
             <a :href="selected.paymentProofUrl" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-blue-600 hover:text-blue-700">
               {{ selected.paymentProofUrl }}
             </a>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <p class="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Quick Status Action</p>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="nextStatus in getNextStatuses(selected.status)"
+              :key="`modal-action-${nextStatus}`"
+              class="btn-base btn-secondary"
+              :disabled="isUpdating(selected.id)"
+              @click="updateStatus(selected.id, nextStatus)"
+            >
+              {{ isUpdating(selected.id) ? 'Updating…' : `Mark as ${nextStatus}` }}
+            </button>
+            <p v-if="!getNextStatuses(selected.status).length" class="text-sm text-slate-500">
+              No further action for this status.
+            </p>
           </div>
         </div>
 
@@ -212,6 +246,16 @@ const selected = ref(null)
 const searchQuery = ref('')
 const selectedDays = ref(0)
 const exporting = ref(false)
+const updatingById = ref({})
+const toast = ref({ message: '', type: 'success' })
+
+const STATUS_TRANSITIONS = {
+  pending: ['processing', 'cancelled'],
+  processing: ['shipped', 'cancelled'],
+  shipped: ['delivered'],
+  delivered: [],
+  cancelled: [],
+}
 
 const dayOptions = [
   { label: 'All Time', value: 0 },
@@ -260,12 +304,66 @@ async function loadOrders() {
   loaded.value = true
 }
 
+function isUpdating(id) {
+  return !!updatingById.value[id]
+}
+
+function getNextStatuses(status) {
+  return STATUS_TRANSITIONS[status] || []
+}
+
+function showToast(message, type = 'success') {
+  toast.value = { message, type }
+  window.setTimeout(() => {
+    if (toast.value.message === message) {
+      toast.value = { message: '', type: 'success' }
+    }
+  }, 2500)
+}
+
+async function onRowStatusChange(order, nextStatus) {
+  if (!nextStatus || nextStatus === order.status) return
+  await updateStatus(order.id, nextStatus)
+}
+
 async function updateStatus(id, status) {
+  const order = orders.value.find(o => o.id === id)
+  const currentStatus = order?.status || selected.value?.status
+  if (!currentStatus || currentStatus === status) return
+
+  if (!getNextStatuses(currentStatus).includes(status)) {
+    showToast(`Invalid transition: ${currentStatus} -> ${status}`, 'error')
+    return
+  }
+
+  if (status === 'cancelled' || status === 'delivered') {
+    const confirmed = window.confirm(`Confirm status change from ${currentStatus} to ${status}?`)
+    if (!confirmed) return
+  }
+
+  updatingById.value = {
+    ...updatingById.value,
+    [id]: true,
+  }
+
   const json = await patch(`/orders/${id}`, { status })
-  if (json.success) {
-    const idx = orders.value.findIndex(o => o.id === id)
-    if (idx !== -1) orders.value[idx].status = status
-    if (selected.value?.id === id) selected.value.status = status
+  if (!json.success) {
+    showToast(json.message || `Failed to update status to ${status}`, 'error')
+    updatingById.value = {
+      ...updatingById.value,
+      [id]: false,
+    }
+    return
+  }
+
+  const idx = orders.value.findIndex(o => o.id === id)
+  if (idx !== -1) orders.value[idx].status = status
+  if (selected.value?.id === id) selected.value.status = status
+  showToast(`Order ${order?.orderNumber || `#${id}`} updated to ${status}`)
+
+  updatingById.value = {
+    ...updatingById.value,
+    [id]: false,
   }
 }
 
