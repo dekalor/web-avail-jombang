@@ -24,15 +24,57 @@
         <!-- Main section -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 mb-10 lg:mb-12">
 
-          <!-- Product Image -->
-          <div class="aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100 shadow-md sm:shadow-lg lg:shadow-xl">
+          <!-- Product Gallery -->
+          <div class="space-y-3 sm:space-y-4">
+            <div class="aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden bg-white shadow-md sm:shadow-lg lg:shadow-xl border border-gray-100">
+              <video
+                v-if="isActiveMediaVideo"
+                :src="activeMediaUrl"
+                class="h-full w-full object-contain p-2 sm:p-3"
+                controls
+                preload="metadata"
+              />
+              <img
+                v-else
+                :src="activeMediaUrl"
+                :alt="product.name"
+                class="w-full h-full object-contain p-2 sm:p-3 cursor-zoom-in"
+                role="button"
+                tabindex="0"
+                @click="openImageModal"
+                @keydown.enter.prevent="openImageModal"
+                @keydown.space.prevent="openImageModal"
+              />
+            </div>
 
-            <img
-              :src="product.imageUrl"
-              :alt="product.name"
-              class="w-full h-full object-cover"
-            />
-
+            <div
+              v-if="galleryImages.length > 1"
+              class="flex gap-2 sm:gap-3 overflow-x-auto pb-1"
+            >
+              <button
+                v-for="(image, index) in galleryImages"
+                :key="`${image.mediaUrl}-${index}`"
+                type="button"
+                @click="selectedImageIndex = index"
+                class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition flex-shrink-0 bg-white"
+                :class="selectedImageIndex === index
+                  ? 'border-[#7BA87D] ring-2 ring-[#7BA87D]/30'
+                  : 'border-gray-200 hover:border-[#7BA87D]/60'"
+              >
+                <img
+                  v-if="image.mediaType !== 'video'"
+                  :src="image.mediaUrl"
+                  :alt="`${product.name} ${index + 1}`"
+                  class="w-full h-full object-contain p-1 bg-white"
+                />
+                <div
+                  v-else
+                  class="flex h-full w-full items-center justify-center bg-slate-900 text-white"
+                >
+                  <span class="rounded bg-black/40 px-2 py-1 text-[10px] font-semibold">VIDEO</span>
+                </div>
+              </button>
+            </div>
           </div>
 
           <!-- Product Info -->
@@ -61,9 +103,24 @@
             </h1>
 
             <!-- Description -->
-            <p class="text-sm sm:text-base lg:text-lg xl:text-xl text-gray-600 leading-relaxed mb-6">
-              {{ product.description }}
-            </p>
+            <div class="mb-6 sm:mb-7 rounded-xl border border-gray-200 bg-white p-4 sm:p-5">
+              <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+                Deskripsi Produk
+              </h3>
+
+              <p class="text-sm sm:text-base text-gray-600 leading-relaxed whitespace-pre-line">
+                {{ displayedDescription }}
+              </p>
+
+              <button
+                v-if="shouldShowDescriptionToggle"
+                type="button"
+                class="mt-2 text-sm font-semibold text-[#2C4A2F] hover:text-[#7BA87D]"
+                @click="showFullDescription = !showFullDescription"
+              >
+                {{ showFullDescription ? 'Tampilkan Ringkas' : 'Baca Selengkapnya' }}
+              </button>
+            </div>
 
             <!-- Price -->
             <div class="mb-6 sm:mb-8">
@@ -210,31 +267,16 @@
 
         </div>
 
-        <!-- Related Products -->
-        <div class="mt-12 sm:mt-16">
-
-          <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-[#2C4A2F] mb-6 sm:mb-8">
-            Produk Terkait
-          </h2>
-
-          <div class="grid
-            grid-cols-1
-            sm:grid-cols-2
-            lg:grid-cols-3
-            xl:grid-cols-4
-            gap-4 sm:gap-6 lg:gap-8">
-
-            <ProductCard
-              v-for="relatedProduct in relatedProducts"
-              :key="relatedProduct.id"
-              :product="relatedProduct"
-            />
-
-          </div>
-
-        </div>
-
       </div>
+
+      <ImageModal
+        v-if="isImageModalOpen && modalImageUrl"
+        :image-url="modalImageUrl"
+        :title="product?.name || 'Detail Produk'"
+        :on-close="closeImageModal"
+        :on-next="imageOnlyMedia.length > 1 ? nextImage : undefined"
+        :on-previous="imageOnlyMedia.length > 1 ? prevImage : undefined"
+      />
 
     </div>
 
@@ -246,16 +288,22 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
-import ProductCard from '../components/ProductCard.vue'
 import { ShoppingCart, Plus, Minus } from 'lucide-vue-next'
+import ImageModal from '../components/ImageModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const cart = useCartStore()
-const { products, product, getProductById, formatPrice, formatWeight } = useProducts()
+const { product, getProductById, formatPrice, formatWeight } = useProducts()
 
 const quantity = ref(1)
 const selectedUnitCode = ref('')
+const selectedImageIndex = ref(0)
+const showFullDescription = ref(false)
+const isImageModalOpen = ref(false)
+const modalImageIndex = ref(0)
+
+const DESCRIPTION_PREVIEW_LIMIT = 180
 
 const availableUnits = computed(() => {
   const units = Array.isArray(product.value?.units) ? [...product.value.units] : []
@@ -280,6 +328,81 @@ const selectedUnitWeight = computed(() =>
 const selectedQtyPerUnit = computed(() =>
   Number(selectedUnit.value?.qtyPerUnit || 1)
 )
+
+const galleryImages = computed(() => {
+  if (!product.value) return []
+
+  const parsed = []
+  const { imageUrl } = product.value
+
+  if (imageUrl) {
+    parsed.push({
+      mediaType: 'image',
+      mediaUrl: imageUrl,
+      sortOrder: 0,
+    })
+  }
+
+  const detailMedia = Array.isArray(product.value.detailMedia)
+    ? [...product.value.detailMedia]
+    : []
+  detailMedia
+    .sort((a, b) =>
+      Number(a.sortOrder || 0) - Number(b.sortOrder || 0)
+      || Number(a.id || 0) - Number(b.id || 0))
+    .forEach((item) => {
+      const mediaUrl = String(item.mediaUrl || '').trim()
+      if (!mediaUrl) return
+      parsed.push({
+        mediaType: item.mediaType === 'video' ? 'video' : 'image',
+        mediaUrl,
+        sortOrder: Number(item.sortOrder || 0),
+      })
+    })
+
+  const seen = new Set()
+  return parsed.filter((item) => {
+    if (!item?.mediaUrl || seen.has(item.mediaUrl)) return false
+    seen.add(item.mediaUrl)
+    return true
+  })
+})
+
+const selectedMedia = computed(() =>
+  galleryImages.value[selectedImageIndex.value] || null
+)
+
+const activeMediaUrl = computed(() =>
+  selectedMedia.value?.mediaUrl || product.value?.imageUrl || ''
+)
+
+const isActiveMediaVideo = computed(() =>
+  selectedMedia.value?.mediaType === 'video'
+)
+
+const imageOnlyMedia = computed(() =>
+  galleryImages.value.filter((item) => item.mediaType !== 'video')
+)
+
+const modalImageUrl = computed(() =>
+  imageOnlyMedia.value[modalImageIndex.value]?.mediaUrl || ''
+)
+
+const fullDescription = computed(() =>
+  String(product.value?.description || '').trim()
+)
+
+const shouldShowDescriptionToggle = computed(() =>
+  fullDescription.value.length > DESCRIPTION_PREVIEW_LIMIT
+)
+
+const displayedDescription = computed(() => {
+  if (!fullDescription.value) return '-'
+  if (showFullDescription.value || !shouldShowDescriptionToggle.value) {
+    return fullDescription.value
+  }
+  return `${fullDescription.value.slice(0, DESCRIPTION_PREVIEW_LIMIT)}...`
+})
 
 const maxStock = computed(() =>
   Number(product.value?.stock || 0)
@@ -307,11 +430,26 @@ const isQtyAtStockLimit = computed(() =>
   isOutOfStock.value || quantity.value >= availableStockToAdd.value
 )
 
-const relatedProducts = computed(() =>
-  products.value
-    .filter(p => String(p.id) !== String(route.params.id))
-    .slice(0, 3)
-)
+function openImageModal() {
+  if (!activeMediaUrl.value || isActiveMediaVideo.value) return
+  const activeImageIdx = imageOnlyMedia.value.findIndex((item) => item.mediaUrl === activeMediaUrl.value)
+  modalImageIndex.value = activeImageIdx >= 0 ? activeImageIdx : 0
+  isImageModalOpen.value = true
+}
+
+function closeImageModal() {
+  isImageModalOpen.value = false
+}
+
+function nextImage() {
+  if (!imageOnlyMedia.value.length) return
+  modalImageIndex.value = (modalImageIndex.value + 1) % imageOnlyMedia.value.length
+}
+
+function prevImage() {
+  if (!imageOnlyMedia.value.length) return
+  modalImageIndex.value = (modalImageIndex.value - 1 + imageOnlyMedia.value.length) % imageOnlyMedia.value.length
+}
 
 function incrementQuantity() {
   if (isQtyAtStockLimit.value) return
@@ -357,5 +495,9 @@ watch(product, (value) => {
 
   const preferred = units.find(unit => unit.unitCode === value.unitCode)
   selectedUnitCode.value = preferred?.unitCode || units[0].unitCode
+  selectedImageIndex.value = 0
+  showFullDescription.value = false
+  isImageModalOpen.value = false
+  modalImageIndex.value = 0
 }, { immediate: true })
 </script>

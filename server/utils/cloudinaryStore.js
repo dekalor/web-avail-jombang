@@ -1,10 +1,16 @@
 const { v2: cloudinary } = require('cloudinary');
 
-const MIME_TO_EXT = {
+const IMAGE_MIME_TO_EXT = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
   'image/gif': 'gif',
+};
+
+const VIDEO_MIME_TO_EXT = {
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'video/quicktime': 'mov',
 };
 
 function loadConfig() {
@@ -24,41 +30,54 @@ function loadConfig() {
   });
 }
 
-function parseDataUrl(dataUrl) {
+function parseMediaDataUrl(dataUrl) {
   if (typeof dataUrl !== 'string') {
-    throw new Error('Invalid image payload');
+    throw new Error('Invalid media payload');
   }
 
-  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  const match = dataUrl.match(/^data:((image|video)\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
   if (!match) {
-    throw new Error('Image must be a valid base64 data URL');
+    throw new Error('Media must be a valid base64 data URL');
   }
 
   const mimeType = match[1].toLowerCase();
-  const base64 = match[2];
-  const ext = MIME_TO_EXT[mimeType];
+  const mediaGroup = match[2].toLowerCase();
+  const base64 = match[3];
+  const mimeMap = mediaGroup === 'video' ? VIDEO_MIME_TO_EXT : IMAGE_MIME_TO_EXT;
+  const ext = mimeMap[mimeType];
 
   if (!ext) {
+    if (mediaGroup === 'video') {
+      throw new Error('Unsupported video type. Use MP4, WEBM, or MOV');
+    }
     throw new Error('Unsupported image type. Use JPG, PNG, WEBP, or GIF');
   }
 
-  return { mimeType, base64, ext };
+  return { mimeType, base64, ext, mediaType: mediaGroup };
 }
 
 function randomSuffix() {
   return Math.random().toString(36).slice(2, 8);
 }
 
-async function uploadImageDataUrl(dataUrl, { folder, prefix }) {
+async function uploadMediaDataUrl(dataUrl, { folder, prefix }) {
   loadConfig();
 
-  const { base64, ext } = parseDataUrl(dataUrl);
+  const { base64, ext, mediaType } = parseMediaDataUrl(dataUrl);
   const buffer = Buffer.from(base64, 'base64');
 
   if (buffer.length === 0) {
-    throw new Error('Image payload is empty');
+    throw new Error('Media payload is empty');
   }
-  if (buffer.length > 5 * 1024 * 1024) {
+
+  const maxSizeBytes = mediaType === 'video'
+    ? 20 * 1024 * 1024
+    : 5 * 1024 * 1024;
+
+  if (buffer.length > maxSizeBytes) {
+    if (mediaType === 'video') {
+      throw new Error('Video is too large (max 20MB)');
+    }
     throw new Error('Image is too large (max 5MB)');
   }
 
@@ -67,12 +86,15 @@ async function uploadImageDataUrl(dataUrl, { folder, prefix }) {
     asset_folder: folder,
     use_asset_folder_as_public_id_prefix: true,
     public_id: publicId,
-    resource_type: 'image',
+    resource_type: 'auto',
     overwrite: false,
     format: ext,
   });
 
-  return result.secure_url;
+  return {
+    url: result.secure_url,
+    mediaType,
+  };
 }
 
 function parseCloudinaryPublicId(url) {
@@ -97,29 +119,42 @@ function parseCloudinaryPublicId(url) {
 
 async function storeProductImage(dataUrl) {
   const folder = process.env.CLOUDINARY_PRODUCTS_FOLDER;
-  return uploadImageDataUrl(dataUrl, { folder, prefix: 'product' });
+  const result = await uploadMediaDataUrl(dataUrl, { folder, prefix: 'product' });
+  if (result.mediaType !== 'image') {
+    throw new Error('Product image must be an image file');
+  }
+  return result.url;
+}
+
+async function storeProductDetailMedia(dataUrl) {
+  const folder = process.env.CLOUDINARY_PRODUCT_DETAILS_FOLDER || process.env.CLOUDINARY_PRODUCTS_FOLDER;
+  return uploadMediaDataUrl(dataUrl, { folder, prefix: 'product-detail' });
 }
 
 async function storeOrderPaymentProof(dataUrl) {
   const folder = process.env.CLOUDINARY_ORDERS_FOLDER;
-  return uploadImageDataUrl(dataUrl, { folder, prefix: 'payment-proof' });
+  const result = await uploadMediaDataUrl(dataUrl, { folder, prefix: 'payment-proof' });
+  if (result.mediaType !== 'image') {
+    throw new Error('Payment proof must be an image file');
+  }
+  return result.url;
 }
 
-async function deleteUploadedImage(imageUrl) {
-  if (!imageUrl || typeof imageUrl !== 'string') return;
+async function deleteUploadedAsset(assetUrl) {
+  if (!assetUrl || typeof assetUrl !== 'string') return;
 
-  const publicId = parseCloudinaryPublicId(imageUrl);
+  const publicId = parseCloudinaryPublicId(assetUrl);
   if (!publicId) return;
 
   loadConfig();
-  await cloudinary.uploader.destroy(publicId, {
-    resource_type: 'image',
-    invalidate: true,
-  });
+  await cloudinary.uploader.destroy(publicId, { resource_type: 'image', invalidate: true });
+  await cloudinary.uploader.destroy(publicId, { resource_type: 'video', invalidate: true });
 }
 
 module.exports = {
   storeProductImage,
+  storeProductDetailMedia,
   storeOrderPaymentProof,
-  deleteUploadedImage,
+  deleteUploadedAsset,
+  deleteUploadedImage: deleteUploadedAsset,
 };

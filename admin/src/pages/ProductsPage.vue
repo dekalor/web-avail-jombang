@@ -16,6 +16,7 @@
               <th>Nama Produk</th>
               <th>Kategori</th>
               <th>Unit Produk</th>
+              <th>Media Detail</th>
               <th>Stok</th>
               <th>Badge</th>
               <th>Status</th>
@@ -50,6 +51,11 @@
                   </span>
                   <span v-if="!p.units?.length" class="text-xs text-slate-400">—</span>
                 </div>
+              </td>
+              <td>
+                <Badge size="sm" color="info">
+                  {{ sortedDetailMedia(p.detailMedia).length }} item
+                </Badge>
               </td>
               <td :class="p.stock < 20 ? 'font-semibold text-red-600' : ''">{{ p.stock }}</td>
               <td>
@@ -172,6 +178,80 @@
           </div>
         </div>
 
+        <div class="mt-4">
+          <div class="mb-2 flex items-center justify-between">
+            <label class="label-base !mb-0">Media Detail Produk</label>
+            <span class="text-xs text-slate-500">Mendukung gambar dan video</span>
+          </div>
+          <input
+            class="input-base"
+            type="file"
+            accept="image/*,video/mp4,video/webm,video/quicktime"
+            multiple
+            @change="onDetailMediaChange"
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Gambar max 5MB, video max 20MB. Urutan media mengikuti posisi daftar di bawah.
+          </p>
+
+          <div v-if="form.detailMedia.length" class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div
+              v-for="(item, index) in form.detailMedia"
+              :key="item.id || `${item.mediaUrl || item.mediaData}-${index}`"
+              class="rounded-lg border border-slate-200 p-2"
+            >
+              <div class="relative aspect-square overflow-hidden rounded-md bg-slate-100">
+                <img
+                  v-if="item.mediaType === 'image'"
+                  :src="item.mediaUrl || item.mediaData"
+                  alt="Detail media"
+                  class="h-full w-full object-cover"
+                />
+                <video
+                  v-else
+                  :src="item.mediaUrl || item.mediaData"
+                  class="h-full w-full object-cover"
+                  controls
+                  preload="metadata"
+                />
+              </div>
+
+              <div class="mt-2 flex items-center justify-between gap-2">
+                <Badge size="sm" :color="item.mediaType === 'video' ? 'warning' : 'success'">
+                  {{ item.mediaType === 'video' ? 'Video' : 'Gambar' }}
+                </Badge>
+                <span class="text-xs text-slate-500">#{{ index + 1 }}</span>
+              </div>
+
+              <div class="mt-2 flex items-center gap-1">
+                <button
+                  type="button"
+                  class="btn-base btn-secondary !px-2 !py-1 text-xs"
+                  :disabled="index === 0"
+                  @click="moveDetailMedia(index, -1)"
+                >
+                  Naik
+                </button>
+                <button
+                  type="button"
+                  class="btn-base btn-secondary !px-2 !py-1 text-xs"
+                  :disabled="index === form.detailMedia.length - 1"
+                  @click="moveDetailMedia(index, 1)"
+                >
+                  Turun
+                </button>
+                <button
+                  type="button"
+                  class="btn-base btn-danger !px-2 !py-1 text-xs"
+                  @click="removeDetailMedia(index)"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
             <label class="label-base">Badge (opsional)</label>
@@ -229,6 +309,7 @@ function defaultForm() {
     stock: 100,
     active: 1,
     units: [defaultUnit()],
+    detailMedia: [],
   }
 }
 const form = ref(defaultForm())
@@ -247,6 +328,13 @@ function defaultUnit() {
 function sortedUnits(units) {
   if (!Array.isArray(units)) return []
   return [...units].sort((a, b) => Number(a.id || 0) - Number(b.id || 0))
+}
+
+function sortedDetailMedia(detailMedia) {
+  if (!Array.isArray(detailMedia)) return []
+  return [...detailMedia].sort((a, b) =>
+    Number(a.sortOrder || 0) - Number(b.sortOrder || 0)
+    || Number(a.id || 0) - Number(b.id || 0))
 }
 
 async function loadProducts() {
@@ -287,6 +375,13 @@ function openEdit(p) {
       qtyPerUnit: Number(unit.qtyPerUnit || 1),
       active: unit.active ? 1 : 0,
     })),
+    detailMedia: sortedDetailMedia(p.detailMedia).map((item) => ({
+      id: item.id,
+      mediaType: item.mediaType === 'video' ? 'video' : 'image',
+      mediaUrl: item.mediaUrl,
+      mediaData: '',
+      sortOrder: Number(item.sortOrder || 0),
+    })),
   }
   if (!form.value.units.length) form.value.units = [defaultUnit()]
   imageData.value = ''
@@ -319,6 +414,15 @@ async function save() {
     category_id: +form.value.categoryId,
     stock: +form.value.stock,
     units: normalizedUnits,
+    detailMedia: (Array.isArray(form.value.detailMedia) ? form.value.detailMedia : [])
+      .map((item, index) => ({
+        ...(item.id ? { id: item.id } : {}),
+        mediaType: item.mediaType === 'video' ? 'video' : 'image',
+        mediaUrl: item.mediaUrl || undefined,
+        mediaData: item.mediaData || undefined,
+        sortOrder: index + 1,
+      }))
+      .filter((item) => item.mediaUrl || item.mediaData),
     imageData: imageData.value || undefined,
     removeImage: removeImageFlag.value,
   }
@@ -372,6 +476,60 @@ function removeImage() {
   imagePreview.value = ''
   form.value.imageUrl = ''
   removeImageFlag.value = true
+}
+
+function removeDetailMedia(index) {
+  form.value.detailMedia.splice(index, 1)
+}
+
+function moveDetailMedia(index, direction) {
+  const nextIndex = index + direction
+  if (nextIndex < 0 || nextIndex >= form.value.detailMedia.length) return
+  const temp = form.value.detailMedia[index]
+  form.value.detailMedia[index] = form.value.detailMedia[nextIndex]
+  form.value.detailMedia[nextIndex] = temp
+}
+
+function readAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('Gagal membaca file'))
+    reader.readAsDataURL(file)
+  })
+}
+
+async function onDetailMediaChange(event) {
+  const files = Array.from(event.target.files || [])
+  if (!files.length) return
+
+  for (const file of files) {
+    const isImage = file.type.startsWith('image/')
+    const isVideo = file.type.startsWith('video/')
+    if (!isImage && !isVideo) {
+      alert(`File ${file.name} tidak didukung. Hanya gambar/video.`)
+      continue
+    }
+
+    if (isImage && file.size > 5 * 1024 * 1024) {
+      alert(`File ${file.name} terlalu besar. Gambar maksimal 5MB.`)
+      continue
+    }
+    if (isVideo && file.size > 20 * 1024 * 1024) {
+      alert(`File ${file.name} terlalu besar. Video maksimal 20MB.`)
+      continue
+    }
+
+    const mediaData = await readAsDataURL(file)
+    form.value.detailMedia.push({
+      mediaType: isVideo ? 'video' : 'image',
+      mediaUrl: '',
+      mediaData,
+      sortOrder: form.value.detailMedia.length + 1,
+    })
+  }
+
+  event.target.value = ''
 }
 
 async function deactivate(id) {

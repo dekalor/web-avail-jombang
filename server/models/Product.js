@@ -40,6 +40,15 @@ module.exports = (sequelize, DataTypes) => {
         as: 'defaultUnit',
       });
 
+      Product.hasMany(models.ProductDetailMedia, {
+        foreignKey: {
+          name: 'productId',
+          field: 'product_id',
+          allowNull: false,
+        },
+        as: 'detailMedia',
+      });
+
     }
 
   }

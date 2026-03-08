@@ -4,7 +4,43 @@
 const productService = require('../services/productService');
 const orderService   = require('../services/orderService');
 const productCategoryService = require('../services/productCategoryService')
-const { storeProductImage, deleteUploadedImage } = require('../utils/cloudinaryStore');
+const {
+  storeProductImage,
+  storeProductDetailMedia,
+  deleteUploadedAsset,
+} = require('../utils/cloudinaryStore');
+
+async function resolveDetailMediaPayload(detailMedia) {
+  if (!Array.isArray(detailMedia)) return undefined;
+
+  const resolved = [];
+  for (let index = 0; index < detailMedia.length; index += 1) {
+    const item = detailMedia[index] || {};
+    const mediaType = String(item.mediaType || '').toLowerCase();
+    const sortOrder = Number(item.sortOrder || index + 1);
+
+    if (item.mediaData) {
+      const uploaded = await storeProductDetailMedia(item.mediaData);
+      resolved.push({
+        mediaType: uploaded.mediaType,
+        mediaUrl: uploaded.url,
+        sortOrder,
+      });
+      continue;
+    }
+
+    const mediaUrl = String(item.mediaUrl || '').trim();
+    if (!mediaUrl) continue;
+
+    resolved.push({
+      mediaType: mediaType === 'video' ? 'video' : 'image',
+      mediaUrl,
+      sortOrder,
+    });
+  }
+
+  return resolved;
+}
 
 const adminController = {
 
@@ -103,6 +139,7 @@ const adminController = {
       if (payload.imageData) {
         payload.imageUrl = await storeProductImage(payload.imageData);
       }
+      payload.detailMedia = await resolveDetailMediaPayload(payload.detailMedia);
       delete payload.imageData;
       delete payload.removeImage;
 
@@ -123,14 +160,25 @@ const adminController = {
       if (payload.imageData) {
         nextImageUrl = await storeProductImage(payload.imageData);
       }
+      const nextDetailMedia = await resolveDetailMediaPayload(payload.detailMedia);
 
       payload.imageUrl = nextImageUrl;
+      if (nextDetailMedia !== undefined) {
+        payload.detailMedia = nextDetailMedia;
+      }
       delete payload.imageData;
       delete payload.removeImage;
 
       const product = await productService.updateProduct(req.params.id, payload);
       if (existing.imageUrl && existing.imageUrl !== nextImageUrl) {
-        await deleteUploadedImage(existing.imageUrl);
+        await deleteUploadedAsset(existing.imageUrl);
+      }
+
+      if (nextDetailMedia !== undefined) {
+        const beforeUrls = new Set((existing.detailMedia || []).map((item) => item.mediaUrl).filter(Boolean));
+        const afterUrls = new Set(nextDetailMedia.map((item) => item.mediaUrl).filter(Boolean));
+        const removedUrls = [...beforeUrls].filter((url) => !afterUrls.has(url));
+        await Promise.all(removedUrls.map((url) => deleteUploadedAsset(url)));
       }
       res.json({ success: true, data: product });
     } catch (err) { next(err); }

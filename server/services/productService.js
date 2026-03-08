@@ -16,6 +16,11 @@ function normalizeProduct(product) {
     weight: defaultUnit?.weight ?? 0,
     qtyPerUnit: defaultUnit?.qtyPerUnit ?? 1,
     unitCode: defaultUnit?.unitCode ?? null,
+    detailMedia: Array.isArray(raw.detailMedia)
+      ? [...raw.detailMedia].sort((a, b) =>
+        Number(a.sortOrder || 0) - Number(b.sortOrder || 0)
+        || Number(a.id || 0) - Number(b.id || 0))
+      : [],
   };
 }
 
@@ -32,7 +37,7 @@ const productService = {
     return normalizeProduct(product);
   },
 
-  async createProduct({ name, description, categoryId, category_id, price, imageUrl, badge, stock, weight, unitCode, units }) {
+  async createProduct({ name, description, categoryId, category_id, price, imageUrl, badge, stock, weight, unitCode, units, detailMedia }) {
     if (!name) {
       throw Object.assign(new Error('name is required'), { status: 400 });
     }
@@ -82,6 +87,21 @@ const productService = {
           qtyPerUnit: 1,
           active: true,
         }, transaction);
+      }
+
+      if (Array.isArray(detailMedia)) {
+        const normalizedDetailMedia = detailMedia
+          .map((item, index) => ({
+            mediaType: String(item.mediaType || '').toLowerCase(),
+            mediaUrl: String(item.mediaUrl || '').trim(),
+            sortOrder: Number(item.sortOrder || index + 1),
+          }))
+          .filter((item) =>
+            item.mediaUrl
+            && (item.mediaType === 'image' || item.mediaType === 'video')
+          );
+
+        await productRepository.replaceDetailMedia(product.id, normalizedDetailMedia, transaction);
       }
 
       return product.id;
@@ -157,6 +177,21 @@ const productService = {
             active: unit.active !== false,
           }, transaction);
         }
+      }
+
+      if (Array.isArray(fields.detailMedia)) {
+        const normalizedDetailMedia = fields.detailMedia
+          .map((item, index) => ({
+            mediaType: String(item.mediaType || '').toLowerCase(),
+            mediaUrl: String(item.mediaUrl || '').trim(),
+            sortOrder: Number(item.sortOrder || index + 1),
+          }))
+          .filter((item) =>
+            item.mediaUrl
+            && (item.mediaType === 'image' || item.mediaType === 'video')
+          );
+
+        await productRepository.replaceDetailMedia(+id, normalizedDetailMedia, transaction);
       }
     });
 

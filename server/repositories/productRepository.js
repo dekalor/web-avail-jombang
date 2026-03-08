@@ -1,5 +1,5 @@
 const { Op }    = require('sequelize');
-const { Product, ProductCategory, ProductUnit } = require('../models');
+const { Product, ProductCategory, ProductUnit, ProductDetailMedia } = require('../models');
 
 const productRepository = {
 
@@ -39,6 +39,12 @@ const productRepository = {
         required: false,
         where: { active: true },
         separate: true,
+      }, {
+        model: ProductDetailMedia,
+        as: 'detailMedia',
+        required: false,
+        separate: true,
+        order: [['sortOrder', 'ASC'], ['id', 'ASC']],
       }],
       order,
       distinct: true,
@@ -66,6 +72,12 @@ const productRepository = {
         required: false,
         where: { active: true },
         separate: true,
+      }, {
+        model: ProductDetailMedia,
+        as: 'detailMedia',
+        required: false,
+        separate: true,
+        order: [['sortOrder', 'ASC'], ['id', 'ASC']],
       }],
     });
   },
@@ -126,6 +138,27 @@ const productRepository = {
 
   upsertUnit(data, transaction) {
     return ProductUnit.upsert(data, { transaction });
+  },
+
+  async replaceDetailMedia(productId, detailMedia, transaction) {
+    await ProductDetailMedia.destroy({
+      where: { productId },
+      transaction,
+    });
+
+    if (!Array.isArray(detailMedia) || !detailMedia.length) {
+      return [];
+    }
+
+    return ProductDetailMedia.bulkCreate(
+      detailMedia.map((item, index) => ({
+        productId,
+        mediaType: item.mediaType,
+        mediaUrl: item.mediaUrl,
+        sortOrder: Number(item.sortOrder || index + 1),
+      })),
+      { transaction }
+    );
   },
 };
 
