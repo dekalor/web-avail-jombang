@@ -3,7 +3,7 @@ const orderRepository = require('../repositories/orderRepository');
 const productRepository = require('../repositories/productRepository');
 const shippingRepository = require('../repositories/shippingRepository');
 const generateOrderNumber = require("../utils/generateOrderNumber")
-const { storeOrderPaymentProof } = require('../utils/localImageStore');
+const { storeOrderPaymentProof } = require('../utils/cloudinaryStore');
 const { FREE_SHIPPING_MIN } = require('../config/config');
 const paymentmethod = require('../models/paymentmethod');
 

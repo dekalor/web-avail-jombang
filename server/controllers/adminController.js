@@ -4,7 +4,7 @@
 const productService = require('../services/productService');
 const orderService   = require('../services/orderService');
 const productCategoryService = require('../services/productCategoryService')
-const { storeProductImage, deleteLocalImage } = require('../utils/localImageStore');
+const { storeProductImage, deleteUploadedImage } = require('../utils/cloudinaryStore');
 
 const adminController = {
 
@@ -130,7 +130,7 @@ const adminController = {
 
       const product = await productService.updateProduct(req.params.id, payload);
       if (existing.imageUrl && existing.imageUrl !== nextImageUrl) {
-        await deleteLocalImage(existing.imageUrl);
+        await deleteUploadedImage(existing.imageUrl);
       }
       res.json({ success: true, data: product });
     } catch (err) { next(err); }
