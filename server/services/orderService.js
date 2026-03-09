@@ -5,7 +5,6 @@ const shippingRepository = require('../repositories/shippingRepository');
 const generateOrderNumber = require("../utils/generateOrderNumber")
 const { storeOrderPaymentProof } = require('../utils/cloudinaryStore');
 const { FREE_SHIPPING_MIN } = require('../config/config');
-const paymentmethod = require('../models/paymentmethod');
 
 const VALID_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
