@@ -281,55 +281,55 @@ const galleryMedias = [
   },  
   {
     type: "image",
-    url: "/src/assets/images/Materi_1.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041988/Materi_1_nojtk3.jpg",
     title: "Informasi",
     alt: "Informasi"
   },
   {
     type: "image",
-    url: "/src/assets/images/Materi_2.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041988/Materi_2_kwdicw.jpg",
     title: "Informasi",
     alt: "Informasi"
   },
   {
     type: "image",
-    url: "/src/assets/images/Materi_3.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041988/Materi_3_y8emkj.jpg",
     title: "Tips",
     alt: "Tips"
   },
   {
     type: "image",
-    url: "/src/assets/images/Materi_4.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041988/Materi_4_cevoe8.jpg",
     title: "Tips",
     alt: "Tips"
   },
   {
     type: "image",
-    url: "/src/assets/images/Materi_5.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041989/Materi_5_d1trcn.jpg",
     title: "Tips",
     alt: "Tips"
   },
   {
     type: "image",
-    url: "/src/assets/images/Materi_6.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041989/Materi_6_qmkwwy.jpg",
     title: "Tips",
     alt: "Tips"
   },
   {
     type: "image",
-    url: "/src/assets/images/Materi_7.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041988/Materi_7_uja0zp.jpg",
     title: "Tips",
     alt: "Tips"
   },
   {
     type: "image",
-    url: "/src/assets/images/Materi_8.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041988/Materi_8_wcod1n.jpg",
     title: "Tips",
     alt: "Tips"
   },
   {
     type: "image",
-    url: "/src/assets/images/Materi_9.jpeg",
+    url: "https://res.cloudinary.com/drp8mahwc/image/upload/v1773041989/Materi_9_m5h3di.jpg",
     title: "Informasi",
     alt: "Informasi"
   },
