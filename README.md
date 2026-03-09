@@ -56,6 +56,7 @@ web-avail-jombang/
 - Product listing + category filter
 - Product detail page
 - Cart with product unit selection (`product_units`)
+- Cart and checkout state persistence via Pinia persisted state
 - Checkout + shipping fee flow
 - Shipping fee calculation via RajaOngkir API with shipping master caching
 - Free shipping threshold (`FREE_SHIPPING_MIN`)
