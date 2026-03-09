@@ -160,7 +160,7 @@
             </div>
 
             <!-- Benefits -->
-            <div class="mb-6 sm:mb-8">
+            <!-- <div class="mb-6 sm:mb-8">
 
               <h3 class="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 Manfaat Produk
@@ -194,7 +194,7 @@
 
               </ul>
 
-            </div>
+            </div> -->
 
             <!-- Quantity -->
             <div class="mb-6">
