@@ -6,10 +6,8 @@
         <div class="flex justify-between items-center h-20">
           <!-- Logo -->
           <router-link to="/" class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-[#7BA87D] rounded-lg flex items-center justify-center">
-              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l7 18M19 3l-7 18M9 9h6"></path>
-              </svg>
+            <div class="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center">
+              <img src="/favicon.png" alt="AVAIL Logo" class="w-full h-full object-contain p-1" />
             </div>
             <div>
               <h1 class="text-3xl font-semibold text-[#2C4A2F]">AVAIL</h1>
@@ -19,11 +17,27 @@
 
           <!-- Navigation -->
           <nav class="hidden md:flex items-center gap-8 text-lg">
-            <router-link to="/" class="text-gray-700 hover:text-[#7BA87D] transition-colors">
+            <router-link
+              to="/"
+              class="text-gray-700 hover:text-[#7BA87D] transition-colors cursor-pointer"
+              active-class="text-[#7BA87D] font-semibold"
+              exact-active-class="text-[#7BA87D] font-semibold"
+            >
               Home
             </router-link>
-            <router-link to="/products" class="text-gray-700 hover:text-[#7BA87D] transition-colors">
+            <router-link
+              to="/products"
+              class="text-gray-700 hover:text-[#7BA87D] transition-colors cursor-pointer"
+              active-class="text-[#7BA87D] font-semibold"
+            >
               Produk Kami
+            </router-link>
+            <router-link
+              to="/testimonials"
+              class="text-gray-700 hover:text-[#7BA87D] transition-colors cursor-pointer"
+              active-class="text-[#7BA87D] font-semibold"
+            >
+              Testimoni
             </router-link>
           </nav>
 

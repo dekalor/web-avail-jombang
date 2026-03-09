@@ -148,7 +148,7 @@
     </section>
 
     <!-- WhatsApp Quick Order Section -->
-    <section class="py-10 sm:py-14 lg:py-16 reveal-on-scroll">
+    <section class="py-10 sm:py-14 lg:py-16 bg-white reveal-on-scroll">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-[#7BA87D] rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl reveal-on-scroll">
           <div class="flex flex-col lg:flex-row items-center gap-8">
@@ -177,28 +177,45 @@
     </section>
 
     <!-- Galery Avail Tips n Benefit -->
-    <section id="gallery-avail-tips-benefit" class="py-10 sm:py-14 lg:py-16 bg-white reveal-on-scroll">
+    <section id="gallery-avail-tips-benefit" class="py-10 sm:py-14 lg:py-16 reveal-on-scroll">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-8 sm:mb-10 lg:mb-12">
           <h2 class="text-2xl md:text-4xl font-bold text-[#2C4A2F] mb-4">
-            Pelajari Lebih Lanjut
+            Lihat Tips & Manfaat AVAIL
           </h2>
           <p class="text-base md:text-xl text-gray-600">
-            Ribuan pelanggan telah merasakan manfaatnya
+            Temukan bagaimana kandungan herbal pada pembalut membantu memberikan perlindungan alami serta menjaga kenyamanan sepanjang hari.
           </p>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-          <div v-for="(image, index) in galleryImages" :key="image.url"
+          <div v-for="(media, index) in galleryMedias" :key="media.url"
             class="group relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer reveal-on-scroll"
             :data-delay="String((index % 3) * 70)"
-            @click="selectedImageIndex = index">
-            <img :src="image.url" :alt="image.alt"
+            @click="selectedMediaIndex = index">
+            <img v-if="media.type === 'image'"
+              :src="media.url" :alt="media.alt"
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+
+            <video
+                v-else
+                :src="media.url"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                muted
+                playsinline
+              />
+            <div
+                v-if="media.type === 'video'"
+                class="absolute inset-0 flex items-center justify-center bg-black/25"
+              >
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/95 flex items-center justify-center shadow-lg">
+                  <Play class="w-6 h-6 sm:w-7 sm:h-7 text-[#2C4A2F]" />
+                </div>
+              </div>
             <div
               class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
               <div class="absolute bottom-4 left-4 right-4">
-                <p class="text-white text-sm md:text-lg font-semibold">{{ image.title }}</p>
+                <p class="text-white text-sm md:text-lg font-semibold">{{ media.title }}</p>
               </div>
             </div>
           </div>
@@ -206,13 +223,40 @@
       </div>
     </section>
 
-    <!-- Image Modal -->
-    <ImageModal v-if="selectedImageIndex !== null" 
-      :imageUrl="galleryImages[selectedImageIndex].url"
-      :title="galleryImages[selectedImageIndex].title"
-      :onNext="() => selectedImageIndex = (selectedImageIndex + 1) % galleryImages.length"
-      :onPrevious="() => selectedImageIndex = (selectedImageIndex - 1 + galleryImages.length) % galleryImages.length"
-      :onClose="() => selectedImageIndex = null" />
+    <!-- Testimonials CTA -->
+    <section class="py-10 sm:py-14 lg:py-16 bg-white reveal-on-scroll">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-[#7BA87D] rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl reveal-on-scroll">
+          <div class="flex flex-col lg:flex-row items-center gap-8">
+
+            <div class="text-center lg:text-left text-white flex-1">
+              <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+                Bukti Nyata dari Pengguna AVAIL
+              </h2>
+              <p class="text-base sm:text-lg lg:text-xl mb-6 text-white/90">
+                Lihat foto dan video pengalaman pelanggan yang sudah merasakan manfaatnya.
+              </p>
+              <button
+                @click="$router.push('/testimonials')"
+                class="w-full sm:w-auto inline-flex justify-center items-center gap-3 bg-white text-[#7BA87D] hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-5 rounded-2xl text-base sm:text-xl font-semibold transition-all hover:scale-105 shadow-lg"
+              >
+                Lihat Semua Testimoni
+                <ArrowRight/>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Media Modal -->
+    <MediaModal v-if="selectedMediaIndex !== null" 
+      :type="galleryMedias[selectedMediaIndex].type"
+      :mediaUrl="galleryMedias[selectedMediaIndex].url"
+      :title="galleryMedias[selectedMediaIndex].title"
+      :onNext="() => selectedMediaIndex = (selectedMediaIndex + 1) % galleryMedias.length"
+      :onPrevious="() => selectedMediaIndex = (selectedMediaIndex - 1 + galleryMedias.length) % galleryMedias.length"
+      :onClose="() => selectedMediaIndex = null" />
   </div>
 </template>
 
@@ -220,56 +264,71 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import ProductCard from '../components/ProductCard.vue'
 import { useProducts } from '../composables/useProducts'
-import { ArrowDown, ArrowRight, Award, Leaf, Shield, Zap } from 'lucide-vue-next'
-import ImageModal from '../components/ImageModal.vue';
+import { ArrowDown, ArrowRight, Award, Leaf, Shield, Zap, Play } from 'lucide-vue-next'
+import MediaModal from '../components/MediaModal.vue';
 
 const { loadProducts, products } = useProducts()
 
-const selectedImageIndex = ref(null);
+const selectedMediaIndex = ref(null);
 let revealObserver = null
 
-const galleryImages = [
+const galleryMedias = [
   {
+    type: "video",
+    url: "https://res.cloudinary.com/drp8mahwc/video/upload/v1773026536/CompanyProfile.mp4",
+    title: "Informasi",
+    alt: "Informasi"
+  },  
+  {
+    type: "image",
     url: "/src/assets/images/Materi_1.jpeg",
     title: "Informasi",
     alt: "Informasi"
   },
   {
+    type: "image",
     url: "/src/assets/images/Materi_2.jpeg",
     title: "Informasi",
     alt: "Informasi"
   },
   {
+    type: "image",
     url: "/src/assets/images/Materi_3.jpeg",
     title: "Tips",
     alt: "Tips"
   },
   {
+    type: "image",
     url: "/src/assets/images/Materi_4.jpeg",
     title: "Tips",
     alt: "Tips"
   },
   {
+    type: "image",
     url: "/src/assets/images/Materi_5.jpeg",
     title: "Tips",
     alt: "Tips"
   },
   {
+    type: "image",
     url: "/src/assets/images/Materi_6.jpeg",
     title: "Tips",
     alt: "Tips"
   },
   {
+    type: "image",
     url: "/src/assets/images/Materi_7.jpeg",
     title: "Tips",
     alt: "Tips"
   },
   {
+    type: "image",
     url: "/src/assets/images/Materi_8.jpeg",
     title: "Tips",
     alt: "Tips"
   },
   {
+    type: "image",
     url: "/src/assets/images/Materi_9.jpeg",
     title: "Informasi",
     alt: "Informasi"

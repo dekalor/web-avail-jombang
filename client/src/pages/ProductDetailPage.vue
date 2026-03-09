@@ -269,9 +269,10 @@
 
       </div>
 
-      <ImageModal
+      <MediaModal
         v-if="isImageModalOpen && modalImageUrl"
-        :image-url="modalImageUrl"
+        :type="selectedMedia.mediaType"
+        :media-url="modalImageUrl"
         :title="product?.name || 'Detail Produk'"
         :on-close="closeImageModal"
         :on-next="imageOnlyMedia.length > 1 ? nextImage : undefined"
@@ -289,7 +290,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
 import { ShoppingCart, Plus, Minus } from 'lucide-vue-next'
-import ImageModal from '../components/ImageModal.vue'
+import MediaModal from '../components/MediaModal.vue'
 
 const route = useRoute()
 const router = useRouter()

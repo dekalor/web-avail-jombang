@@ -24,7 +24,20 @@
 
       <!-- Image -->
       <div class="w-full max-h-[80vh] overflow-hidden flex items-center justify-center bg-black">
-        <img :src="imageUrl" :alt="title" class="max-w-full max-h-[80vh] object-contain" />
+        <img v-if="type === 'image'"
+         :src="mediaUrl" 
+         :alt="title" 
+         class="max-w-full max-h-[80vh] object-contain" 
+        />
+
+        <video
+          v-else
+          :src="mediaUrl"
+          class="max-w-full max-h-[80vh] object-contain"
+          controls
+          autoplay
+          playsinline
+        />
       </div>
     </div>
   </div>
@@ -35,7 +48,8 @@ import { onMounted, onUnmounted } from 'vue';
 import { X, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
 const props = defineProps({
-  imageUrl: String,
+  type: String,
+  mediaUrl: String,
   title: String,
   onClose: Function,
   onNext: Function,
