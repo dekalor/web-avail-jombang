@@ -29,11 +29,44 @@ export const useCartStore = defineStore('cart', () => {
     return `${productId}:${unitCode || 'default'}`
   }
 
-  function maxQtyByUnit(stock, qtyPerUnit) {
+  function usedStockPcs(productId, excludeCartKey = null) {
+    return items.value
+      .filter(item => item.id === productId && item.cartKey !== excludeCartKey)
+      .reduce((sum, item) => {
+        const qty = Number(item.quantity || 0)
+        const perUnit = Number(item.qtyPerUnit || 1)
+        return sum + qty * perUnit
+      }, 0)
+  }
+
+  function maxQtyByUnit(stock, qtyPerUnit, usedPcs = 0) {
     const stockPcs = Number(stock || 0)
     const perUnit = Number(qtyPerUnit || 1)
-    if (stockPcs <= 0 || perUnit <= 0) return 0
-    return Math.floor(stockPcs / perUnit)
+    const availablePcs = stockPcs - Number(usedPcs || 0)
+    if (availablePcs <= 0 || perUnit <= 0) return 0
+    return Math.floor(availablePcs / perUnit)
+  }
+
+  function usedStockPcsForProduct(productId) {
+    return items.value
+      .filter(item => item.id === productId)
+      .reduce((sum, item) => {
+        const qty = Number(item.quantity || 0)
+        const perUnit = Number(item.qtyPerUnit || 1)
+        return sum + qty * perUnit
+      }, 0)
+  }
+
+  function availableQtyForUnit({ product, unitCode, qtyPerUnit, excludeCartKey = null }) {
+    if (!product) return 0
+    const perUnit = Number(qtyPerUnit || 1)
+    if (perUnit <= 0) return 0
+
+    const selectedKey = excludeCartKey
+      || toCartKey(product.id, unitCode || product.unitCode || 'default')
+
+    const usedOtherPcs = usedStockPcs(product.id, selectedKey)
+    return maxQtyByUnit(product.stock, perUnit, usedOtherPcs)
   }
 
   // Getters (computed)
@@ -58,10 +91,11 @@ export const useCartStore = defineStore('cart', () => {
     const selectedUnit = normalizeUnitFromProduct(product, selectedUnitCode)
     if (!selectedUnit) return false
 
-    const maxQty = maxQtyByUnit(product.stock, selectedUnit.qtyPerUnit)
+    const cartKey = toCartKey(product.id, selectedUnit.unitCode)
+    const usedPcsOther = usedStockPcs(product.id, cartKey)
+    const maxQty = maxQtyByUnit(product.stock, selectedUnit.qtyPerUnit, usedPcsOther)
     if (maxQty <= 0) return false
 
-    const cartKey = toCartKey(product.id, selectedUnit.unitCode)
     const existing = items.value.find(item => item.cartKey === cartKey)
     if (existing) {
       if (existing.quantity >= maxQty) return false
@@ -94,10 +128,13 @@ export const useCartStore = defineStore('cart', () => {
     }
     const item = items.value.find(i => i.cartKey === cartKey)
     if (item) {
-      const maxQty = maxQtyByUnit(item.stock, item.qtyPerUnit)
-      item.quantity = maxQty > 0
-        ? Math.min(quantity, maxQty)
-        : quantity
+      const usedPcsOther = usedStockPcs(item.id, cartKey)
+      const maxQty = maxQtyByUnit(item.stock, item.qtyPerUnit, usedPcsOther)
+      if (maxQty <= 0) {
+        removeFromCart(cartKey)
+        return
+      }
+      item.quantity = Math.min(quantity, maxQty)
     }
   }
 
@@ -115,10 +152,15 @@ export const useCartStore = defineStore('cart', () => {
     if (!nextUnit) return false
 
     const nextCartKey = toCartKey(item.id, nextUnit.unitCode)
-    const maxQty = maxQtyByUnit(latest.stock, nextUnit.qtyPerUnit)
+    let usedPcsOther = usedStockPcs(item.id, cartKey)
+    const existing = items.value.find(i => i.cartKey === nextCartKey && i.cartKey !== cartKey)
+    if (existing) {
+      usedPcsOther -= Number(existing.quantity || 0) * Number(existing.qtyPerUnit || 1)
+    }
+
+    const maxQty = maxQtyByUnit(latest.stock, nextUnit.qtyPerUnit, usedPcsOther)
     if (maxQty <= 0) return false
 
-    const existing = items.value.find(i => i.cartKey === nextCartKey && i.cartKey !== cartKey)
     const nextQuantity = Math.max(1, Math.min(item.quantity, maxQty))
 
     if (existing) {
@@ -153,9 +195,18 @@ export const useCartStore = defineStore('cart', () => {
     }
 
     const productsById = new Map(res.data.map(product => [product.id, product]))
+    const totalPcsByProduct = new Map()
+
+    items.value.forEach((item) => {
+      const current = totalPcsByProduct.get(item.id) || 0
+      const qty = Number(item.quantity || 0)
+      const perUnit = Number(item.qtyPerUnit || 1)
+      totalPcsByProduct.set(item.id, current + qty * perUnit)
+    })
+
     let updated = false
 
-    items.value = items.value.map(item => {
+    const nextItems = items.value.map(item => {
       const latest = productsById.get(item.id)
       if (!latest) return item
 
@@ -166,10 +217,12 @@ export const useCartStore = defineStore('cart', () => {
       const nextStock = Number(latest.stock || 0)
       const nextWeight = Number(nextUnit.weight || 0)
       const nextQtyPerUnit = Number(nextUnit.qtyPerUnit || 1)
-      const maxQty = maxQtyByUnit(nextStock, nextQtyPerUnit)
+      const totalPcs = totalPcsByProduct.get(item.id) || 0
+      const usedOtherPcs = totalPcs - (Number(item.quantity || 0) * Number(item.qtyPerUnit || 1))
+      const maxQty = maxQtyByUnit(nextStock, nextQtyPerUnit, usedOtherPcs)
       const nextQuantity = maxQty > 0
         ? Math.min(item.quantity, maxQty)
-        : item.quantity
+        : 0
 
       if (
         item.price !== nextPrice ||
@@ -201,6 +254,9 @@ export const useCartStore = defineStore('cart', () => {
       }
     })
 
+    items.value = nextItems.filter(item => item.quantity > 0)
+    if (items.value.length !== nextItems.length) updated = true
+
     return { success: true, updated }
   }
 
@@ -214,7 +270,9 @@ export const useCartStore = defineStore('cart', () => {
     updateQuantity,
     clearCart,
     updateItemUnit,
-    refreshCartPrices
+    refreshCartPrices,
+    availableQtyForUnit,
+    usedStockPcsForProduct
   }
 }, {
   persist: {

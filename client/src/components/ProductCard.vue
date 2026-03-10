@@ -102,7 +102,7 @@
           </button>
 
           <p v-if="!isOutOfStock && isQtyAtStockLimit" class="text-xs text-red-500 mt-2">
-            Stok habis, tidak bisa tambah ke keranjang.
+            Qty sudah di batas stok ({{ maxQtyForSelectedUnit }}).
           </p>
 
         </div>
@@ -160,7 +160,11 @@ const cartQtyForSelectedUnit = computed(() =>
 )
 
 const maxQtyForSelectedUnit = computed(() =>
-  Math.floor(Number(props.product.stock || 0) / selectedQtyPerUnit.value)
+  cart.availableQtyForUnit({
+    product: props.product,
+    unitCode: selectedUnitCode.value,
+    qtyPerUnit: selectedQtyPerUnit.value,
+  })
 )
 
 const isOutOfStock = computed(() =>

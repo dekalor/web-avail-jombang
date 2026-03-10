@@ -105,35 +105,29 @@
 
                   <!-- Quantity -->
                   <div>
-                    <div class="flex items-center gap-2 sm:gap-3">
+                    <QtyStepper
+                      :model-value="item.quantity"
+                      :min="1"
+                      :max="getMaxQty(item)"
+                      :disable-increment="isQtyAtStockLimit(item)"
+                      @update:model-value="setItemQuantity(item, $event)"
+                    />
 
+                    <div class="mt-2 flex items-center gap-2">
                       <button
-                        @click="decrementQuantity(item)"
-                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10 flex items-center justify-center"
+                        type="button"
+                        class="rounded-full border border-gray-300 px-2.5 py-1 text-[11px] font-semibold text-gray-600 hover:border-[#7BA87D] hover:text-[#2C4A2F]"
+                        @click="applyMaxQty(item)"
                       >
-                        <Minus class="w-3 h-3 sm:w-4 sm:h-4" />
+                        Maks
                       </button>
-
-                      <span class="text-lg sm:text-xl font-semibold min-w-[2.5rem] text-center">
-                        {{ item.quantity }}
-                      </span>
-
-                      <button
-                        @click="incrementQuantity(item)"
-                        :disabled="isQtyAtStockLimit(item)"
-                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 flex items-center justify-center"
-                        :class="isQtyAtStockLimit(item)
-                          ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10'"
-                      >
-                        <Plus class="w-3 h-3 sm:w-4 sm:h-4" />
-                      </button>
-
+                      <p v-if="isQtyAtStockLimit(item)" class="text-xs text-red-500">
+                        Qty sudah di batas stok ({{ getMaxQty(item) }})
+                      </p>
+                      <p v-else class="text-xs text-gray-500">
+                        Tersedia sampai {{ getMaxQty(item) }} {{ item.unitLabel || item.unitCode?.toUpperCase() || 'unit' }}
+                      </p>
                     </div>
-
-                    <p v-if="isQtyAtStockLimit(item)" class="text-xs text-red-500 mt-2">
-                      Stok habis, tidak bisa tambah ke keranjang.
-                    </p>
 
                   </div>
 
@@ -260,7 +254,8 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
-import { Plus, Minus, ArrowRight, ShoppingBag, Trash2, Weight } from 'lucide-vue-next'
+import { ArrowRight, ShoppingBag, Trash2, Weight } from 'lucide-vue-next'
+import QtyStepper from '../components/QtyStepper.vue'
 
 const router = useRouter()
 const cart = useCartStore()
@@ -289,15 +284,31 @@ const removeConfirm = ref({
 })
 
 // Methods
-function incrementQuantity(item) {
-  if (isQtyAtStockLimit(item)) return
-  cart.updateQuantity(item.cartKey, item.quantity + 1)
+function getMaxQty(item) {
+  return cart.availableQtyForUnit({
+    product: item,
+    unitCode: item.unitCode,
+    qtyPerUnit: item.qtyPerUnit,
+    excludeCartKey: item.cartKey,
+  })
 }
 
-function decrementQuantity(item) {
-  if (item.quantity > 1) {
-    cart.updateQuantity(item.cartKey, item.quantity - 1)
+function setItemQuantity(item, nextQty) {
+  const maxQty = getMaxQty(item)
+
+  if (maxQty <= 0) {
+    return
   }
+
+  const safeQty = Math.min(Math.max(Number(nextQty || 1), 1), maxQty)
+
+  cart.updateQuantity(item.cartKey, safeQty)
+}
+
+function applyMaxQty(item) {
+  const maxQty = getMaxQty(item)
+  if (maxQty <= 0) return
+  cart.updateQuantity(item.cartKey, maxQty)
 }
 
 function openRemoveConfirm(item) {
@@ -328,9 +339,7 @@ function goToCheckout() {
 }
 
 function isQtyAtStockLimit(item) {
-  const stockPcs = Number(item.stock || 0)
-  const qtyPerUnit = Number(item.qtyPerUnit || 1)
-  const maxQty = qtyPerUnit > 0 ? Math.floor(stockPcs / qtyPerUnit) : 0
+  const maxQty = getMaxQty(item)
   if (maxQty <= 0) return true
   return item.quantity >= maxQty
 }

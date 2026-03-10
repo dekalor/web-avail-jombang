@@ -203,37 +203,34 @@
                 Jumlah
               </label>
 
-              <div class="flex items-center gap-3 sm:gap-4">
+              <QtyStepper
+                :model-value="quantity"
+                :min="1"
+                :max="Math.max(availableStockToAdd, 1)"
+                :disable-increment="isQtyAtStockLimit"
+                @update:model-value="setQuantity"
+              />
 
+              <div class="mt-2 flex items-center gap-2">
                 <button
-                  @click="decrementQuantity"
-                  class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-2 border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10 flex items-center justify-center"
+                  type="button"
+                  class="rounded-full border border-gray-300 px-2.5 py-1 text-[11px] font-semibold text-gray-600 hover:border-[#7BA87D] hover:text-[#2C4A2F]"
+                  @click="applyMaxQty"
+                  :disabled="isOutOfStock"
                 >
-                  <Minus class="w-4 h-4 sm:w-6 sm:h-6"/>
+                  Maks
                 </button>
 
-                <span class="text-lg sm:text-xl lg:text-2xl font-semibold min-w-[3rem] sm:min-w-[4rem] text-center">
-                  {{ quantity }}
-                </span>
+                <p v-if="isQtyAtStockLimit" class="text-xs text-red-500">
+                  {{ isOutOfStock
+                    ? 'Stok habis, tidak bisa tambah ke keranjang.'
+                    : `Qty sudah di batas stok (${availableStockToAdd})` }}
+                </p>
 
-                <button
-                  @click="incrementQuantity"
-                  :disabled="isQtyAtStockLimit"
-                  class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-2 flex items-center justify-center"
-                  :class="isQtyAtStockLimit
-                    ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'border-gray-300 hover:border-[#7BA87D] hover:bg-[#7BA87D]/10'"
-                >
-                  <Plus class="w-4 h-4 sm:w-6 sm:h-6"/>
-                </button>
-
+                <p v-else class="text-xs text-gray-500">
+                  Tersedia sampai {{ availableStockToAdd }} {{ selectedUnit?.label || selectedUnit?.unitCode?.toUpperCase() || 'unit' }}
+                </p>
               </div>
-
-              <p v-if="isQtyAtStockLimit" class="text-xs text-red-500 mt-2">
-                {{ isOutOfStock
-                  ? 'Stok habis, tidak bisa tambah ke keranjang.'
-                  : 'Qty maksimal untuk ditambahkan sudah tercapai.' }}
-              </p>
 
             </div>
 
@@ -289,8 +286,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
 import { useProducts } from '../composables/useProducts'
-import { ShoppingCart, Plus, Minus } from 'lucide-vue-next'
+import { ShoppingCart } from 'lucide-vue-next'
 import MediaModal from '../components/MediaModal.vue'
+import QtyStepper from '../components/QtyStepper.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -409,18 +407,12 @@ const maxStock = computed(() =>
   Number(product.value?.stock || 0)
 )
 
-const cartQtyForThisProduct = computed(() => {
-  if (!product.value?.id) return 0
-  return cart.items
-    .filter(item => item.id === product.value.id && item.unitCode === selectedUnitCode.value)
-    .reduce((sum, item) => sum + Number(item.quantity || 0), 0)
-})
-
 const availableStockToAdd = computed(() =>
-  Math.max(
-    Math.floor(maxStock.value / selectedQtyPerUnit.value) - cartQtyForThisProduct.value,
-    0
-  )
+  cart.availableQtyForUnit({
+    product: product.value,
+    unitCode: selectedUnitCode.value,
+    qtyPerUnit: selectedQtyPerUnit.value,
+  })
 )
 
 const isOutOfStock = computed(() =>
@@ -452,13 +444,22 @@ function prevImage() {
   modalImageIndex.value = (modalImageIndex.value - 1 + imageOnlyMedia.value.length) % imageOnlyMedia.value.length
 }
 
-function incrementQuantity() {
-  if (isQtyAtStockLimit.value) return
-  quantity.value++
+function setQuantity(nextQty) {
+  if (availableStockToAdd.value <= 0) {
+    quantity.value = 1
+    return
+  }
+
+  const safeQty = Math.min(
+    Math.max(Number(nextQty || 1), 1),
+    availableStockToAdd.value
+  )
+  quantity.value = safeQty
 }
 
-function decrementQuantity() {
-  if (quantity.value > 1) quantity.value--
+function applyMaxQty() {
+  if (availableStockToAdd.value <= 0) return
+  quantity.value = availableStockToAdd.value
 }
 
 function addToCart() {
