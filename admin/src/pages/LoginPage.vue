@@ -22,13 +22,24 @@
 
         <div>
           <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">Password</label>
-          <input
-            v-model="form.password"
-            type="password"
-            class="input-base border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-500"
-            placeholder="••••••••"
-            @keyup.enter="submit"
-          />
+          <div class="relative">
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              class="input-base border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-500 pr-12"
+              placeholder="••••••••"
+              @keyup.enter="submit"
+            />
+            <button
+              type="button"
+              class="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-slate-300 hover:text-white"
+              @click="showPassword = !showPassword"
+              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+            >
+              <EyeOff v-if="showPassword" class="h-4 w-4" />
+              <Eye v-else class="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <button class="btn-base w-full bg-blue-600 text-white hover:bg-blue-700" @click="submit" :disabled="loading">
@@ -41,6 +52,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { Eye, EyeOff } from 'lucide-vue-next'
 import { useApi } from '../composables/useApi.js'
 
 const emit = defineEmits(['login-success'])
@@ -49,6 +61,7 @@ const { post } = useApi()
 const form = ref({ username: '', password: '' })
 const error = ref('')
 const loading = ref(false)
+const showPassword = ref(false)
 
 async function submit() {
   error.value = ''
