@@ -18,6 +18,12 @@ const isProd = process.env.NODE_ENV === 'production';
 async function createApp() {
   const app = express();
   const bodyLimit = process.env.BODY_LIMIT || '20mb';
+
+  if (isProd) {
+    // Trust first proxy so secure cookies work behind TLS terminators
+    app.set('trust proxy', 1);
+  }
+  
   app.use(express.json({ limit: bodyLimit }));
   app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
   app.use(express.text({ limit: bodyLimit }));
