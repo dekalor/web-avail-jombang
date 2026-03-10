@@ -26,10 +26,10 @@ const orderService = {
 
       const product = await productRepository.findById(productId);
       if (!product) {
-        throw Object.assign(new Error(`Product id ${productId} not found`), { status: 400 });
+        throw Object.assign(new Error(`ID Produk ${productId} tidak ditemukan`), { status: 400 });
       }
       if (!product.active) {
-        throw Object.assign(new Error(`Product "${product.name}" is unavailable`), { status: 400 });
+        throw Object.assign(new Error(`Produk "${product.name}" sedang tidak tersedia`), { status: 400 });
       }
       let unit = null;
       if (item.product_unit_id) {
@@ -44,21 +44,14 @@ const orderService = {
       }
 
       if (!unit || !unit.active) {
-        throw Object.assign(new Error(`Product unit for "${product.name}" not found`), { status: 400 });
+        throw Object.assign(new Error(`Unit produk untuk "${product.name}" tidak ditemukan`), { status: 400 });
       }
 
-      const qtyPerUnit = Number(unit.qtyPerUnit || 1);
-      if (!Number.isFinite(qtyPerUnit) || qtyPerUnit <= 0) {
-        throw Object.assign(
-          new Error(`Invalid qty_per_unit for "${product.name}" (${unit.unitCode})`),
-          { status: 400 }
-        );
-      }
-
+      const qtyPerUnit = Number(unit.qtyPerUnit);
       const qtyInPcs = qty * qtyPerUnit;
       if (product.stock < qtyInPcs) {
         throw Object.assign(
-          new Error(`Insufficient stock for "${product.name}" (available: ${product.stock} pcs)`),
+          new Error(`Stok tidak cukup untuk produk "${product.name}" (tersedia: ${product.stock} pcs)`),
           { status: 400 }
         );
       }
