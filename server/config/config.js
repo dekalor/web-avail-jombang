@@ -34,4 +34,14 @@ module.exports = {
     CHECKOUT_CHALLENGE_MIN_SUBMIT_MS: parseInt(process.env.CHECKOUT_CHALLENGE_MIN_SUBMIT_MS || '3000', 10),
     CHECKOUT_CHALLENGE_TTL_MS: parseInt(process.env.CHECKOUT_CHALLENGE_TTL_MS || '600000', 10),
   },
+
+  EMAIL: {
+    SMTP_HOST: process.env.SMTP_HOST || '',
+    SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
+    SMTP_SECURE: String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true',
+    SMTP_USER: process.env.SMTP_USER || '',
+    SMTP_PASS: process.env.SMTP_PASS || '',
+    SMTP_FROM: process.env.SMTP_FROM || '',
+    ORDER_NOTIFICATION_EMAIL: process.env.ORDER_NOTIFICATION_EMAIL || '',
+  },
 };

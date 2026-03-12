@@ -4,6 +4,7 @@ const productRepository = require('../repositories/productRepository');
 const shippingRepository = require('../repositories/shippingRepository');
 const generateOrderNumber = require("../utils/generateOrderNumber")
 const { storeOrderPaymentProof } = require('../utils/cloudinaryStore');
+const { notifyOrderReceived } = require('../utils/orderEmailNotifier');
 const { FREE_SHIPPING_MIN } = require('../config/config');
 
 const VALID_STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -118,7 +119,15 @@ const orderService = {
       return newOrder;
     });
 
-    return orderRepository.findById(order.id);
+    const createdOrder = await orderRepository.findById(order.id);
+
+    try {
+      await notifyOrderReceived(createdOrder);
+    } catch (emailErr) {
+      console.error(`[OrderEmail] Failed to send notification for order ${createdOrder.orderNumber}: ${emailErr.message}`);
+    }
+
+    return createdOrder;
   },
 
   async getOrderById(id) {
