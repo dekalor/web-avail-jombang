@@ -41,21 +41,63 @@
             </router-link>
           </nav>
 
-          <!-- Cart Button -->
-          <button
-            @click="$router.push('/cart')"
-            class="relative text-lg px-6 py-3 border-2 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <ShoppingCart class="w-6 h-6" />
-            <span
-              v-if="totalItems > 0"
-              class="absolute -top-2 -right-2 bg-[#7BA87D] text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold"
+          <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Cart Button -->
+            <button
+              @click="$router.push('/cart')"
+              class="relative text-lg px-3 sm:px-6 py-2.5 sm:py-3 border-2 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              {{ totalItems }}
-            </span>
-          </button>
+              <ShoppingCart class="w-5 h-5 sm:w-6 sm:h-6" />
+              <span
+                v-if="totalItems > 0"
+                class="absolute -top-2 -right-2 bg-[#7BA87D] text-white w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold"
+              >
+                {{ totalItems }}
+              </span>
+            </button>
+
+            <!-- Mobile Menu Button -->
+            <button
+              class="md:hidden inline-flex items-center justify-center w-11 h-11 border-2 rounded-lg hover:bg-gray-50 transition-colors text-[#2C4A2F]"
+              @click="isMobileMenuOpen = !isMobileMenuOpen"
+              :aria-expanded="isMobileMenuOpen"
+              aria-label="Toggle navigation menu"
+            >
+              <X v-if="isMobileMenuOpen" class="w-5 h-5" />
+              <Menu v-else class="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
+
+      <!-- Mobile Navigation -->
+      <nav
+        v-if="isMobileMenuOpen"
+        class="md:hidden border-t border-gray-200 bg-white px-4 py-3 space-y-1"
+      >
+        <router-link
+          to="/"
+          class="block px-3 py-2 rounded-md text-gray-700 hover:bg-[#F5F1E8] hover:text-[#2C4A2F] transition-colors"
+          active-class="bg-[#E7F1E7] text-[#2C4A2F] font-semibold"
+          exact-active-class="bg-[#E7F1E7] text-[#2C4A2F] font-semibold"
+        >
+          Home
+        </router-link>
+        <router-link
+          to="/products"
+          class="block px-3 py-2 rounded-md text-gray-700 hover:bg-[#F5F1E8] hover:text-[#2C4A2F] transition-colors"
+          active-class="bg-[#E7F1E7] text-[#2C4A2F] font-semibold"
+        >
+          Produk Kami
+        </router-link>
+        <router-link
+          to="/testimonials"
+          class="block px-3 py-2 rounded-md text-gray-700 hover:bg-[#F5F1E8] hover:text-[#2C4A2F] transition-colors"
+          active-class="bg-[#E7F1E7] text-[#2C4A2F] font-semibold"
+        >
+          Testimoni
+        </router-link>
+      </nav>
     </header>
 
     <!-- Main Content -->
@@ -131,13 +173,23 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useCartStore } from '../stores/cartStore'
-import { MapPin, MessageCircleCheck, Mail, ShoppingCart } from 'lucide-vue-next';
+import { MapPin, MessageCircleCheck, Mail, ShoppingCart, Menu, X } from 'lucide-vue-next';
 
 const cart = useCartStore()
+const route = useRoute()
 const totalItems = computed(() => cart.totalItems)
 const currentYear = new Date().getFullYear()
+const isMobileMenuOpen = ref(false)
+
+watch(
+  () => route.fullPath,
+  () => {
+    isMobileMenuOpen.value = false
+  }
+)
 
 const stores = [
   {
