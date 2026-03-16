@@ -121,11 +121,11 @@ const orderService = {
 
     const createdOrder = await orderRepository.findById(order.id);
 
-    try {
-      await notifyOrderReceived(createdOrder);
-    } catch (emailErr) {
-      console.error(`[OrderEmail] Failed to send notification for order ${createdOrder.orderNumber}: ${emailErr.message}`);
-    }
+    setImmediate(() => {
+      notifyOrderReceived(createdOrder).catch((emailErr) => {
+        console.error(`[OrderEmail] Failed to send notification for order ${createdOrder.orderNumber}: ${emailErr.message}`);
+      });
+    });
 
     return createdOrder;
   },
