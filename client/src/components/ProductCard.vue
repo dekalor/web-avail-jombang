@@ -70,7 +70,7 @@
                   ? 'bg-[#7BA87D] border-[#7BA87D] text-white'
                   : 'bg-white border-gray-300 text-gray-700 hover:border-[#7BA87D] hover:text-[#2C4A2F]'"
               >
-                {{ unit.label || unit.unitCode.toUpperCase() }}
+                {{ formatUnitLabel(unit) }}
               </button>
             </div>
           </div>
@@ -132,7 +132,7 @@ const cart = useCartStore()
 const isAdded = ref(false)
 const selectedUnitCode = ref('')
 
-const { formatPrice } = useProducts()
+const { formatPrice, formatUnitLabel } = useProducts()
 
 const availableUnits = computed(() =>
   Array.isArray(props.product?.units) ? props.product.units : []

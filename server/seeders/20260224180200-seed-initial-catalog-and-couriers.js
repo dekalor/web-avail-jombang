@@ -40,28 +40,28 @@ module.exports = {
         description: '1 pack berisi kombinasi 3 day use, night use dan pantiliner',
         category_id: 1,
         image_url: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772945655/FC_Combination_C9_h2kcir.png',
-        stock: 500,
+        stock: 450,
       },
       {
         name: 'Avail A Cafe',
         description: 'Minuman serbuk kopi dengan berbagai kandungan bahan alami yang dapat membantu meningkatkan stamina tubuh dan berkhasia untuk mengatasi masalah gangguan seksual pria',
         category_id: 2,
         image_url: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772945658/product-1771487886152-dely3x_k93gwz.png',
-        stock: 250,
+        stock: 500,
       },
       {
         name: 'Avail Nutrashake (ANS)',
         description: 'Suplemen serat alami yang sangat dibutuhkan oleh tubuh, terutama dalam mendukung fungsi dan kesehatan pencernaan.',
         category_id: 2,
         image_url: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772946389/Nutrashake_zwinnc.png',
-        stock: 250,
+        stock: 1200,
       },
       {
         name: 'Avail Nutracella (ANC)',
         description: 'ANC mengandung kombinasi bahan-bahan alami bermanfaat bagi kesehatan tubuh, yaitu Klorofil, Spirulina, Green Tea, Glutathione, Double Stem Cell, Collagen Ikan, Ekstrak Mix Berry, FOS',
         category_id: 2,
         image_url: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772945655/ANC_olpcrq.png',
-        stock: 250,
+        stock: 1500,
       },
     ]);
 
@@ -91,10 +91,10 @@ module.exports = {
       { product_id: productMap.get('Avail FC Night Use'), unit_code: 'ball', label: 'BALL', price: 410000, weight: 500, qty_per_unit: 8 },
       { product_id: productMap.get('Avail FC Day Use'), unit_code: 'pcs', label: 'PCS', price: 39000, weight: 50, qty_per_unit: 1 },
       { product_id: productMap.get('Avail FC Day Use'), unit_code: 'ball', label: 'BALL', price: 380000, weight: 500, qty_per_unit: 10 },
-      { product_id: productMap.get('Avail FC Kombinasi'), unit_code: 'ball', label: 'BALL', price: 330000, weight: 600, qty_per_unit: 1 },
-      { product_id: productMap.get('Avail A Cafe'), unit_code: 'box', label: 'BOX', price: 265000, weight: 150, qty_per_unit: 1 },
-      { product_id: productMap.get('Avail Nutrashake (ANS)'), unit_code: 'box', label: 'BOX', price: 335000, weight: 80, qty_per_unit: 1 },
-      { product_id: productMap.get('Avail Nutracella (ANC)'), unit_code: 'box', label: 'BOX', price: 550000, weight: 80, qty_per_unit: 1 },
+      { product_id: productMap.get('Avail FC Kombinasi'), unit_code: 'ball', label: 'BALL', price: 330000, weight: 600, qty_per_unit: 9 },
+      { product_id: productMap.get('Avail A Cafe'), unit_code: 'box', label: 'BOX', price: 265000, weight: 150, qty_per_unit: 5 },
+      { product_id: productMap.get('Avail Nutrashake (ANS)'), unit_code: 'box', label: 'BOX', price: 335000, weight: 80, qty_per_unit: 12 },
+      { product_id: productMap.get('Avail Nutracella (ANC)'), unit_code: 'box', label: 'BOX', price: 550000, weight: 80, qty_per_unit: 15 },
     ]);
 
     await queryInterface.bulkInsert('product_detail_medias', [

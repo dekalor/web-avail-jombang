@@ -83,6 +83,16 @@ export function useProducts() {
     return `${parseFloat(kg.toFixed(2))}kg`
   }
 
+  function formatUnitLabel(unit) {
+    const label = unit?.label || String(unit?.unitCode || '').toUpperCase()
+    const qtyPerUnit = Number(unit?.qtyPerUnit || 1)
+    const unitCode = String(unit?.unitCode || '').toLowerCase()
+
+    if (!label) return 'UNIT'
+    if (qtyPerUnit <= 1 || unitCode === 'pcs') return label
+    return `${label} (${qtyPerUnit} pcs)`
+  }
+
   return {
     products,
     product,
@@ -96,5 +106,6 @@ export function useProducts() {
     formatPrice,
     calculateDiscount,
     formatWeight,
+    formatUnitLabel,
   }
 }

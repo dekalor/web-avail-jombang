@@ -150,7 +150,7 @@
                     ? 'bg-[#7BA87D] border-[#7BA87D] text-white shadow-sm'
                     : 'bg-white border-gray-300 text-gray-700 hover:border-[#7BA87D] hover:text-[#2C4A2F]'"
                 >
-                  {{ unit.label || unit.unitCode.toUpperCase() }}
+                  {{ formatUnitLabel(unit) }}
                 </button>
               </div>
 
@@ -293,7 +293,7 @@ import QtyStepper from '../components/QtyStepper.vue'
 const route = useRoute()
 const router = useRouter()
 const cart = useCartStore()
-const { product, getProductById, formatPrice, formatWeight } = useProducts()
+const { product, getProductById, formatPrice, formatWeight, formatUnitLabel } = useProducts()
 
 const quantity = ref(1)
 const selectedUnitCode = ref('')
