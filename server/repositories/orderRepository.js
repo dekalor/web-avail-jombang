@@ -53,10 +53,10 @@ const orderRepository = {
     return OrderItem.create(itemData, { transaction });
   },
 
-  async updateStatus(id, status) {
-    const order = await Order.findByPk(id);
+  async updateStatus(id, status, transaction) {
+    const order = await Order.findByPk(id, { transaction });
     if (!order) return null;
-    return order.update({ status });
+    return order.update({ status }, { transaction });
   },
 
   // ── Stats queries ─────────────────────────────────────────────────────────

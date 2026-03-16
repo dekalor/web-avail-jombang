@@ -111,6 +111,10 @@ const productRepository = {
     return Product.decrement('stock', { by: qty, where: { id }, transaction });
   },
 
+  incrementStock(id, qty, transaction) {
+    return Product.increment('stock', { by: qty, where: { id }, transaction });
+  },
+
   findUnitById(id) {
     return ProductUnit.findByPk(id);
   },

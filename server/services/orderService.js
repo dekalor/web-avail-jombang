@@ -161,9 +161,31 @@ const orderService = {
         { status: 400 }
       );
     }
-    const order = await orderRepository.updateStatus(id, status);
-    if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
-    return order;
+
+    const updatedOrder = await db.sequelize.transaction(async (transaction) => {
+      const order = await orderRepository.findById(id);
+      if (!order) throw Object.assign(new Error('Order not found'), { status: 404 });
+
+      const previousStatus = String(order.status || '').toLowerCase();
+      const nextStatus = String(status || '').toLowerCase();
+
+      if (previousStatus !== 'cancelled' && nextStatus === 'cancelled') {
+        for (const item of order.items || []) {
+          const qty = Number(item.qty || 0);
+          const qtyPerUnit = Number(item?.unit?.qtyPerUnit || 1);
+          const qtyInPcs = qty * qtyPerUnit;
+          if (qtyInPcs <= 0) continue;
+
+          await productRepository.incrementStock(item.productId, qtyInPcs, transaction);
+        }
+      }
+
+      const nextOrder = await orderRepository.updateStatus(id, nextStatus, transaction);
+      if (!nextOrder) throw Object.assign(new Error('Order not found'), { status: 404 });
+      return nextOrder;
+    });
+
+    return updatedOrder;
   },
 
   async getOrderStats() {
