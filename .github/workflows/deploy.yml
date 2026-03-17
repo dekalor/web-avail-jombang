@@ -10,6 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build app
+        run: npm run build
+
+      - name: Upload build to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          source: "client/dist,admin/dist"
+          target: "/home/availjom/web-avail-jombang"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -30,11 +46,8 @@ jobs:
             echo "📥 Pull latest code"
             git pull origin main
 
-            echo "📦 Install dependencies"
-            npm install
-
-            echo "🏗️ Build frontend"
-            npm run build
+            echo "📦 Install production deps"
+            npm install --omit=dev
 
             echo "🔄 Restart app"
             pm2 reload web-avail-jombang || pm2 start ecosystem.config.js
