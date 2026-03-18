@@ -261,13 +261,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import ProductCard from '../components/ProductCard.vue'
 import { useProducts } from '../composables/useProducts'
 import { ArrowDown, ArrowRight, Award, Leaf, Shield, Zap, Play } from 'lucide-vue-next'
 import MediaModal from '../components/MediaModal.vue';
 
-const { loadProducts, products } = useProducts()
+const { loadFeaturedProducts, featuredProducts } = useProducts()
 
 const selectedMediaIndex = ref(null);
 let revealObserver = null
@@ -336,7 +336,7 @@ const galleryMedias = [
 ];
 
 onMounted(async () => {
-  await loadProducts()
+  await loadFeaturedProducts(3)
   await nextTick()
   initScrollReveal()
 })
@@ -347,9 +347,6 @@ onUnmounted(() => {
     revealObserver = null
   }
 })
-
-// Featured products (first 3)
-const featuredProducts = computed(() => products.value.slice(0, 3))
 
 function scrollToGallery() {
   const section = document.getElementById('gallery-avail-tips-benefit')

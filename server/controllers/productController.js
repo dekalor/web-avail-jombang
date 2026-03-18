@@ -28,6 +28,14 @@ const productController = {
     } catch (err) { next(err); }
   },
 
+  async featured(req, res, next) {
+    try {
+      const limit = Math.max(Number(req.query.limit || 3), 1);
+      const products = await productService.getFeaturedProducts(limit);
+      res.json({ success: true, data: products });
+    } catch (err) { next(err); }
+  },
+
   async getCategories(req, res, next) {
     try {
       const categories = await productCategoryService.getAllProductCategories({

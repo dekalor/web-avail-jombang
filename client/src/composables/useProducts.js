@@ -2,6 +2,7 @@ import { ref, onMounted, computed, watch } from "vue"
 import { useApi } from '../composables/useApi.js'
 
 const products = ref([])
+const featuredProducts = ref([])
 const categories = ref([])
 const loading = ref(false)
 const selectedCategoryId = ref(0)
@@ -57,6 +58,26 @@ export function useProducts() {
     categories.value = res.data
   }
 
+  async function loadFeaturedProducts(limit = 3) {
+    loading.value = true
+    try {
+      const params = new URLSearchParams()
+      params.set('limit', String(Math.max(Number(limit || 3), 1)))
+
+      const res = await get(`/products/featured?${params.toString()}`)
+      if (!res.success) {
+        throw new Error('Failed to fetch featured products')
+      }
+
+      featuredProducts.value = Array.isArray(res.data) ? res.data : []
+    } catch (err) {
+      console.error(err)
+      featuredProducts.value = []
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function getProductById(id) {
     loading.value = true
     try {
@@ -95,12 +116,14 @@ export function useProducts() {
 
   return {
     products,
+    featuredProducts,
     product,
     categories: categoryOptions,
     loading,
     selectedCategoryId,
     loadProducts,
     loadCategories,
+    loadFeaturedProducts,
     getProductById,
 
     formatPrice,

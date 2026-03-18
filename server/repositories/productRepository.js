@@ -1,5 +1,5 @@
-const { Op }    = require('sequelize');
-const { Product, ProductCategory, ProductUnit, ProductDetailMedia } = require('../models');
+const { Op, fn, col } = require('sequelize');
+const { Product, ProductCategory, ProductUnit, ProductDetailMedia, OrderItem, Order } = require('../models');
 
 const productRepository = {
 
@@ -80,6 +80,121 @@ const productRepository = {
         order: [['sortOrder', 'ASC'], ['id', 'ASC']],
       }],
     });
+  },
+
+  async findFeatured(limit = 3) {
+    const topSoldRows = await OrderItem.findAll({
+      attributes: [
+        'productId',
+        [fn('SUM', col('OrderItem.qty')), 'units_sold'],
+      ],
+      include: [
+        {
+          model: Order,
+          as: 'order',
+          attributes: [],
+          where: { status: { [Op.ne]: 'cancelled' } },
+          required: true,
+        },
+        {
+          model: Product,
+          as: 'product',
+          attributes: [],
+          where: { active: true },
+          required: true,
+        },
+      ],
+      group: ['OrderItem.product_id'],
+      order: [[fn('SUM', col('OrderItem.qty')), 'DESC']],
+      limit: limit,
+      raw: true,
+    });
+
+    const topSoldProductIds = topSoldRows.map((row) => Number(row.productId)).filter(Boolean);
+
+    if (!topSoldProductIds.length) {
+      return this.findAll({ activeOnly: true }).then((rows) => rows.slice(0, limit));
+    }
+
+    const featuredProducts = await Product.findAll({
+      where: {
+        id: { [Op.in]: topSoldProductIds },
+        active: true,
+      },
+      include: [{
+        model: ProductCategory,
+        as: 'category',
+        attributes: ['id', 'name'],
+        required: false,
+      }, {
+        model: ProductUnit,
+        as: 'defaultUnit',
+        required: false,
+        where: {
+          unitCode: 'pcs',
+          active: true,
+        },
+      }, {
+        model: ProductUnit,
+        as: 'units',
+        required: false,
+        where: { active: true },
+        separate: true,
+      }, {
+        model: ProductDetailMedia,
+        as: 'detailMedia',
+        required: false,
+        separate: true,
+        order: [['sortOrder', 'ASC'], ['id', 'ASC']],
+      }],
+      distinct: true,
+    });
+
+    const byId = new Map(featuredProducts.map((item) => [Number(item.id), item]));
+    const orderedFeatured = topSoldProductIds.map((id) => byId.get(id)).filter(Boolean);
+
+    if (orderedFeatured.length >= limit) {
+      return orderedFeatured.slice(0, limit);
+    }
+
+    const remaining = limit - orderedFeatured.length;
+    const fallbackProducts = await Product.findAll({
+      where: {
+        active: true,
+        id: { [Op.notIn]: topSoldProductIds },
+      },
+      include: [{
+        model: ProductCategory,
+        as: 'category',
+        attributes: ['id', 'name'],
+        required: false,
+      }, {
+        model: ProductUnit,
+        as: 'defaultUnit',
+        required: false,
+        where: {
+          unitCode: 'pcs',
+          active: true,
+        },
+      }, {
+        model: ProductUnit,
+        as: 'units',
+        required: false,
+        where: { active: true },
+        separate: true,
+      }, {
+        model: ProductDetailMedia,
+        as: 'detailMedia',
+        required: false,
+        separate: true,
+        order: [['sortOrder', 'ASC'], ['id', 'ASC']],
+      }],
+      order: [['id', 'ASC']],
+      distinct: true,
+      limit: remaining,
+    });
+
+    return [...orderedFeatured, ...fallbackProducts];
   },
 
   create(data, transaction) {

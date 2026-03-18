@@ -31,6 +31,11 @@ const productService = {
     return products.map(normalizeProduct);
   },
 
+  async getFeaturedProducts(limit = 3) {
+    const products = await productRepository.findFeatured(limit);
+    return products.map(normalizeProduct);
+  },
+
   async getProductById(id) {
     const product = await productRepository.findById(id);
     if (!product) throw Object.assign(new Error('Product not found'), { status: 404 });
