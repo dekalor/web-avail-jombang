@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "nodemon server/index.js",
-    "build": "npm run build -w client && npm run build -w admin",
+    "build": "node server/scripts/generateSitemap.js && npm run build -w client && npm run build -w admin",
     "start": "node server/index.js",
     "migrateup": "npx sequelize-cli db:migrate",
     "migratedownto": "npx sequelize-cli db:migrate:undo:all",
