@@ -129,7 +129,7 @@
                 <div class="flex items-center gap-2">
                   <button class="btn-base btn-secondary" @click="viewDetail(order.id)">Detail</button>
                   <select
-                    class="input-base !w-[140px]"
+                    class="input-base !w-[200px]"
                     :disabled="isUpdating(order.id) || !getNextStatuses(order.status).length"
                     :value="order.status"
                     @change="onRowStatusChange(order, $event.target.value)"
