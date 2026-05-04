@@ -60,7 +60,13 @@ jobs:
             echo "📦 Install production deps"
             npm install --omit=dev
 
-            echo "🔄 Restart app"
-            pm2 reload web-avail-jombang || pm2 start ecosystem.config.js
+            echo "🔄 Start or reload PM2 (idempotent)"
+            pm2 start ecosystem.config.js --only web-avail-jombang
+
+            echo "💾 Save PM2 state"
+            pm2 save
+
+            echo "🧹 clean old processes"
+            pm2 prune
 
             echo "✅ Deployment finished"
