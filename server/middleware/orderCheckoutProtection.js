@@ -1,17 +1,7 @@
 const crypto = require('crypto');
+const { Op } = require('sequelize');
 const rateLimit = require('express-rate-limit');
 const { API_SECURITY } = require('../config/config');
-
-const challengeStore = new Map();
-
-function cleanupExpiredChallenges() {
-  const now = Date.now();
-  for (const [id, value] of challengeStore.entries()) {
-    if (value.expiresAt <= now) {
-      challengeStore.delete(id);
-    }
-  }
-}
 
 function getClientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
@@ -28,18 +18,21 @@ function ensureGuestToken(req) {
   return req.session.guestCheckoutToken;
 }
 
-function issueCheckoutProtection(req, res) {
-  cleanupExpiredChallenges();
+async function issueCheckoutProtection(req, res) {
+  // Lazy cleanup of expired challenges
+  const { CheckoutChallenge } = require('../models');
+  CheckoutChallenge.destroy({ where: { expiresAt: { [Op.lt]: Date.now() } } }).catch(() => {});
 
   const guestToken = ensureGuestToken(req);
   const challengeId = crypto.randomUUID();
   const now = Date.now();
 
-  challengeStore.set(challengeId, {
-    issuedAt: now,
-    expiresAt: now + API_SECURITY.CHECKOUT_CHALLENGE_TTL_MS,
+  await CheckoutChallenge.create({
+    id: challengeId,
     guestToken,
     ip: getClientIp(req),
+    issuedAt: now,
+    expiresAt: now + API_SECURITY.CHECKOUT_CHALLENGE_TTL_MS,
   });
 
   return res.json({
@@ -53,8 +46,8 @@ function issueCheckoutProtection(req, res) {
   });
 }
 
-function verifyCheckoutProtection(req, res, next) {
-  cleanupExpiredChallenges();
+async function verifyCheckoutProtection(req, res, next) {
+  const { CheckoutChallenge } = require('../models');
 
   const data = req.validated || req.body || {};
   const guestToken = data.guest_checkout_token;
@@ -75,7 +68,7 @@ function verifyCheckoutProtection(req, res, next) {
     });
   }
 
-  const challenge = challengeStore.get(challengeId);
+  const challenge = await CheckoutChallenge.findByPk(challengeId);
   if (!challenge) {
     return res.status(403).json({
       success: false,
@@ -83,15 +76,25 @@ function verifyCheckoutProtection(req, res, next) {
     });
   }
 
+  const now = Date.now();
+
+  if (Number(challenge.expiresAt) <= now) {
+    await challenge.destroy();
+    return res.status(403).json({
+      success: false,
+      message: 'Challenge is invalid or expired',
+    });
+  }
+
   if (challenge.guestToken !== guestToken || challenge.ip !== getClientIp(req)) {
-    challengeStore.delete(challengeId);
+    await challenge.destroy();
     return res.status(403).json({
       success: false,
       message: 'Challenge does not match this request',
     });
   }
 
-  const elapsed = Date.now() - challenge.issuedAt;
+  const elapsed = now - Number(challenge.issuedAt);
   if (elapsed < API_SECURITY.CHECKOUT_CHALLENGE_MIN_SUBMIT_MS) {
     return res.status(429).json({
       success: false,
@@ -99,7 +102,7 @@ function verifyCheckoutProtection(req, res, next) {
     });
   }
 
-  challengeStore.delete(challengeId);
+  await challenge.destroy();
   return next();
 }
 

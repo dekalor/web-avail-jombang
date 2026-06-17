@@ -5,9 +5,9 @@ const db = require('./models')
 
 async function start() {
   await db.sequelize.authenticate()
-    .then(() => console.log('✅ MySQL (Sequelize) connected'))
+    .then(() => console.log('✅ Database connected'))
     .catch(err => {
-      console.error('❌ MySQL connection failed:', err.message);
+      console.error('❌ Database connection failed:', err.message);
       process.exit(1);
     });
 
@@ -17,7 +17,7 @@ async function start() {
   const app = await createApp();
   app.listen(PORT, () => {
     const isDev = process.env.NODE_ENV !== 'production';
-    console.log(`🌱 Avail Jombang → http://localhost:${PORT}`);
+    console.log(`Avail Jombang → http://localhost:${PORT}`);
     if (isDev) {
       console.log(`   Store  → http://localhost:${PORT}/`);
       console.log(`   Admin  → http://localhost:${PORT}/admin/`);
