@@ -36,7 +36,7 @@ async function createApp() {
     cookie: {
       maxAge: SESSION.MAX_AGE_MS,
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
     },
   }));
@@ -49,21 +49,7 @@ async function createApp() {
   app.use('/api/admin',    adminRoutes);
   app.use('/api/shipping',    shippingRoutes);
 
-  if (isProd) {
-    // ── Production: serve pre-built Vite dist folders ──────────────────────
-    // Admin SPA — must come before client so /admin/* is matched first
-    app.use('/admin', express.static(path.join(__dirname, '../admin/dist')));
-    app.get('/admin/*', (req, res) =>
-      res.sendFile(path.join(__dirname, '../admin/dist/index.html'))
-    );
-
-    // Client
-    app.use(express.static(path.join(__dirname, '../client/dist')));
-    app.get('*', (req, res) =>
-      res.sendFile(path.join(__dirname, '../client/dist/index.html'))
-    );
-
-  } else {
+  if (!isProd) {
     // ── Development: Vite dev servers as Express middleware ─────────────────
     // Both get full HMR, no separate ports needed.
     const { createServer: createViteServer } = await import('vite');

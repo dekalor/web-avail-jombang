@@ -8,7 +8,7 @@ module.exports = {
     USER:     process.env.DB_USER     || 'root',
     PASSWORD: process.env.DB_PASSWORD || '',
     NAME:     process.env.DB_NAME     || 'avail_db',
-    DIALECT:  'mysql',
+    DIALECT:  process.env.DB_DIALECT || 'postgres',
   },
 
   SESSION: {

@@ -10,9 +10,11 @@ export function useApi() {
     }
   }
 
+  const apiBase = import.meta.env.API_BASE_URL ?? ''
+
   async function request(method, path, body) {
     try {
-      const res = await fetch(`/api${path}`, {
+      const res = await fetch(`${apiBase}/api${path}`, {
         method,
         credentials: 'include',
         headers: headers(body !== undefined),

@@ -6,8 +6,10 @@ export function useApi() {
     }
   }
 
+  const apiBase = import.meta.env.API_BASE_URL ?? ''
+
   async function request(method, path, body) {
-    const res = await fetch(`/api/admin${path}`, {
+    const res = await fetch(`${apiBase}/api/admin${path}`, {
       method,
       credentials: 'include',
       headers: headers(body !== undefined),
