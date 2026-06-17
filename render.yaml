@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: avail-jombang-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server/index.js
+    buildFilter:
+      paths:
+        - server/**
+        - package.json
+        - package-lock.json
