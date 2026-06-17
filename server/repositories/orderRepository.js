@@ -84,7 +84,7 @@ const orderRepository = {
   countToday() {
     return Order.count({
       where: {
-        created_at: { [Op.gte]: literal('CURRENT_DATE') },
+        created_at: { [Op.gte]: literal('CURDATE()') },
       },
     });
   },
@@ -96,7 +96,7 @@ const orderRepository = {
         [fn('COUNT', col('id')), 'count'],
       ],
       where: {
-        created_at: { [Op.gte]: literal('CURRENT_DATE') },
+        created_at: { [Op.gte]: literal('CURDATE()') },
       },
       group: ['status'],
       raw: true,
@@ -110,7 +110,7 @@ const orderRepository = {
         [fn('SUM', col('total')), 'revenue'],
       ],
       where: {
-        created_at: { [Op.gte]: literal("CURRENT_DATE - INTERVAL '6 days'") },
+        created_at: { [Op.gte]: literal('DATE_SUB(CURDATE(), INTERVAL 6 DAY)') },
         status: { [Op.notIn]: ['cancelled', 'pending'] },
       },
       group: [fn('DATE', col('created_at'))],

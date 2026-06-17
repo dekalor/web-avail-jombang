@@ -86,11 +86,10 @@ module.exports = {
     });
 
     await queryInterface.sequelize.query(`
-      UPDATE products
-      SET price = COALESCE(pso.price, products.price),
-          weight = COALESCE(pso.weight, products.weight)
-      FROM product_units pso
-      WHERE pso.product_id = products.id AND pso.unit_code = 'pcs' AND pso.active = true
+      UPDATE products p
+      LEFT JOIN product_units pso
+        ON pso.product_id = p.id AND pso.unit_code = 'pcs' AND pso.active = 1
+      SET p.price = COALESCE(pso.price, p.price), p.weight = COALESCE(pso.weight, p.weight)
     `);
 
     await queryInterface.dropTable('product_units');

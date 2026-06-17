@@ -7,11 +7,11 @@ module.exports = {
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: process.env.DB_DIALECT || 'postgres',
+    dialect: process.env.DB_DIALECT || 'mysql',
     timezone: '+07:00',
     logging: console.log,
     define: {
-      underscored:   true,
+      underscored:   true,   // JS camelCase → DB snake_case automatically
       timestamps:    true,
       createdAt:     'created_at',
       updatedAt:     'updated_at',
@@ -30,23 +30,17 @@ module.exports = {
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: process.env.DB_DIALECT || 'postgres',
+    dialect: process.env.DB_DIALECT,
     timezone: '+07:00',
     logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    },
     define: {
-      underscored:   true,
+      underscored:   true,   // JS camelCase → DB snake_case automatically
       timestamps:    true,
       createdAt:     'created_at',
       updatedAt:     'updated_at',
     },
     pool: {
-      max:     2,
+      max:     10,
       min:     0,
       acquire: 30000,
       idle:    10000,
