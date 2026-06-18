@@ -42,6 +42,10 @@ async function createApp() {
   }));
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+  app.use('/api/health-check', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+
   // ─── Base Route ──────────────────────────────────────────────────────────
   app.use('/api', security);
   app.use('/api/products', productRoutes);
