@@ -5,9 +5,9 @@ const db = require('./models')
 
 async function start() {
   await db.sequelize.authenticate()
-    .then(() => console.log('✅ MySQL (Sequelize) connected'))
+    .then(() => console.log('✅ Database connected'))
     .catch(err => {
-      console.error('❌ MySQL connection failed:', err.message);
+      console.error('❌ Database connection failed:', err.message);
       process.exit(1);
     });
 

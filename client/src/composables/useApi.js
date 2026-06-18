@@ -10,7 +10,7 @@ export function useApi() {
     }
   }
 
-  const apiBase = import.meta.env.API_BASE_URL ?? ''
+  const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
 
   async function request(method, path, body) {
     try {
