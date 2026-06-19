@@ -19,7 +19,7 @@ const corsMiddleware = cors({
 
 module.exports = function security(req, res, next) {
   // Explicitly skip admin APIs
-  if (req.path.startsWith('/admin')) return next();
+  // if (req.path.startsWith('/admin')) return next();
 
   if (!isAllowedOrigin(req.headers.origin)) {
     return res.status(403).json({
