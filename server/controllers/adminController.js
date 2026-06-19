@@ -52,7 +52,10 @@ const adminController = {
         productService.getProductStats(),
       ]);
       res.json({ success: true, data: { ...orderStats, ...productStats } });
-    } catch (err) { next(err); }
+    } catch (err) { 
+      console.error(err);
+      next(err); 
+    }
   },
 
   // ── Orders ────────────────────────────────────────────────────────────────
