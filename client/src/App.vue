@@ -8,5 +8,5 @@
 <script setup>
 import ErrorModal from './components/ErrorModal.vue';
 import { Analytics } from "@vercel/analytics/vue";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SpeedInsights } from "@vercel/speed-insights/vue";
 </script>
