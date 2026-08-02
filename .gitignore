@@ -137,3 +137,9 @@ vite.config.mjs.timestamp-*
 .pnp.*
 
 uploads
+
+# Local MCP server config
+.mcp.json
+
+# Agent skills installed via `npx skills add`
+.agents/

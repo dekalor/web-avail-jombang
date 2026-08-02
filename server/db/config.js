@@ -10,7 +10,9 @@ module.exports = {
     dialect: process.env.DB_DIALECT || 'postgres',
     timezone: '+07:00',
     logging: console.log,
+    migrationStorageTableSchema: 'avail_jom',
     define: {
+      schema:        'avail_jom',
       underscored:   true,   // JS camelCase → DB snake_case automatically
       timestamps:    true,
       createdAt:     'created_at',
@@ -33,7 +35,9 @@ module.exports = {
     dialect: process.env.DB_DIALECT,
     timezone: '+07:00',
     logging: false,
+    migrationStorageTableSchema: 'avail_jom',
     define: {
+      schema:        'avail_jom',
       underscored:   true,   // JS camelCase → DB snake_case automatically
       timestamps:    true,
       createdAt:     'created_at',
