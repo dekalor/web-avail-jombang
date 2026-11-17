@@ -62,6 +62,7 @@ const pages = [
   { id: 'orders', path: '/orders', label: 'Pesanan', icon: '🛒' },
   { id: 'products', path: '/products', label: 'Produk', icon: '📦' },
   { id: 'product-categories', path: '/product-categories', label: 'Kategori Produk', icon: '🗂️' },
+  { id: 'testimonials', path: '/testimonials', label: 'Testimoni', icon: '💬' },
 ]
 
 const currentPage = computed(() => String(route.name || 'dashboard'))

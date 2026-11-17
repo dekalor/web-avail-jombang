@@ -3,7 +3,8 @@
 
 const productService = require('../services/productService');
 const orderService   = require('../services/orderService');
-const productCategoryService = require('../services/productCategoryService')
+const productCategoryService = require('../services/productCategoryService');
+const testimonialService = require('../services/testimonialService');
 const {
   storeProductImage,
   storeProductDetailMedia,
@@ -226,6 +227,35 @@ const adminController = {
     try {
       await productCategoryService.deactivateProductCategory(req.params.id);
       res.json({ success: true, message: 'Product Category deactivated' });
+    } catch (err) { next(err); }
+  },
+
+  // ── Testimonials ───────────────────────────────────────────────────────────
+  async getTestimonials(req, res, next) {
+    try {
+      const testimonials = await testimonialService.getAllTestimonials({ activeOnly: false });
+      res.json({ success: true, data: testimonials });
+    } catch (err) { next(err); }
+  },
+
+  async createTestimonial(req, res, next) {
+    try {
+      const testimonial = await testimonialService.createTestimonial(req.body);
+      res.status(201).json({ success: true, data: testimonial });
+    } catch (err) { next(err); }
+  },
+
+  async updateTestimonial(req, res, next) {
+    try {
+      const testimonial = await testimonialService.updateTestimonial(req.params.id, req.body);
+      res.json({ success: true, data: testimonial });
+    } catch (err) { next(err); }
+  },
+
+  async deleteTestimonial(req, res, next) {
+    try {
+      await testimonialService.deactivateTestimonial(req.params.id);
+      res.json({ success: true, message: 'Testimonial deactivated' });
     } catch (err) { next(err); }
   },
 };

@@ -16,7 +16,57 @@
         </p>
       </section>
 
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <!-- Loading State: Skeleton Cards -->
+      <section
+        v-if="loading"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+      >
+        <div
+          v-for="n in 6"
+          :key="`skeleton-${n}`"
+          class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm animate-pulse"
+        >
+          <div class="aspect-[4/5] bg-gray-200"></div>
+          <div class="p-4 sm:p-5 space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="h-5 w-36 bg-gray-200 rounded"></div>
+              <div class="h-5 w-14 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="h-4 w-full bg-gray-200 rounded"></div>
+            <div class="h-4 w-4/5 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Error State -->
+      <section
+        v-else-if="error"
+        class="bg-white rounded-2xl border border-gray-100 p-8 sm:p-12 text-center max-w-lg mx-auto shadow-sm"
+      >
+        <p class="text-base sm:text-lg text-gray-700 mb-4">{{ error }}</p>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#7BA87D] text-white font-medium hover:bg-[#68946a] transition-colors"
+          @click="loadTestimonials"
+        >
+          <RefreshCw class="w-4 h-4" />
+          Coba Lagi
+        </button>
+      </section>
+
+      <!-- Empty State -->
+      <section
+        v-else-if="testimonials.length === 0"
+        class="bg-white rounded-2xl border border-gray-100 p-8 sm:p-12 text-center max-w-lg mx-auto shadow-sm"
+      >
+        <p class="text-base sm:text-lg text-gray-600">Belum ada testimoni yang ditampilkan saat ini.</p>
+      </section>
+
+      <!-- Testimonials Grid -->
+      <section
+        v-else
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+      >
         <article
           v-for="item in testimonials"
           :key="item.id"
@@ -31,8 +81,9 @@
               <img
                 v-if="item.type === 'image'"
                 :src="item.mediaUrl"
-                :alt="item.title"
+                :alt="item.title || item.customerName"
                 class="w-full h-full object-cover"
+                loading="lazy"
               />
 
               <video
@@ -72,6 +123,7 @@
     </div>
   </div>
 
+  <!-- Preview Modal -->
   <div
     v-if="selected"
     class="fixed inset-0 z-50 bg-black/80 p-4 flex items-center justify-center"
@@ -101,7 +153,7 @@
         <img
           v-if="selected.type === 'image'"
           :src="selected.mediaUrl"
-          :alt="selected.title"
+          :alt="selected.title || selected.customerName"
           class="w-full max-h-[75vh] object-contain"
         />
         <video
@@ -125,76 +177,27 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
-import { Play, X } from 'lucide-vue-next'
+import { Play, X, RefreshCw } from 'lucide-vue-next'
+import { useApi } from '../composables/useApi'
+
+const { get } = useApi()
 
 const selected = ref(null)
+const testimonials = ref([])
+const loading = ref(true)
+const error = ref(null)
 
-const testimonials = [
-  {
-    id: 1,
-    type: 'image',
-    customerName: 'Kristiani Apu',
-    title: 'Ulasan pelanggan',
-    caption: 'Mengidap Mioma sampai hampir angkat rahim & sembuh setelah pakai FC Sanitary Pad',
-    mediaUrl: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772946816/Testimonial_1_gdk0cs.jpg',
-  },
-  {
-    id: 2,
-    type: 'image',
-    customerName: 'Siti Masruroh',
-    title: 'Ulasan pelanggan',
-    caption: 'Menstruasi tidak lancar karena PCOS kini kembali normal',
-    mediaUrl: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772946816/Testimonial_2_m0xpmp.jpg',
-  },
-  {
-    id: 3,
-    type: 'video',
-    customerName: 'Konsumen',
-    title: 'Cerita pengalaman',
-    caption: 'Istri dan anak-anak nya sering konsultasi ke dokter masalah kewanitaan, setelah pakai FC Sanitary Pad sudah tidak pernah ke dokter lagi',
-    mediaUrl: 'https://res.cloudinary.com/drp8mahwc/video/upload/v1772946819/Testimonial_3_y3itsb.mp4',
-  },
-  {
-    id: 4,
-    type: 'image',
-    customerName: 'Selebriti Indonesia',
-    title: 'Cerita pengalaman',
-    caption: 'Para selebriti yang menggunakan AVAIL sehari-hari (bukan endorse)',
-    mediaUrl: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772946816/Testimonial_4_dq3uso.jpg',
-  },
-  {
-    id: 5,
-    type: 'video',
-    customerName: 'Ahan Suryadi - Garut',
-    title: 'Cerita pengalaman',
-    caption: 'Karena pernah operasi dan radiasi di kepala mengakibatkan aktifitas seksual kurang maksimal, setelah mengkonsumsi AVAIL A Cafe aktifitas seksual bisa kembali maksimal',
-    mediaUrl: 'https://res.cloudinary.com/drp8mahwc/video/upload/v1772946824/Testimonial_5_rgrdna.mp4',
-  },
-  {
-    id: 6,
-    type: 'image',
-    customerName: 'Syifatun - Trenggalek',
-    title: 'Ulasan pelanggan',
-    caption: 'Gangguan lambung membaik setelah mengkonsumsi Nutrashake',
-    mediaUrl: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772946820/Testimonial_6_kpacsq.jpg',
-  },
-  {
-    id: 7,
-    type: 'video',
-    customerName: 'Sari - Nutrisionis Avail',
-    title: 'Ulasan pelanggan',
-    caption: 'Pernah tau Gerd ya? Penyakit lambung.. Apakah nutrashake bisa menjadi solusi bagi orang-orang yg bermasalah dengan lambung.. kebetulan saya tanya sama Mbak Sari. Mbak Sari ini tandem nya Dr.Erina (dokter AVAIL) sebagai nutrisionis AVAIL. Sangat sangat mempuni Lulusan UI.',
-    mediaUrl: 'https://res.cloudinary.com/drp8mahwc/video/upload/v1772946823/Testimonial_7_li7no1.mp4',
-  },
-  {
-    id: 8,
-    type: 'image',
-    customerName: 'Anisa Prasasti',
-    title: 'Ulasan pelanggan',
-    caption: 'Nutrashake hempas kolesterol',
-    mediaUrl: 'https://res.cloudinary.com/drp8mahwc/image/upload/v1772946823/Testimonial_8_mnqi7b.jpg',
-  },
-]
+async function loadTestimonials() {
+  loading.value = true
+  error.value = null
+  const res = await get('/testimonials')
+  if (res.success && Array.isArray(res.data)) {
+    testimonials.value = res.data
+  } else {
+    error.value = 'Gagal memuat testimoni pelanggan.'
+  }
+  loading.value = false
+}
 
 function openPreview(item) {
   selected.value = item
@@ -212,6 +215,7 @@ function handleKeydown(event) {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  loadTestimonials()
 })
 
 onUnmounted(() => {

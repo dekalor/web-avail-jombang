@@ -32,4 +32,10 @@ router.post('/product-categories', adminCtrl.createProductCategory);
 router.put('/product-categories/:id',      adminCtrl.updateProductCategory);
 router.delete('/product-categories/:id',   adminCtrl.deleteProductCategory);
 
+// Testimonials
+router.get('/testimonials',          adminCtrl.getTestimonials);
+router.post('/testimonials',         adminCtrl.createTestimonial);
+router.put('/testimonials/:id',      adminCtrl.updateTestimonial);
+router.delete('/testimonials/:id',   adminCtrl.deleteTestimonial);
+
 module.exports = router;

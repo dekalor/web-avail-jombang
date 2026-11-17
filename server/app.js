@@ -7,6 +7,7 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes   = require('./routes/orderRoutes');
 const adminRoutes   = require('./routes/adminRoutes');
 const shippingRoutes   = require('./routes/shippingRoutes');
+const testimonialRoutes = require('./routes/testimonialRoutes');
 
 const SequelizeSessionStore = require('./middleware/sequelizeSessionStore');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
@@ -52,6 +53,7 @@ async function createApp() {
   app.use('/api/orders',   orderRoutes);
   app.use('/api/admin',    adminRoutes);
   app.use('/api/shipping',    shippingRoutes);
+  app.use('/api/testimonials', testimonialRoutes);
 
   if (!isProd) {
     // ── Development: Vite dev servers as Express middleware ─────────────────

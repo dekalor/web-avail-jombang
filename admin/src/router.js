@@ -3,6 +3,7 @@ import DashboardPage from './pages/DashboardPage.vue'
 import OrdersPage from './pages/OrdersPage.vue'
 import ProductsPage from './pages/ProductsPage.vue'
 import ProductCategoriesPage from './pages/ProductCategoriesPage.vue'
+import TestimonialsPage from './pages/TestimonialsPage.vue'
 
 const EmptyPage = { template: '<div />' }
 
@@ -17,6 +18,12 @@ const routes = [
     name: 'product-categories',
     component: ProductCategoriesPage,
     meta: { title: 'Kategori Produk' },
+  },
+  {
+    path: '/testimonials',
+    name: 'testimonials',
+    component: TestimonialsPage,
+    meta: { title: 'Testimoni' },
   },
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]
